@@ -1,0 +1,214 @@
+package com.iffly.compose.markdown.multiplatform.widget.richtext
+
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.ParagraphStyle
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.fastForEach
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.withContext
+
+@Composable
+actual fun AutoLineHeightText(
+    text: AnnotatedString,
+    modifier: Modifier,
+    color: Color,
+    fontSize: TextUnit,
+    fontStyle: FontStyle?,
+    fontWeight: FontWeight?,
+    fontFamily: FontFamily?,
+    letterSpacing: TextUnit,
+    textDecoration: TextDecoration?,
+    textAlign: TextAlign?,
+    lineHeight: TextUnit,
+    overflow: TextOverflow,
+    softWrap: Boolean,
+    maxLines: Int,
+    minLines: Int,
+    inlineContent: ImmutableMap<String, InlineTextContent>,
+    onTextLayout: (TextLayoutResult) -> Unit,
+    style: TextStyle,
+) {
+    val (adjustedText, textLayoutResultState) =
+        rememberAdjustedText(
+            text = text,
+        )
+
+    Text(
+        text = adjustedText,
+        modifier = modifier,
+        color = color,
+        fontSize = fontSize,
+        fontStyle = fontStyle,
+        fontWeight = fontWeight,
+        fontFamily = fontFamily,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        textAlign = textAlign,
+        lineHeight = lineHeight,
+        overflow = overflow,
+        softWrap = softWrap,
+        maxLines = maxLines,
+        minLines = minLines,
+        inlineContent = inlineContent,
+        onTextLayout = { layoutResult ->
+            textLayoutResultState.value = layoutResult
+            onTextLayout(layoutResult)
+        },
+        style = style,
+    )
+}
+
+@Composable
+private fun rememberAdjustedText(text: AnnotatedString): Pair<AnnotatedString, MutableState<TextLayoutResult?>> {
+    val textLayoutResultState = remember { mutableStateOf<TextLayoutResult?>(null) }
+    var adjustedText by remember(text) { mutableStateOf(text) }
+    val density = LocalDensity.current
+    LaunchedEffect(text) {
+        snapshotFlow {
+            textLayoutResultState.value
+        }.distinctUntilChanged()
+            .mapNotNull { layoutResult ->
+                layoutResult?.let {
+                    if (adjustedText != it.layoutInput.text) {
+                        return@let null
+                    }
+                    withContext(Dispatchers.Default) {
+                        calculateAdjustLineHeightRequest(
+                            layoutResult = it,
+                            density = density,
+                        ).takeIf { map -> map.isNotEmpty() }?.let { requestMap ->
+                            buildAdjustLineHeightText(
+                                currentText = it.layoutInput.text,
+                                requests = requestMap.values.toList(),
+                            )
+                        }
+                    }
+                }
+            }.collectLatest {
+                adjustedText = it
+            }
+    }
+    return Pair(adjustedText, textLayoutResultState)
+}
+
+private fun buildAdjustLineHeightText(
+    currentText: AnnotatedString,
+    requests: List<AdjustLineHeightRequest>,
+): AnnotatedString {
+    val newText =
+        buildAnnotatedString {
+            var lastIndex = 0
+            requests
+                .sortedBy {
+                    it.startIndex
+                }.fastForEach {
+                    if (it.startIndex > lastIndex) {
+                        appendAndRemoveLastLineSeparator(
+                            currentText.subSequence(
+                                lastIndex,
+                                it.startIndex,
+                            ),
+                        )
+                    }
+                    withStyle(ParagraphStyle(lineHeight = it.lineHeight)) {
+                        appendAndRemoveLastLineSeparator(
+                            currentText.subSequence(
+                                it.startIndex,
+                                it.endIndex,
+                            ),
+                        )
+                    }
+                    lastIndex = it.endIndex
+                }
+            if (lastIndex < currentText.length) {
+                append(currentText.subSequence(lastIndex, currentText.length))
+            }
+        }
+    return newText
+}
+
+private fun AnnotatedString.Builder.appendAndRemoveLastLineSeparator(subSegment: AnnotatedString) {
+    if (subSegment.lastOrNull() == '\n') {
+        append(subSegment.subSequence(0, subSegment.length - 1))
+    } else {
+        append(subSegment)
+    }
+}
+
+private fun calculateAdjustLineHeightRequest(
+    layoutResult: TextLayoutResult,
+    density: Density,
+): MutableMap<Int, AdjustLineHeightRequest> {
+    val adjustLineHeightRequestMap = mutableMapOf<Int, AdjustLineHeightRequest>()
+    val annotationRanges = layoutResult.layoutInput.placeholders
+
+    annotationRanges.fastForEach { annotation ->
+        if (!annotation.item.height.isSp) {
+            return@fastForEach
+        }
+
+        val lineNumber = layoutResult.getLineForOffset(annotation.start)
+        val textLineHeight =
+            layoutResult.getLineBottom(lineNumber) - layoutResult.getLineTop(lineNumber)
+        val textLineHeightSp =
+            with(density) {
+                textLineHeight.toSp()
+            }
+        val existingRequestLineHeight = adjustLineHeightRequestMap[lineNumber]?.lineHeight ?: 0.sp
+
+        val inlineContentLineHeight = annotation.item.height
+        val maxRequestLineHeight =
+            if (inlineContentLineHeight > existingRequestLineHeight) {
+                inlineContentLineHeight
+            } else {
+                existingRequestLineHeight
+            }
+
+        if (maxRequestLineHeight > textLineHeightSp) {
+            adjustLineHeightRequestMap[lineNumber] =
+                AdjustLineHeightRequest(
+                    startIndex = layoutResult.getLineStart(lineNumber),
+                    endIndex = layoutResult.getLineEnd(lineNumber),
+                    lineHeight = maxRequestLineHeight,
+                )
+        }
+    }
+    return adjustLineHeightRequestMap
+}
+
+private data class AdjustLineHeightRequest(
+    val startIndex: Int,
+    val endIndex: Int,
+    val lineHeight: TextUnit,
+)

@@ -1,0 +1,17 @@
+@file:Suppress("ktlint:compose:compositionlocal-allowlist")
+
+package com.iffly.compose.markdown.multiplatform.config
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.staticCompositionLocalOf
+import com.iffly.compose.markdown.multiplatform.ActionHandler
+
+internal val LocalActionHandlerProvider =
+    staticCompositionLocalOf<ActionHandler?> {
+        null
+    }
+
+@Composable
+@ReadOnlyComposable
+fun currentActionHandler(): ActionHandler? = LocalActionHandlerProvider.current
