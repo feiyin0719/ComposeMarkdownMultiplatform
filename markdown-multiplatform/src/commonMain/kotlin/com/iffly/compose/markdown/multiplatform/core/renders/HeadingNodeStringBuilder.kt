@@ -32,6 +32,11 @@ class HeadingNodeStringBuilder : IInlineNodeStringBuilder {
                     it.type == MarkdownTokenTypes.SETEXT_CONTENT
             } ?: return
 
+        val trimmedChildren =
+            atxContent.children
+                .dropWhile { it.type == MarkdownTokenTypes.WHITE_SPACE }
+                .dropLastWhile { it.type == MarkdownTokenTypes.WHITE_SPACE }
+
         val spanStyle = markdownTheme.getNodeSpanStyle(node)
         val paragraphStyle = markdownTheme.getNodeParagraphStyle(node)
 
@@ -47,6 +52,7 @@ class HeadingNodeStringBuilder : IInlineNodeStringBuilder {
                     actionHandler = actionHandler,
                     isShowNotSupported = isShowNotSupported,
                     nodeStringBuilderContext = nodeStringBuilderContext,
+                    children = trimmedChildren,
                 )
             }
         }

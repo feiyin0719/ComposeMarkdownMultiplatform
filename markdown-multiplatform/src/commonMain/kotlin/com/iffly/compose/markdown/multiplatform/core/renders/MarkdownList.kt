@@ -88,11 +88,6 @@ class ListItemRenderer : IBlockRenderer {
             Spacer(modifier = Modifier.width(listTheme.markerSpacerWidth))
             MarkdownChildren(
                 parent = node,
-                children =
-                    node.children.filter {
-                        it.type != MarkdownTokenTypes.LIST_BULLET &&
-                            it.type != MarkdownTokenTypes.LIST_NUMBER
-                    },
                 sourceText = sourceText,
                 modifier = Modifier.wrapContentSize(),
                 verticalArrangement = Arrangement.Top,

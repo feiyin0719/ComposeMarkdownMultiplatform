@@ -20,8 +20,8 @@ fun AnnotatedString.Builder.buildChildNodeAnnotatedString(
     actionHandler: ActionHandler? = null,
     isShowNotSupported: Boolean,
     nodeStringBuilderContext: NodeStringBuilderContext,
+    children: List<ASTNode> = parent.children,
 ) {
-    val children = parent.children
     for (child in children) {
         val customBuilder =
             renderRegistry.getInlineNodeStringBuilder(child.type)

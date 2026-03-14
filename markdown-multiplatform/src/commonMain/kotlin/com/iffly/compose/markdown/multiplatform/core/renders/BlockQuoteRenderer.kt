@@ -31,14 +31,15 @@ class BlockQuoteRenderer : IBlockRenderer {
 
         MarkdownChildren(
             parent = node,
-            children = node.children.filter { it.type != MarkdownTokenTypes.BLOCK_QUOTE },
             sourceText = sourceText,
             modifier =
                 modifier
                     .fillMaxWidth()
                     .wrapContentHeight()
-                    .background(color = blockQuoteTheme.backgroundColor, shape = blockQuoteTheme.shape)
-                    .drawBehind {
+                    .background(
+                        color = blockQuoteTheme.backgroundColor,
+                        shape = blockQuoteTheme.shape,
+                    ).drawBehind {
                         val borderWidth = blockQuoteTheme.borderWidth.toPx()
                         val x = borderWidth / 2
                         drawLine(

@@ -79,12 +79,18 @@ fun BasicSyntaxExample(
 
                 > This is a quote block
                 > Can contain multiple lines of content
+                
+                > This is a blockquote. 
+                > It can span multiple lines.
+                >
+                > > Nested blockquote.
 
                 ### Quote with List
                 > - Quote list item 1
                 > - Quote list item 2
                 > 1. Nested quote list item
                 > 2. Another nested quote list item
+                >    new line for nested quote list item
                 >>  - Nested quote list item
                 >>  - Another nested quote list item
                 > # Quote with Heading1

@@ -8,6 +8,9 @@ import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.contentText
+import com.iffly.compose.markdown.multiplatform.util.previousSibling
+import org.intellij.markdown.MarkdownElementTypes
+import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.html.entities.Entities
 
@@ -30,6 +33,237 @@ class TextNodeStringBuilder : IInlineNodeStringBuilder {
                 processEscapes = true,
             ),
         )
+    }
+}
+
+class SingleQuoteNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append('\'')
+    }
+}
+
+class DoubleQuoteNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append('\"')
+    }
+}
+
+class LParenNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append('(')
+    }
+}
+
+class RParenNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append(')')
+    }
+}
+
+class LBracketNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append('[')
+    }
+}
+
+class RBracketNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append(']')
+    }
+}
+
+class LtNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append('<')
+    }
+}
+
+class GtNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append('>')
+    }
+}
+
+class ColonNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append(':')
+    }
+}
+
+class ExclamationMarkNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append('!')
+    }
+}
+
+class BacktickNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        append('`')
+    }
+}
+
+class EmphTokenNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        val parentType = node.parent?.type
+        if (parentType != MarkdownElementTypes.EMPH && parentType != MarkdownElementTypes.STRONG) {
+            append(node.contentText(sourceText))
+        }
+    }
+}
+
+class WhiteSpaceNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        if (node.previousSibling()?.type != MarkdownTokenTypes.BLOCK_QUOTE) {
+            append(' ')
+        }
+    }
+}
+
+class EolNodeStringBuilder : IInlineNodeStringBuilder {
+    override fun AnnotatedString.Builder.buildInlineNodeString(
+        node: ASTNode,
+        sourceText: String,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        markdownTheme: MarkdownTheme,
+        actionHandler: ActionHandler?,
+        indentLevel: Int,
+        isShowNotSupported: Boolean,
+        renderRegistry: RenderRegistry,
+        nodeStringBuilderContext: NodeStringBuilderContext,
+    ) {
+        if (node.previousSibling()?.type != MarkdownTokenTypes.HARD_LINE_BREAK) {
+            append(' ')
+        }
     }
 }
 

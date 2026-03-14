@@ -10,22 +10,6 @@ import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.StringExt
 import org.intellij.markdown.ast.ASTNode
 
-class SoftLineBreakNodeStringBuilder : IInlineNodeStringBuilder {
-    override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
-        markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
-        indentLevel: Int,
-        isShowNotSupported: Boolean,
-        renderRegistry: RenderRegistry,
-        nodeStringBuilderContext: NodeStringBuilderContext,
-    ) {
-        append(" ")
-    }
-}
-
 class HardLineBreakNodeStringBuilder : IInlineNodeStringBuilder {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: ASTNode,

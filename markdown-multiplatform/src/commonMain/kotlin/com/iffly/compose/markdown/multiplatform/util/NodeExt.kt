@@ -133,3 +133,13 @@ fun ASTNode.isLooseList(): Boolean {
     }
     return false
 }
+
+/**
+ * Returns the next sibling of this node, or null if there is no next sibling.
+ */
+fun ASTNode.previousSibling(): ASTNode? {
+    val parent = this.parent ?: return null
+    val siblings = parent.children
+    val index = siblings.indexOf(this)
+    return if (index > 0) siblings[index - 1] else null
+}

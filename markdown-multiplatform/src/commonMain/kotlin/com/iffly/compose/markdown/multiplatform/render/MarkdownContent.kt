@@ -6,20 +6,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
-import com.iffly.compose.markdown.multiplatform.config.LocalSourceTextProvider
 import com.iffly.compose.markdown.multiplatform.config.currentRenderRegistry
 import com.iffly.compose.markdown.multiplatform.config.currentSourceText
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
-import com.iffly.compose.markdown.multiplatform.config.isShowNotSupported
-import com.iffly.compose.markdown.multiplatform.util.contentText
-import org.intellij.markdown.MarkdownElementTypes
-import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
+import org.intellij.markdown.ast.CompositeASTNode
 
 fun interface MarkdownContentRenderer {
     @Composable
@@ -58,8 +53,8 @@ private fun DefaultMarkdownContent(
     val renderer = renderRegistry.getBlockRenderer(node.type)
     if (renderer != null) {
         renderer.Invoke(node, sourceText, modifier)
-    } else {
-        // Try as text
+    } else if (node is CompositeASTNode) {
+        // Try as text only for element types
         MarkdownText(node, modifier = modifier)
     }
 }
@@ -67,9 +62,9 @@ private fun DefaultMarkdownContent(
 @Composable
 fun MarkdownChildren(
     parent: ASTNode,
+    modifier: Modifier = Modifier,
     children: List<ASTNode> = parent.children,
     sourceText: String = currentSourceText(),
-    modifier: Modifier = Modifier,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     spacerHeight: Dp = currentTheme().spacerTheme.spacerHeight,
     showSpacer: Boolean = currentTheme().spacerTheme.showSpacer,
@@ -83,6 +78,7 @@ fun MarkdownChildren(
     onBeforeAll: (@Composable (parent: ASTNode) -> Unit)? = null,
     onAfterAll: (@Composable (parent: ASTNode) -> Unit)? = null,
 ) {
+    val renderRegistry = currentRenderRegistry()
     Column(modifier = modifier, verticalArrangement = verticalArrangement) {
         onBeforeAll?.invoke(parent)
         children.forEachIndexed { index, child ->
@@ -93,7 +89,10 @@ fun MarkdownChildren(
                     modifier = childModifierFactory(child),
                 )
                 onAfterChild?.invoke(child, parent)
-                if (index != children.lastIndex && showSpacer && child.type != MarkdownTokenTypes.EOL) {
+                if (index != children.lastIndex &&
+                    showSpacer &&
+                    renderRegistry.getBlockRenderer(child.type) != null
+                ) {
                     Spacer(Modifier.height(spacerHeight))
                 }
             }
