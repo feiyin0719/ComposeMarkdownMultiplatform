@@ -54,6 +54,12 @@ val markdownExamples =
             ImageExample(paddingValues)
         },
         MarkdownExample(
+            title = "HTML Example",
+            description = "Demonstrates HTML rendering with the HTML plugin",
+        ) { paddingValues ->
+            HtmlExample(paddingValues)
+        },
+        MarkdownExample(
             title = "LazyMarkdownColumn Example",
             description = "Renders markdown using LazyColumn for efficient display",
         ) { paddingValues ->

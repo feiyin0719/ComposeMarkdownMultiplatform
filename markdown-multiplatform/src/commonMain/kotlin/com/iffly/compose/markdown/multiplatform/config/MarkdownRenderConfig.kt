@@ -87,15 +87,10 @@ class MarkdownRenderConfig {
         fun build(): MarkdownRenderConfig {
             plugins.forEach { plugin ->
                 plugin.inlineNodeStringBuilders().forEach { (elementType, builder) ->
-                    // don't override user-provided builders
-                    if (!inlineNodeStringBuilders.containsKey(elementType)) {
-                        inlineNodeStringBuilders[elementType] = builder
-                    }
+                    inlineNodeStringBuilders[elementType] = builder
                 }
                 plugin.blockRenderers().forEach { (elementType, renderer) ->
-                    if (!blockRenderers.containsKey(elementType)) {
-                        blockRenderers[elementType] = renderer
-                    }
+                    blockRenderers[elementType] = renderer
                 }
             }
 

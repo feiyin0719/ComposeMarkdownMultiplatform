@@ -45,4 +45,5 @@ rootProject.name = "ComposeMarkdownMultiplatform"
 include(":markdown-multiplatform")
 include(":markdown-multiplatform-table")
 include(":markdown-multiplatform-image")
+include(":markdown-multiplatform-html")
 include(":sample-multiplatform")
