@@ -47,4 +47,10 @@ val markdownExamples =
         ) { paddingValues ->
             TableExample(paddingValues)
         },
+        MarkdownExample(
+            title = "Image Example",
+            description = "Demonstrates image rendering with the image plugin",
+        ) { paddingValues ->
+            ImageExample(paddingValues)
+        },
     )

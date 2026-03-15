@@ -45,7 +45,7 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.ui)
                 implementation(libs.kotlin.immutable.collections)
-                compileOnly(project(":markdown-multiplatform"))
+                implementation(project(":markdown-multiplatform"))
             }
         }
 
