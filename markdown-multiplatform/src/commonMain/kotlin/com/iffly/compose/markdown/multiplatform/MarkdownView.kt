@@ -1,6 +1,6 @@
 package com.iffly.compose.markdown.multiplatform
 
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -41,10 +41,7 @@ fun MarkdownView(
     ) {
         MarkdownContent(
             node = rootNode,
-            modifier =
-                modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState()),
+            modifier = modifier,
         )
     }
 }
