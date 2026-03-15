@@ -13,8 +13,6 @@ import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.config.currentRenderRegistry
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContent
-import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
-import org.intellij.markdown.parser.MarkdownParser
 
 /**
  * A Composable that displays markdown content using LazyColumn.
@@ -38,10 +36,10 @@ fun LazyMarkdownColumn(
     showNotSupported: Boolean = false,
     lazyListState: LazyListState = rememberLazyListState(),
 ) {
-    val flavour = remember { GFMFlavourDescriptor() }
+    val markdownParser = markdownRenderConfig.markdownParser
     val rootNode =
-        remember(text) {
-            MarkdownParser(flavour).buildMarkdownTreeFromString(text)
+        remember(text, markdownParser) {
+            markdownParser.parse(text)
         }
 
     val children =

@@ -29,9 +29,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import com.iffly.compose.markdown.multiplatform.config.currentParser
 import kotlinx.coroutines.CoroutineScope
+import org.intellij.markdown.ast.ASTNode
+
+fun interface MarkdownParser {
+    fun parse(sourceText: String): ASTNode
+}
 
 data class NodeStringBuilderContext(
+    val parser: MarkdownParser,
     val layoutContext: TextLayoutContext,
     val designContext: TextStyleContext,
     val systemContext: SystemContext,
@@ -87,6 +94,7 @@ fun rememberNodeStringBuilderContext(
     val fontFamilyResolver = LocalFontFamilyResolver.current
     val softwareKeyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
+    val parser = currentParser()
 
     val mergedTextStyle = systemTextStyle.merge(textStyle)
 
@@ -106,8 +114,10 @@ fun rememberNodeStringBuilderContext(
         softwareKeyboardController,
         focusManager,
         scope,
+        parser,
     ) {
         NodeStringBuilderContext(
+            parser = parser,
             layoutContext =
                 TextLayoutContext(
                     density = density,

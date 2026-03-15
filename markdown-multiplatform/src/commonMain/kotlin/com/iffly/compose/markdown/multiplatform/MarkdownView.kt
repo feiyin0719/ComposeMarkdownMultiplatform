@@ -9,14 +9,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.iffly.compose.markdown.multiplatform.config.LocalActionHandlerProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalMarkdownThemeProvider
+import com.iffly.compose.markdown.multiplatform.config.LocalParserProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalRenderRegistryProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalShowNotSupportedProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalSourceTextProvider
 import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContent
 import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
-import org.intellij.markdown.parser.MarkdownParser
 
 @Composable
 fun MarkdownView(
@@ -27,10 +26,10 @@ fun MarkdownView(
     actionHandler: ActionHandler? = null,
     showNotSupported: Boolean = false,
 ) {
-    val flavour = remember { GFMFlavourDescriptor() }
+    val markdownParser = markdownRenderConfig.markdownParser
     val rootNode =
-        remember(text) {
-            MarkdownParser(flavour).buildMarkdownTreeFromString(text)
+        remember(text, markdownParser) {
+            markdownParser.parse(text)
         }
 
     ProvideMarkdownLocals(
@@ -56,6 +55,7 @@ fun ProvideMarkdownLocals(
 ) {
     CompositionLocalProvider(
         LocalMarkdownThemeProvider provides markdownRenderConfig.markdownTheme,
+        LocalParserProvider provides markdownRenderConfig.markdownParser,
         LocalRenderRegistryProvider provides markdownRenderConfig.renderRegistry,
         LocalActionHandlerProvider provides actionHandler,
         LocalShowNotSupportedProvider provides showNotSupported,
