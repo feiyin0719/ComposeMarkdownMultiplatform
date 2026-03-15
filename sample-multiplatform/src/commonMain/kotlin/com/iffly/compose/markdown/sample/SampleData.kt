@@ -41,4 +41,10 @@ val markdownExamples =
         ) { paddingValues ->
             DynamicContentExample(paddingValues)
         },
+        MarkdownExample(
+            title = "Table Example",
+            description = "Demonstrates GFM table rendering with the table plugin",
+        ) { paddingValues ->
+            TableExample(paddingValues)
+        },
     )
