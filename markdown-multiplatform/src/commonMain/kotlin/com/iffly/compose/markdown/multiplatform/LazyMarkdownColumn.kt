@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
+import com.iffly.compose.markdown.multiplatform.config.currentRenderRegistry
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContent
 import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
@@ -55,6 +56,7 @@ fun LazyMarkdownColumn(
         showNotSupported = showNotSupported,
     ) {
         val theme = currentTheme()
+        val renderRegistry = currentRenderRegistry()
         LazyColumn(
             modifier = modifier,
             state = lazyListState,
@@ -64,7 +66,10 @@ fun LazyMarkdownColumn(
                     node = node,
                     modifier = Modifier,
                 )
-                if (index != children.lastIndex && theme.spacerTheme.showSpacer) {
+                if (index != children.lastIndex
+                    && theme.spacerTheme.showSpacer
+                    && renderRegistry.getBlockRenderer(node.type) != null
+                ) {
                     Spacer(Modifier.height(theme.spacerTheme.spacerHeight))
                 }
             }
