@@ -53,4 +53,10 @@ val markdownExamples =
         ) { paddingValues ->
             ImageExample(paddingValues)
         },
+        MarkdownExample(
+            title = "LazyMarkdownColumn Example",
+            description = "Renders markdown using LazyColumn for efficient display",
+        ) { paddingValues ->
+            LazyMarkdownColumnExample(paddingValues)
+        },
     )
