@@ -65,4 +65,10 @@ val markdownExamples =
         ) { paddingValues ->
             LazyMarkdownColumnExample(paddingValues)
         },
+        MarkdownExample(
+            title = "Inline View Example",
+            description = "Demonstrates FixedSize and DynamicSize inline views in markdown",
+        ) { paddingValues ->
+            InlineViewExample(paddingValues)
+        },
     )
