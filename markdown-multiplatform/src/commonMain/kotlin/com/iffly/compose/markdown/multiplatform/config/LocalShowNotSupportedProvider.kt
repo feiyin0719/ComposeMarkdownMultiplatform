@@ -11,6 +11,11 @@ internal val LocalShowNotSupportedProvider =
         false
     }
 
+/**
+ * Returns whether unsupported Markdown elements should be visually displayed.
+ *
+ * @see LocalShowNotSupportedProvider
+ */
 @Composable
 @ReadOnlyComposable
 fun isShowNotSupported(): Boolean = LocalShowNotSupportedProvider.current

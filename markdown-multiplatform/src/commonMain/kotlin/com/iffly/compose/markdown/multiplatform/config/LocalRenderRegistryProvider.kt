@@ -12,6 +12,11 @@ internal val LocalRenderRegistryProvider =
         error("No RenderRegistry provided")
     }
 
+/**
+ * Returns the current [RenderRegistry] from the composition local.
+ *
+ * @see LocalRenderRegistryProvider
+ */
 @Composable
 @ReadOnlyComposable
 fun currentRenderRegistry(): RenderRegistry = LocalRenderRegistryProvider.current

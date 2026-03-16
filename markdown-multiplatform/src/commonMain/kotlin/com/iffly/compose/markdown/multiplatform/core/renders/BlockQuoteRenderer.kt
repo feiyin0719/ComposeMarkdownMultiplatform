@@ -17,6 +17,15 @@ import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 
+/**
+ * Block renderer for blockquote elements (`> text`).
+ *
+ * Renders the quoted content with a left border line drawn behind the content,
+ * a configurable background color, and appropriate padding. Supports nested
+ * blockquotes. Theming is controlled via [MarkdownTheme.blockQuoteTheme].
+ *
+ * @see IBlockRenderer
+ */
 class BlockQuoteRenderer : IBlockRenderer {
     @Composable
     override fun Invoke(

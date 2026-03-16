@@ -16,6 +16,15 @@ import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 
+/**
+ * Inline node string builder for inline link elements (`[text](url)`).
+ *
+ * Extracts the link destination URL and link text, applies a [LinkAnnotation] with
+ * the configured link styles from [MarkdownTheme], and optionally attaches an
+ * [ActionHandler]-based interaction listener for click handling.
+ *
+ * @see IInlineNodeStringBuilder
+ */
 class LinkNodeStringBuilder : IInlineNodeStringBuilder {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: ASTNode,
@@ -65,6 +74,14 @@ class LinkNodeStringBuilder : IInlineNodeStringBuilder {
     }
 }
 
+/**
+ * Inline node string builder for short reference link elements (`[text]`).
+ *
+ * Renders the link text content without resolving the reference, since reference
+ * resolution is not yet supported.
+ *
+ * @see IInlineNodeStringBuilder
+ */
 class ShortReferenceLinkNodeStringBuilder : IInlineNodeStringBuilder {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: ASTNode,
@@ -94,6 +111,14 @@ class ShortReferenceLinkNodeStringBuilder : IInlineNodeStringBuilder {
     }
 }
 
+/**
+ * Inline node string builder for link definition elements (`[label]: url`).
+ *
+ * Link definitions do not produce any visible output; this builder intentionally
+ * appends nothing.
+ *
+ * @see IInlineNodeStringBuilder
+ */
 class LinkDefinitionNodeStringBuilder : IInlineNodeStringBuilder {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: ASTNode,

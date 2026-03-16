@@ -17,6 +17,16 @@ import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContent
 import org.intellij.markdown.ast.ASTNode
 
+/**
+ * A Composable that renders markdown text into native Compose UI elements.
+ * Parses the provided markdown string and renders it using the configured render pipeline.
+ *
+ * @param text The raw markdown content to render.
+ * @param modifier Modifier to be applied to the root content layout.
+ * @param markdownRenderConfig Configuration controlling parsing, theming, and rendering behavior.
+ * @param actionHandler Optional handler for user interactions such as link clicks and image clicks.
+ * @param showNotSupported Whether to display placeholder text for unsupported markdown elements.
+ */
 @Composable
 fun MarkdownView(
     text: String,
@@ -45,6 +55,17 @@ fun MarkdownView(
     }
 }
 
+/**
+ * Provides markdown-related [CompositionLocalProvider] values to the composition tree.
+ * This sets up the theme, parser, render registry, action handler, and source text
+ * so that child composables can access them via composition locals.
+ *
+ * @param markdownRenderConfig The render configuration supplying theme, parser, and registry.
+ * @param sourceText The raw markdown source text.
+ * @param actionHandler Optional handler for user interaction events.
+ * @param showNotSupported Whether to show unsupported element placeholders.
+ * @param content The composable content that will have access to the provided locals.
+ */
 @Composable
 fun ProvideMarkdownLocals(
     markdownRenderConfig: MarkdownRenderConfig,

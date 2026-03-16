@@ -20,6 +20,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.unit.dp
 
+/**
+ * A composable that displays a loading indicator with a shimmer animation background.
+ *
+ * Renders a [CircularProgressIndicator] centered inside a rounded box with an
+ * animated linear gradient shimmer effect.
+ */
 @Composable
 fun LoadingView(modifier: Modifier = Modifier) {
     val shimmerColors =

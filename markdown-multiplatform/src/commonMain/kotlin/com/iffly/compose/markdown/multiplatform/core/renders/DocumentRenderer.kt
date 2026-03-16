@@ -8,6 +8,14 @@ import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.MarkdownChildren
 import org.intellij.markdown.ast.ASTNode
 
+/**
+ * Block renderer for the root document node (`MARKDOWN_FILE`).
+ *
+ * Serves as the top-level container that renders all child block elements
+ * in a vertical arrangement.
+ *
+ * @see IBlockRenderer
+ */
 class DocumentRenderer : IBlockRenderer {
     @Composable
     override fun Invoke(

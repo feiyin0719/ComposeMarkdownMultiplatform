@@ -14,6 +14,15 @@ import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
 import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownElementTypes
 
+/**
+ * Theme configuration for markdown image rendering, controlling alignment, scaling, shape, and error appearance.
+ *
+ * @param alignment How the image is aligned within its container.
+ * @param contentScale How the image is scaled to fit its bounds.
+ * @param shape Shape applied to clip the image.
+ * @param modifier Additional modifier applied to the image.
+ * @param errorPlaceholderColor Background color for the error placeholder view.
+ */
 @Immutable
 data class ImageTheme(
     val alignment: Alignment = Alignment.Center,
@@ -23,6 +32,16 @@ data class ImageTheme(
     val errorPlaceholderColor: Color = Color(0xFFE0E0E0),
 )
 
+/**
+ * Markdown render plugin that adds inline image support for [MarkdownElementTypes.IMAGE] nodes.
+ *
+ * Registers an [ImageNodeStringBuilder] as the inline node string builder for image elements.
+ *
+ * @param imageTheme Theme configuration controlling the image appearance.
+ * @param loadingView Renderer displayed while the image is loading.
+ * @param errorView Renderer displayed when the image fails to load; defaults to [ErrorImageWidgetRenderer].
+ * @see IMarkdownRenderPlugin
+ */
 class ImageMarkdownPlugin(
     private val imageTheme: ImageTheme = ImageTheme(),
     private val loadingView: ImageWidgetRenderer = LoadingImageWidgetRenderer(),

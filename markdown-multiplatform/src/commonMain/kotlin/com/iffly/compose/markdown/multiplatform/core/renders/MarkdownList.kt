@@ -23,6 +23,15 @@ import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 
+/**
+ * Block renderer for ordered and unordered list containers.
+ *
+ * Renders the list items as vertical children, adjusting spacing based on
+ * whether the list is loose (items separated by blank lines) or tight.
+ *
+ * @see IBlockRenderer
+ * @see ListItemRenderer
+ */
 class ListBlockRenderer : IBlockRenderer {
     @Composable
     override fun Invoke(
@@ -45,6 +54,16 @@ class ListBlockRenderer : IBlockRenderer {
     }
 }
 
+/**
+ * Block renderer for individual list item elements.
+ *
+ * Renders each list item in a horizontal row with the appropriate bullet or number
+ * marker, indentation based on nesting level, and the item's content. Supports both
+ * loose and tight list spacing and respects blockquote context styling.
+ *
+ * @see IBlockRenderer
+ * @see ListBlockRenderer
+ */
 class ListItemRenderer : IBlockRenderer {
     @Composable
     override fun Invoke(

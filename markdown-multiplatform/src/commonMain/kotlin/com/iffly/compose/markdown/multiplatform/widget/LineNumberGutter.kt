@@ -15,6 +15,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.collections.immutable.ImmutableList
 
+/**
+ * A composable that renders a vertical gutter of line numbers corresponding to the text content.
+ *
+ * It maps visual (potentially wrapped) line offsets back to original source line numbers,
+ * displaying the original line number for the first visual line of each source line and
+ * a continuation placeholder for wrapped continuation lines. The gutter text is wrapped
+ * in [DisableSelection] so it cannot be selected by the user.
+ *
+ * @param originalLineStartOffset Character offsets where each original source line begins.
+ * @param visualLineStartOffset Character offsets where each visual (rendered) line begins.
+ * @param lineNumberStyle The text style applied to line numbers.
+ * @param continuationPlaceholder Text shown for wrapped continuation lines (defaults to a space).
+ * @param paddingValues Padding applied around the gutter.
+ * @param calculateGutterLineNumber Strategy for mapping visual lines to original line numbers.
+ * @see CalculateGutterLineNumber
+ */
 @Composable
 fun LineNumberGutter(
     originalLineStartOffset: ImmutableList<Int>,
@@ -66,10 +82,21 @@ fun LineNumberGutter(
     }
 }
 
+/**
+ * A functional interface that maps visual (rendered) line offsets to original source line indices.
+ *
+ * Implementations receive the character offsets where original and visual lines begin
+ * and return a list mapping each visual line to its original line index (or [EMPTY_LINE_INDEX]
+ * for wrapped continuation lines).
+ *
+ * @see LineNumberGutter
+ */
 fun interface CalculateGutterLineNumber {
     companion object {
+        /** Sentinel value indicating that a visual line is a continuation of the previous original line. */
         const val EMPTY_LINE_INDEX = Int.MIN_VALUE
 
+        /** Default implementation that sequentially maps visual lines to original source lines. */
         val DefaultCalculateGutterLineNumber =
             CalculateGutterLineNumber { originalLineStartOffset, visualLineStartOffset ->
                 val visualToOriginalLine = mutableListOf<Int>()
@@ -91,6 +118,14 @@ fun interface CalculateGutterLineNumber {
             }
     }
 
+    /**
+     * Computes the mapping from visual lines to original source line indices.
+     *
+     * @param originalLineStartOffset Character offsets where each original source line begins.
+     * @param visualLineStartOffset Character offsets where each visual (rendered) line begins.
+     * @return A list where each element is the original line index for the corresponding visual line,
+     *         or [EMPTY_LINE_INDEX] for continuation lines.
+     */
     operator fun invoke(
         originalLineStartOffset: List<Int>,
         visualLineStartOffset: List<Int>,

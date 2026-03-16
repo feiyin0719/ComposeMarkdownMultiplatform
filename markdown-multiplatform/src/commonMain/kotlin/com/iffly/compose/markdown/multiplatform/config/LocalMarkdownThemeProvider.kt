@@ -12,6 +12,11 @@ internal val LocalMarkdownThemeProvider =
         error("No MarkdownTheme provided")
     }
 
+/**
+ * Returns the current [MarkdownTheme] from the composition local.
+ *
+ * @see LocalMarkdownThemeProvider
+ */
 @Composable
 @ReadOnlyComposable
 fun currentTheme(): MarkdownTheme = LocalMarkdownThemeProvider.current

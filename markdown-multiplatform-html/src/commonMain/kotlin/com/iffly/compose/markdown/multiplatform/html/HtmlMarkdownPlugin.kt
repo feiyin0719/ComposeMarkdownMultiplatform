@@ -6,6 +6,17 @@ import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
 import org.intellij.markdown.IElementType
 import org.intellij.markdown.MarkdownTokenTypes
 
+/**
+ * Markdown render plugin that adds inline HTML tag support.
+ *
+ * Combines the [defaultHtmlInlineTagHandlers] with any custom handlers provided,
+ * where custom handlers override defaults for the same tag names. Registers an
+ * [HtmlInlineNodeStringBuilder] for [MarkdownTokenTypes.HTML_TAG] elements.
+ *
+ * @param customTagHandlers Additional or overriding HTML inline tag handlers.
+ * @see IMarkdownRenderPlugin
+ * @see HtmlInlineTagHandler
+ */
 class HtmlMarkdownPlugin(
     customTagHandlers: List<HtmlInlineTagHandler> = emptyList(),
 ) : IMarkdownRenderPlugin {

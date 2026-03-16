@@ -25,6 +25,20 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 
+/**
+ * A composable that renders rich text with support for both inline and standalone inline content.
+ *
+ * The text is split into segments around standalone inline content annotations, and each segment
+ * is rendered in a vertical [Column]. Embedded inline content (e.g., inline images or icons)
+ * is delegated to [AdaptiveInlineContentText].
+ *
+ * @param text The annotated string to display, possibly containing inline content annotations.
+ * @param inlineContent A map of inline content keyed by their annotation IDs.
+ * @param onTextLayout Callback invoked when the text layout is computed.
+ * @param style The default text style to apply.
+ * @see RichTextInlineContent
+ * @see AdaptiveInlineContentText
+ */
 @Composable
 fun RichText(
     text: AnnotatedString,

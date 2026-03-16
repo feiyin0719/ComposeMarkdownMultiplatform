@@ -26,6 +26,13 @@ import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 
+/**
+ * Functional interface for rendering an image widget as a Composable, used for loading
+ * and error states.
+ *
+ * @see LoadingImageWidgetRenderer
+ * @see ErrorImageWidgetRenderer
+ */
 fun interface ImageWidgetRenderer {
     @Suppress("ComposableNaming")
     @Composable
@@ -37,6 +44,9 @@ fun interface ImageWidgetRenderer {
     )
 }
 
+/**
+ * Default loading state renderer that displays a generic loading indicator.
+ */
 class LoadingImageWidgetRenderer : ImageWidgetRenderer {
     @Suppress("ComposableNaming")
     @Composable
@@ -50,6 +60,11 @@ class LoadingImageWidgetRenderer : ImageWidgetRenderer {
     }
 }
 
+/**
+ * Default error state renderer that displays an error placeholder with alt text.
+ *
+ * @param imageTheme Theme providing the error placeholder color and shape.
+ */
 class ErrorImageWidgetRenderer(
     private val imageTheme: ImageTheme,
 ) : ImageWidgetRenderer {
@@ -72,6 +87,13 @@ class ErrorImageWidgetRenderer(
     }
 }
 
+/**
+ * Composable that displays an error view when an image fails to load,
+ * showing the alt text or a default "Image load failed" message.
+ *
+ * @param modifier Modifier applied to the error view container.
+ * @param altText Alternative text to display; falls back to "Image load failed" when null.
+ */
 @Composable
 fun MarkdownImageErrorView(
     modifier: Modifier = Modifier,
@@ -89,6 +111,16 @@ fun MarkdownImageErrorView(
     }
 }
 
+/**
+ * Inline node string builder for markdown image elements that extracts the image URL
+ * and alt text from the AST, then appends a standalone inline content placeholder
+ * that renders the image via [MarkdownImage].
+ *
+ * @param imageTheme Theme controlling the image appearance.
+ * @param loadingView Renderer displayed during image loading.
+ * @param errorView Renderer displayed when the image fails to load.
+ * @see IInlineNodeStringBuilder
+ */
 class ImageNodeStringBuilder(
     private val imageTheme: ImageTheme = ImageTheme(),
     private val loadingView: ImageWidgetRenderer = LoadingImageWidgetRenderer(),

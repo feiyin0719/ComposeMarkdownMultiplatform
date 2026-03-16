@@ -49,6 +49,12 @@ import org.intellij.markdown.ast.getTextInNode
 import org.intellij.markdown.flavours.gfm.GFMElementTypes
 import org.intellij.markdown.flavours.gfm.GFMTokenTypes
 
+/**
+ * Functional interface for rendering a table widget section (title or cell) as a Composable.
+ *
+ * @see TableTitleRenderer
+ * @see TableCellRenderer
+ */
 fun interface TableWidgetRenderer {
     @Suppress("ComposableNaming")
     @Composable
@@ -59,6 +65,11 @@ fun interface TableWidgetRenderer {
     )
 }
 
+/**
+ * Default renderer for the table title bar, which displays a "Copy table" action.
+ *
+ * @param tableTheme Theme configuration controlling the title bar appearance.
+ */
 class TableTitleRenderer(
     private val tableTheme: TableTheme = TableTheme(),
 ) : TableWidgetRenderer {
@@ -73,6 +84,9 @@ class TableTitleRenderer(
     }
 }
 
+/**
+ * Default renderer for individual table cell content, displaying markdown text within a selection container.
+ */
 class TableCellRenderer : TableWidgetRenderer {
     @Suppress("ComposableNaming")
     @Composable
@@ -91,6 +105,15 @@ class TableCellRenderer : TableWidgetRenderer {
     }
 }
 
+/**
+ * Block renderer for GFM table elements, delegating to [TableTitleRenderer] and [TableCellRenderer]
+ * for the title bar and cell content respectively.
+ *
+ * @param tableTheme Theme configuration for the table visual appearance.
+ * @param tableTitleRenderer Custom renderer for the table title bar; defaults to [TableTitleRenderer].
+ * @param tableCellRenderer Custom renderer for table cells; defaults to [TableCellRenderer].
+ * @see IBlockRenderer
+ */
 class TableRenderer(
     private val tableTheme: TableTheme = TableTheme(),
     tableTitleRenderer: TableWidgetRenderer? = null,
@@ -118,6 +141,13 @@ class TableRenderer(
     }
 }
 
+/**
+ * Inline node string builder for table cells that applies header or body text styles
+ * from the [TableTheme] based on the cell's position in the table.
+ *
+ * @param tableTheme Theme providing the text styles for header and body cells.
+ * @see CompositeChildNodeStringBuilder
+ */
 class TableCellNodeStringBuilder(
     private val tableTheme: TableTheme,
 ) : CompositeChildNodeStringBuilder() {
@@ -146,6 +176,19 @@ class TableCellNodeStringBuilder(
     }
 }
 
+/**
+ * Composable that renders a GFM markdown table with a title bar, header row, and body rows.
+ *
+ * Parses the table AST node to extract cell data and column alignments, then renders
+ * using the custom [Table] layout with borders and scrolling support.
+ *
+ * @param tableNode The AST node representing the GFM table element.
+ * @param sourceText The full markdown source text.
+ * @param tableTitleRenderer Renderer for the table title bar.
+ * @param tableCellRenderer Renderer for individual cell content.
+ * @param modifier Modifier applied to the outer table container.
+ * @param tableTheme Theme configuration controlling the table appearance.
+ */
 @Composable
 fun MarkdownTable(
     tableNode: ASTNode,

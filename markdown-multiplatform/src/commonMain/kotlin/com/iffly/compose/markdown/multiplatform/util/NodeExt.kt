@@ -8,8 +8,14 @@ import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 
+/**
+ * Finds the first direct child node of the given [type], or null if none exists.
+ */
 fun ASTNode.findChildOfType(type: IElementType): ASTNode? = children.firstOrNull { it.type == type }
 
+/**
+ * Extracts the raw text of this node from the original [sourceText].
+ */
 fun ASTNode.getTextInNode(sourceText: String): String = sourceText.substring(startOffset, endOffset)
 
 /**
@@ -29,6 +35,10 @@ fun ASTNode.getHeadingLevel(): Int? =
         else -> null
     }
 
+/**
+ * Returns the [SpanStyle] for the given [node] based on this theme.
+ * If the node is a heading, the corresponding heading style is used; otherwise the default text style is used.
+ */
 fun MarkdownTheme.getNodeSpanStyle(node: ASTNode): SpanStyle {
     val level = node.getHeadingLevel()
     return if (level != null) {
@@ -38,6 +48,10 @@ fun MarkdownTheme.getNodeSpanStyle(node: ASTNode): SpanStyle {
     }
 }
 
+/**
+ * Returns the [ParagraphStyle] for the given [node] based on this theme.
+ * If the node is a heading, the corresponding heading style is used; otherwise the default text style is used.
+ */
 fun MarkdownTheme.getNodeParagraphStyle(node: ASTNode?): ParagraphStyle {
     if (node == null) return this.textStyle.toParagraphStyle()
     val level = node.getHeadingLevel()
@@ -48,8 +62,14 @@ fun MarkdownTheme.getNodeParagraphStyle(node: ASTNode?): ParagraphStyle {
     }
 }
 
+/**
+ * Returns the raw text content of this node extracted from [sourceText].
+ *
+ * @see getTextInNode
+ */
 fun ASTNode.contentText(sourceText: String): String = getTextInNode(sourceText)
 
+/** Unicode bullet point character used as the marker for unordered list items. */
 const val BULLET_POINT = "\u2022"
 
 /**
@@ -135,7 +155,7 @@ fun ASTNode.isLooseList(): Boolean {
 }
 
 /**
- * Returns the next sibling of this node, or null if there is no next sibling.
+ * Returns the previous sibling of this node, or null if this is the first child.
  */
 fun ASTNode.previousSibling(): ASTNode? {
     val parent = this.parent ?: return null

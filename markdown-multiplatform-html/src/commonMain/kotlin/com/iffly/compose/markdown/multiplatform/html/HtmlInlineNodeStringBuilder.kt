@@ -11,6 +11,16 @@ import com.iffly.compose.markdown.multiplatform.util.StringExt
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 
+/**
+ * Inline node string builder for HTML tags within markdown content.
+ *
+ * Parses HTML tag tokens, handles `<br>` tags as line breaks, and delegates
+ * open/close tag processing to registered [HtmlInlineTagHandler] instances.
+ *
+ * @param tagHandlers Map of lowercase tag names to their corresponding handlers.
+ * @see IInlineNodeStringBuilder
+ * @see HtmlInlineTagHandler
+ */
 class HtmlInlineNodeStringBuilder(
     private val tagHandlers: Map<String, HtmlInlineTagHandler>,
 ) : IInlineNodeStringBuilder {

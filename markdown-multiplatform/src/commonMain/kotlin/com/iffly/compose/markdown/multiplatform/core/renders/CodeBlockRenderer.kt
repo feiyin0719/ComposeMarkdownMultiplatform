@@ -31,6 +31,15 @@ import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 
+/**
+ * Block renderer for fenced code blocks (` ``` `) and indented code blocks.
+ *
+ * Renders a styled container with an optional header showing the language name and
+ * a copy button, followed by the code content with optional line numbers and scrolling.
+ * Theming is controlled via [MarkdownTheme.codeBlockTheme].
+ *
+ * @see IBlockRenderer
+ */
 class CodeBlockRenderer : IBlockRenderer {
     @Composable
     override fun Invoke(

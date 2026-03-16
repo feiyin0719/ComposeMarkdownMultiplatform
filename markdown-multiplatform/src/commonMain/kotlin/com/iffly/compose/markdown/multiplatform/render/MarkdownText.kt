@@ -23,6 +23,7 @@ import com.iffly.compose.markdown.multiplatform.widget.richtext.RichText
 import kotlinx.collections.immutable.toImmutableMap
 import org.intellij.markdown.ast.ASTNode
 
+/** Functional interface for custom rendering of inline markdown text composables. */
 fun interface MarkdownTextRenderer {
     @Composable
     operator fun invoke(
@@ -34,6 +35,15 @@ fun interface MarkdownTextRenderer {
     )
 }
 
+/**
+ * Renders an AST node as styled inline text using the registered [MarkdownTextRenderer],
+ * or falls back to the default implementation.
+ *
+ * @param parent The AST node whose inline content is rendered as text.
+ * @param modifier Modifier to apply to the text layout.
+ * @param textAlign Horizontal text alignment.
+ * @param textStyle Optional text style override; merged with the theme's default text style.
+ */
 @Composable
 fun MarkdownText(
     parent: ASTNode,
@@ -133,6 +143,21 @@ private fun DefaultMarkdownText(
     }
 }
 
+/**
+ * Builds an [AnnotatedString] and associated inline content map from an AST node.
+ * This is the core function that traverses the inline node tree and produces styled text
+ * with embedded inline content (e.g., images, code spans).
+ *
+ * @param node The AST node to convert to an annotated string.
+ * @param sourceText The raw markdown source text.
+ * @param markdownTheme The theme providing text styles.
+ * @param renderRegistry The registry of inline node string builders.
+ * @param actionHandler Optional handler for user interaction events.
+ * @param indentLevel The current indentation level for nested elements.
+ * @param isShowNotSupported Whether to display placeholder text for unsupported elements.
+ * @param nodeStringBuilderContext Context providing layout, style, and system information.
+ * @return A pair of the built [AnnotatedString] and a map of inline content keyed by placeholder ID.
+ */
 fun markdownText(
     node: ASTNode,
     sourceText: String,

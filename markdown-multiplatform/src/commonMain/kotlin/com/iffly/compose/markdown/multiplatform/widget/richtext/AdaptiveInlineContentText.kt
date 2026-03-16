@@ -28,6 +28,20 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 
+/**
+ * A composable that renders annotated text with support for adaptive inline content whose
+ * placeholder size is determined by measuring the actual content.
+ *
+ * If all inline content has fixed sizes, the text is rendered directly via [AutoLineHeightText].
+ * Otherwise, a [SubcomposeLayout] is used to measure adaptive content before final text layout.
+ *
+ * @param text The annotated string to display.
+ * @param inlineContent A map of embedded inline content entries keyed by annotation ID.
+ * @param onTextLayout Callback invoked when the text layout is computed.
+ * @param style The default text style to apply.
+ * @see AutoLineHeightText
+ * @see RichTextInlineContent.EmbeddedRichTextInlineContent
+ */
 @Composable
 fun AdaptiveInlineContentText(
     text: AnnotatedString,

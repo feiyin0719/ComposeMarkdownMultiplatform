@@ -6,6 +6,15 @@ import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.MarkdownText
 import org.intellij.markdown.ast.ASTNode
 
+/**
+ * Block renderer for text-based markdown elements such as paragraphs and headings.
+ *
+ * Delegates rendering to [MarkdownText], which builds an [AnnotatedString] from
+ * the node's inline children and displays it as styled text.
+ *
+ * @see IBlockRenderer
+ * @see MarkdownText
+ */
 class TextBlockRenderer : IBlockRenderer {
     @Composable
     override fun Invoke(

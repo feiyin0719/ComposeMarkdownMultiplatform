@@ -17,6 +17,20 @@ import org.intellij.markdown.IElementType
 import org.intellij.markdown.flavours.gfm.GFMElementTypes
 import org.intellij.markdown.flavours.gfm.GFMTokenTypes
 
+/**
+ * Theme configuration for markdown table rendering, controlling colors, text styles, shape, and padding.
+ *
+ * @param borderColor Color used for the table border lines.
+ * @param borderThickness Thickness of the table border lines.
+ * @param titleBackgroundColor Background color for the table title bar.
+ * @param tableHeaderBackgroundColor Background color for the header row.
+ * @param tableCellBackgroundColor Background color for body cells.
+ * @param cellTextStyle Optional text style applied to body cell text.
+ * @param headerTextStyle Optional text style applied to header cell text.
+ * @param copyTextStyle Text style for the "Copy table" action label.
+ * @param shape Shape applied to the outer table container.
+ * @param cellPadding Padding applied inside each table cell.
+ */
 data class TableTheme(
     val borderColor: Color = Color.Gray,
     val borderThickness: Dp = 1.dp,
@@ -35,6 +49,15 @@ data class TableTheme(
     val cellPadding: PaddingValues = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
 )
 
+/**
+ * Markdown render plugin that adds GFM (GitHub Flavored Markdown) table support.
+ *
+ * Registers a block renderer for [GFMElementTypes.TABLE] and an inline node string builder
+ * for [GFMTokenTypes.CELL].
+ *
+ * @param tableTheme Theme configuration controlling the visual appearance of tables.
+ * @see IMarkdownRenderPlugin
+ */
 class TableMarkdownPlugin(
     private val tableTheme: TableTheme = TableTheme(),
 ) : IMarkdownRenderPlugin {

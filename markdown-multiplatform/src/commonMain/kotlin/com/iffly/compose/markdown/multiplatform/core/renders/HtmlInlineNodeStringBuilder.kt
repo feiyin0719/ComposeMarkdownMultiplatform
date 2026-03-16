@@ -11,6 +11,14 @@ import com.iffly.compose.markdown.multiplatform.util.StringExt
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.getTextInNode
 
+/**
+ * Inline node string builder for inline HTML tag tokens.
+ *
+ * Currently only handles `<br>` / `<br/>` tags by appending a line separator.
+ * All other HTML tags are silently ignored.
+ *
+ * @see IInlineNodeStringBuilder
+ */
 class HtmlInlineNodeStringBuilder : IInlineNodeStringBuilder {
     companion object {
         private val BR_REGEX = Regex("""<br\s*/?>""", RegexOption.IGNORE_CASE)

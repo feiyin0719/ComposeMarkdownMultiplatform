@@ -14,6 +14,15 @@ import com.iffly.compose.markdown.multiplatform.util.getNodeSpanStyle
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.ast.ASTNode
 
+/**
+ * Inline node string builder for ATX and Setext heading elements (h1--h6).
+ *
+ * Extracts the heading content (excluding leading/trailing whitespace), then applies
+ * the heading-level-specific [SpanStyle] and [ParagraphStyle] from the [MarkdownTheme]
+ * before recursively building child inline content.
+ *
+ * @see IInlineNodeStringBuilder
+ */
 class HeadingNodeStringBuilder : IInlineNodeStringBuilder {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: ASTNode,

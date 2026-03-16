@@ -9,6 +9,14 @@ import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import org.intellij.markdown.ast.ASTNode
 
+/**
+ * No-op inline node string builder that intentionally appends nothing.
+ *
+ * Used for token types (such as block quote markers) that should not produce
+ * any visible inline text output.
+ *
+ * @see IInlineNodeStringBuilder
+ */
 class EmptyNodeStringBuilder : IInlineNodeStringBuilder {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: ASTNode,

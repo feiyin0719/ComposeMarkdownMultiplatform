@@ -10,6 +10,13 @@ import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.StringExt
 import org.intellij.markdown.ast.ASTNode
 
+/**
+ * Inline node string builder for hard line break tokens (trailing spaces or backslash).
+ *
+ * Appends a platform line separator to force a line break within inline content.
+ *
+ * @see IInlineNodeStringBuilder
+ */
 class HardLineBreakNodeStringBuilder : IInlineNodeStringBuilder {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: ASTNode,

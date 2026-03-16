@@ -11,6 +11,11 @@ internal val LocalSourceTextProvider =
         error("No source text provided")
     }
 
+/**
+ * Returns the current raw Markdown source text from the composition local.
+ *
+ * @see LocalSourceTextProvider
+ */
 @Composable
 @ReadOnlyComposable
 fun currentSourceText(): String = LocalSourceTextProvider.current

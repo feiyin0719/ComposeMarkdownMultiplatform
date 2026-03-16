@@ -101,6 +101,12 @@ internal class SpanTagHandler : HtmlInlineTagHandler {
     }
 }
 
+/**
+ * Returns the list of default [HtmlInlineTagHandler] implementations for common HTML inline tags.
+ *
+ * Included handlers: bold (`<b>`, `<strong>`), italic (`<i>`, `<em>`), underline (`<u>`, `<ins>`),
+ * strikethrough (`<del>`, `<s>`, `<strike>`), link (`<a>`), and span (`<span>`).
+ */
 fun defaultHtmlInlineTagHandlers(): List<HtmlInlineTagHandler> =
     listOf(
         BoldTagHandler(),

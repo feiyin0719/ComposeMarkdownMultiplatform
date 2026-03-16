@@ -42,7 +42,18 @@ import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
 import org.intellij.markdown.flavours.gfm.GFMElementTypes
 
+/**
+ * The core rendering plugin that registers all built-in block renderers and inline
+ * node string builders for standard Markdown and GFM elements.
+ *
+ * This plugin maps each markdown element type (headings, paragraphs, lists, code blocks,
+ * blockquotes, links, emphasis, etc.) to its corresponding renderer or string builder
+ * implementation.
+ *
+ * @see IMarkdownRenderPlugin
+ */
 class CorePlugin : IMarkdownRenderPlugin {
+    /** Returns the mapping of markdown element types to their [IBlockRenderer] implementations. */
     override fun blockRenderers(): Map<IElementType, IBlockRenderer> {
         val blockRenderers = mutableMapOf<IElementType, IBlockRenderer>()
         blockRenderers[MarkdownElementTypes.MARKDOWN_FILE] = DocumentRenderer()
@@ -65,6 +76,7 @@ class CorePlugin : IMarkdownRenderPlugin {
         return blockRenderers
     }
 
+    /** Returns the mapping of markdown token/element types to their [IInlineNodeStringBuilder] implementations. */
     override fun inlineNodeStringBuilders(): Map<IElementType, IInlineNodeStringBuilder> {
         val builders = mutableMapOf<IElementType, IInlineNodeStringBuilder>()
         builders[MarkdownTokenTypes.TEXT] = TextNodeStringBuilder()

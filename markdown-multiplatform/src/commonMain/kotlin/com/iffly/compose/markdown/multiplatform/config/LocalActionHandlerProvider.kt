@@ -12,6 +12,11 @@ internal val LocalActionHandlerProvider =
         null
     }
 
+/**
+ * Returns the current [ActionHandler] from the composition local, or `null` if none is provided.
+ *
+ * @see LocalActionHandlerProvider
+ */
 @Composable
 @ReadOnlyComposable
 fun currentActionHandler(): ActionHandler? = LocalActionHandlerProvider.current

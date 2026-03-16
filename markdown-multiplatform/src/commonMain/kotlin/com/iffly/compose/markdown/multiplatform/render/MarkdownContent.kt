@@ -16,6 +16,7 @@ import com.iffly.compose.markdown.multiplatform.config.currentTheme
 import org.intellij.markdown.ast.ASTNode
 import org.intellij.markdown.ast.CompositeASTNode
 
+/** Functional interface for custom rendering of the top-level markdown content composable. */
 fun interface MarkdownContentRenderer {
     @Composable
     operator fun invoke(
@@ -25,6 +26,14 @@ fun interface MarkdownContentRenderer {
     )
 }
 
+/**
+ * Renders a single AST node as Compose UI content.
+ * Delegates to the custom [MarkdownContentRenderer] if one is registered, otherwise
+ * falls back to [DefaultMarkdownContent].
+ *
+ * @param node The AST node to render.
+ * @param modifier Modifier to apply to the rendered content.
+ */
 @Composable
 fun MarkdownContent(
     node: ASTNode,
@@ -59,6 +68,23 @@ private fun DefaultMarkdownContent(
     }
 }
 
+/**
+ * Renders the child nodes of a parent AST node in a vertical [Column], with optional
+ * spacers between block-level elements and lifecycle callbacks around each child.
+ *
+ * @param parent The parent AST node whose children will be rendered.
+ * @param modifier Modifier to apply to the wrapping Column.
+ * @param children The list of child nodes to render; defaults to [parent]'s children.
+ * @param sourceText The raw markdown source text.
+ * @param verticalArrangement The vertical arrangement strategy for the Column.
+ * @param spacerHeight The height of spacers inserted between block-level children.
+ * @param showSpacer Whether to show spacers between block-level children.
+ * @param childModifierFactory Factory function producing a Modifier for each child node.
+ * @param onBeforeChild Optional composable invoked before each child is rendered.
+ * @param onAfterChild Optional composable invoked after each child is rendered.
+ * @param onBeforeAll Optional composable invoked before all children are rendered.
+ * @param onAfterAll Optional composable invoked after all children are rendered.
+ */
 @Composable
 fun MarkdownChildren(
     parent: ASTNode,

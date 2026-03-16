@@ -159,11 +159,17 @@ data class MarkdownTheme(
     val codeBlockTheme: CodeBlockTheme = CodeBlockTheme(),
 ) {
     companion object {
+        /** Heading level 1 (largest). */
         const val HEAD1 = 1
+        /** Heading level 2. */
         const val HEAD2 = 2
+        /** Heading level 3. */
         const val HEAD3 = 3
+        /** Heading level 4. */
         const val HEAD4 = 4
+        /** Heading level 5. */
         const val HEAD5 = 5
+        /** Heading level 6 (smallest). */
         const val HEAD6 = 6
     }
 }

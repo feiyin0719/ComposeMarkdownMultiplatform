@@ -22,6 +22,20 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlin.math.max
 import kotlin.math.min
 
+/**
+ * Composable that lays out a table using [SubcomposeLayout], supporting configurable cell padding,
+ * alignment, borders, shape clipping, and optional weight-based column widths.
+ *
+ * @param modifier Modifier applied to the table layout.
+ * @param cellPadding Padding applied inside each cell.
+ * @param cellAlignment Default alignment for cell content.
+ * @param border Border configuration controlling which borders are drawn and their appearance.
+ * @param shape Optional shape to clip the table container.
+ * @param widthWeights Optional list of relative weights for column widths; when provided,
+ *   columns are sized proportionally to the available width.
+ * @param content DSL content block defining the table structure via [TableScope].
+ * @see TableScope
+ */
 @Composable
 fun Table(
     modifier: Modifier = Modifier,

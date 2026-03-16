@@ -17,6 +17,17 @@ import androidx.compose.ui.unit.TextUnit
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
 
+/**
+ * A platform-specific composable that renders annotated text with automatic line height adjustment.
+ *
+ * This expect function is implemented per platform to ensure consistent line height behavior
+ * across different Compose targets.
+ *
+ * @param text The annotated string to display.
+ * @param inlineContent A map of inline text content entries keyed by annotation ID.
+ * @param onTextLayout Callback invoked when the text layout is computed.
+ * @param style The text style to apply.
+ */
 @Composable
 expect fun AutoLineHeightText(
     text: AnnotatedString,

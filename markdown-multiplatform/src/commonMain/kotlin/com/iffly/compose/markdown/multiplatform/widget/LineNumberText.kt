@@ -24,6 +24,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.collections.immutable.toImmutableList
 
+/**
+ * A composable that displays text with an optional line number gutter alongside it.
+ *
+ * The gutter maps visual (wrapped) lines back to original source lines, and the text
+ * content supports horizontal scrolling when soft wrapping is disabled.
+ *
+ * @param text The source text to display.
+ * @param lineNumberStyle The text style applied to the line number gutter.
+ * @param textStyle The text style applied to the main text content.
+ * @param contentPadding Padding applied around the main text content.
+ * @param lineNumberPadding Padding applied around the line number gutter.
+ * @param showLineNumber Whether to show the line number gutter.
+ * @param onTextLayout Optional callback invoked when the text layout is computed.
+ * @see LineNumberGutter
+ */
 @Composable
 fun LineNumberText(
     text: String,

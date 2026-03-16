@@ -7,6 +7,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
 
+/**
+ * Parses inline CSS style attributes from HTML tags into Compose [SpanStyle] objects.
+ *
+ * Supports CSS properties: `color`, `background-color`, `background`, `font-weight`,
+ * `font-style`, `text-decoration`, and `font-size`. Recognizes named colors, hex colors
+ * (3, 6, or 8 digit), and `rgb()` notation.
+ */
 internal object CssStyleParser {
     private val STYLE_REGEX = Regex("""style\s*=\s*["']([^"']*)["']""", RegexOption.IGNORE_CASE)
 
@@ -36,6 +43,13 @@ internal object CssStyleParser {
             "darkgrey" to Color(0xFFA9A9A9),
         )
 
+    /**
+     * Parses the `style` attribute from a raw HTML tag string and converts it into a [SpanStyle].
+     *
+     * @param tag The raw HTML tag string (e.g., `<span style="color: red;">`).
+     * @return A [SpanStyle] representing the parsed CSS properties, or null if no style attribute
+     *   is found or no supported properties are present.
+     */
     fun parseInlineCssStyle(tag: String): SpanStyle? {
         val styleMatch = STYLE_REGEX.find(tag) ?: return null
         val css = styleMatch.groupValues[1]

@@ -12,6 +12,11 @@ internal val LocalParserProvider =
         error("No MarkdownParser provided")
     }
 
+/**
+ * Returns the current [MarkdownParser] from the composition local.
+ *
+ * @see LocalParserProvider
+ */
 @Composable
 @ReadOnlyComposable
 fun currentParser(): MarkdownParser = LocalParserProvider.current

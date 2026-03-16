@@ -14,25 +14,53 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.ImmutableList
 
+/**
+ * Defines which borders of the table are rendered.
+ */
 enum class TableBorderMode {
+    /** No borders are drawn. */
     NONE,
+    /** Only horizontal borders between rows are drawn. */
     HORIZONTAL,
+    /** Only vertical borders between columns are drawn. */
     VERTICAL,
+    /** Both horizontal and vertical borders are drawn. */
     ALL,
 }
 
+/**
+ * Configuration for table border rendering, specifying the border mode, brush, and width.
+ *
+ * @param mode Which borders to draw (none, horizontal, vertical, or all).
+ * @param brush The [Brush] used to paint the border lines.
+ * @param width The thickness of the border lines.
+ */
 data class TableBorder(
     val mode: TableBorderMode,
     val brush: Brush,
     val width: Dp,
 ) {
     companion object {
+        /**
+         * Creates a [TableBorder] with a solid color.
+         *
+         * @param mode Which borders to draw.
+         * @param color The border color.
+         * @param width The border line thickness.
+         */
         fun solid(
             mode: TableBorderMode = TableBorderMode.NONE,
             color: Color = Color.Gray,
             width: Dp = 1.dp,
         ) = TableBorder(mode, SolidColor(color), width)
 
+        /**
+         * Creates a [TableBorder] with a custom [Brush].
+         *
+         * @param mode Which borders to draw.
+         * @param brush The brush used to paint the borders.
+         * @param width The border line thickness.
+         */
         fun brush(
             mode: TableBorderMode = TableBorderMode.NONE,
             brush: Brush,

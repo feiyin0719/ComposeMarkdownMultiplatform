@@ -25,13 +25,22 @@ import org.intellij.markdown.parser.sequentialparsers.SequentialParser
 import org.intellij.markdown.parser.sequentialparsers.SequentialParserManager
 import org.intellij.markdown.parser.MarkdownParser as IntelliJMarkdownParser
 
+/**
+ * Configuration holder for the Markdown rendering pipeline, encapsulating the theme,
+ * parser, and render registry. Instances are created via the [Builder].
+ *
+ * @see Builder
+ */
 class MarkdownRenderConfig {
+    /** The theme used for styling rendered Markdown content. */
     var markdownTheme: MarkdownTheme
         private set
 
+    /** The parser responsible for converting raw Markdown text into an AST. */
     var markdownParser: MarkdownParser
         private set
 
+    /** The registry that maps element types to their corresponding renderers. */
     var renderRegistry: RenderRegistry
         private set
 
@@ -52,6 +61,11 @@ class MarkdownRenderConfig {
             )
     }
 
+    /**
+     * Builder for constructing a [MarkdownRenderConfig] instance.
+     *
+     * Plugins, renderers, parsers, and theme can be customized before calling [build].
+     */
     class Builder {
         private val plugins =
             mutableListOf(
@@ -74,16 +88,32 @@ class MarkdownRenderConfig {
 
         private val sequentialParsers = mutableListOf<SequentialParser>()
 
+        /**
+         * Sets the [MarkdownTheme] used for styling rendered Markdown content.
+         *
+         * @param markdownTheme the theme to apply
+         */
         fun markdownTheme(markdownTheme: MarkdownTheme): Builder {
             this.markdownTheme = markdownTheme
             return this
         }
 
+        /**
+         * Registers a plugin that contributes parsers, renderers, or other extensions.
+         *
+         * @param plugin the plugin to register
+         */
         fun addPlugin(plugin: IMarkdownRenderPlugin): Builder {
             plugins.add(plugin)
             return this
         }
 
+        /**
+         * Registers a custom inline node string builder for the given element type.
+         *
+         * @param elementType the element type this builder handles
+         * @param builder the inline node string builder implementation
+         */
         fun addInlineNodeStringBuilder(
             elementType: IElementType,
             builder: IInlineNodeStringBuilder,
@@ -92,6 +122,12 @@ class MarkdownRenderConfig {
             return this
         }
 
+        /**
+         * Registers a custom block renderer for the given element type.
+         *
+         * @param elementType the element type this renderer handles
+         * @param renderer the block renderer implementation
+         */
         fun addBlockRenderer(
             elementType: IElementType,
             renderer: IBlockRenderer,
@@ -100,6 +136,11 @@ class MarkdownRenderConfig {
             return this
         }
 
+        /**
+         * Registers a custom marker block provider for extending block-level parsing.
+         *
+         * @param provider the marker block provider to add
+         */
         fun addMarkerBlockProvider(
             provider: MarkerBlockProvider<MarkerProcessor.StateInfo>,
         ): Builder {
@@ -107,21 +148,40 @@ class MarkdownRenderConfig {
             return this
         }
 
+        /**
+         * Registers a custom sequential parser for extending inline-level parsing.
+         *
+         * @param parser the sequential parser to add
+         */
         fun addSequentialParser(parser: SequentialParser): Builder {
             sequentialParsers.add(parser)
             return this
         }
 
+        /**
+         * Sets a custom [MarkdownTextRenderer] for rendering inline text elements.
+         *
+         * @param renderer the text renderer to use
+         */
         fun markdownTextRenderer(renderer: MarkdownTextRenderer): Builder {
             this.markdownTextRenderer = renderer
             return this
         }
 
+        /**
+         * Sets a custom [MarkdownContentRenderer] for rendering overall Markdown content.
+         *
+         * @param renderer the content renderer to use
+         */
         fun markdownContentRenderer(renderer: MarkdownContentRenderer): Builder {
             this.markdownContentRenderer = renderer
             return this
         }
 
+        /**
+         * Builds the [MarkdownRenderConfig] by collecting all registered plugins,
+         * renderers, and parsers into a finalized configuration.
+         */
         fun build(): MarkdownRenderConfig {
             plugins.forEach { plugin ->
                 plugin.markerBlockProviders().forEach { provider ->

@@ -16,6 +16,19 @@ import coil3.request.crossfade
 import com.iffly.compose.markdown.multiplatform.config.currentActionHandler
 import org.intellij.markdown.ast.ASTNode
 
+/**
+ * Composable that asynchronously loads and displays a markdown image using Coil,
+ * with crossfade animation, memory and disk caching, and customizable loading/error states.
+ *
+ * @param url The URL of the image to load.
+ * @param contentDescription Accessibility description for the image.
+ * @param node The AST node representing this image element.
+ * @param errorView Renderer displayed when the image fails to load.
+ * @param loadingView Renderer displayed while the image is loading.
+ * @param modifier Modifier applied to the image.
+ * @param alignment Alignment of the image within its bounds.
+ * @param contentScale How the image is scaled to fit its bounds.
+ */
 @Composable
 fun MarkdownImage(
     url: String,
