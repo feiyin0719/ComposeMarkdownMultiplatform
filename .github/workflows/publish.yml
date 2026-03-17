@@ -55,3 +55,4 @@ jobs:
           path: |
             **/build/reports/
             **/build/logs/
+            /Users/runner/work/_temp/.gradle-actions/
