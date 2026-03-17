@@ -42,19 +42,30 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_SIGNING_PASSWORD }}
 
-      - name: Create bundle and upload to Central Portal
+      - name: Generate checksums and create bundle
         run: |
-          VERSION=${{ steps.version.outputs.version }}
-          REPO_DIR="$HOME/.m2/repository/io/github/feiyin0719"
+          REPO_DIR="$HOME/.m2/repository"
+          GROUP_DIR="$REPO_DIR/io/github/feiyin0719"
+
+          echo "=== Removing local-only metadata ==="
+          find "$GROUP_DIR" -name "maven-metadata-local.xml" -delete
+
+          echo "=== Generating md5 and sha1 checksums ==="
+          find "$GROUP_DIR" -type f \
+            ! -name "*.md5" ! -name "*.sha1" ! -name "*.sha256" ! -name "*.sha512" \
+            | while read -r file; do
+              md5 -q "$file" > "$file.md5"
+              shasum -a 1 "$file" | cut -d' ' -f1 > "$file.sha1"
+            done
 
           echo "=== Creating deployment bundle ==="
           cd "$REPO_DIR"
-          # Remove local-only metadata files that Central Portal rejects
-          find . -name "maven-metadata-local.xml" -delete
-          zip -r /tmp/central-bundle.zip .
+          zip -r /tmp/central-bundle.zip io/github/feiyin0719/
           BUNDLE_SIZE=$(du -h /tmp/central-bundle.zip | cut -f1)
           echo "Bundle size: $BUNDLE_SIZE"
 
+      - name: Upload bundle to Central Portal
+        run: |
           echo "=== Uploading to Central Portal ==="
           RESPONSE=$(curl --max-time 600 --retry 3 --retry-delay 10 \
             -X POST \
