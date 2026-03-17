@@ -300,7 +300,7 @@ Advanced overrides:
 
 ### MarkdownTheme
 
-`MarkdownTheme` (from `com.iffly.compose.markdown.multiplatform.style.MarkdownTheme`) is the **core theme model** controlling how Markdown content appears in Compose.
+`MarkdownTheme` (from `io.github.feiyin0719.markdown.multiplatform.style.MarkdownTheme`) is the **core theme model** controlling how Markdown content appears in Compose.
 
 #### Data Structure
 

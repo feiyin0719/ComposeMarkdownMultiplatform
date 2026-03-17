@@ -300,7 +300,7 @@ class MarkdownRenderConfig {
 
 ### MarkdownTheme
 
-`MarkdownTheme`（来自 `com.iffly.compose.markdown.multiplatform.style.MarkdownTheme`）是控制 Markdown 内容在 Compose 中如何呈现的**核心主题模型**。
+`MarkdownTheme`（来自 `io.github.feiyin0719.markdown.multiplatform.style.MarkdownTheme`）是控制 Markdown 内容在 Compose 中如何呈现的**核心主题模型**。
 
 #### 数据结构
 

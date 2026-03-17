@@ -32,8 +32,6 @@
 
 ## 安装
 
-> **说明：** 本库将发布到 **Maven Central**。发布正在进行中，下面的坐标为占位符。
-
 ### 系统要求
 
 - **Kotlin**：2.0.21+
@@ -51,7 +49,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.iffly.compose:markdown-multiplatform:<version>")
+                implementation("io.github.feiyin0719:markdown-multiplatform:<version>")
             }
         }
     }
@@ -68,16 +66,16 @@ kotlin {
 
 ```kotlin
 dependencies {
-    implementation("com.iffly.compose:markdown-multiplatform-table:<version>")
-    implementation("com.iffly.compose:markdown-multiplatform-image:<version>")
-    implementation("com.iffly.compose:markdown-multiplatform-html:<version>")
+    implementation("io.github.feiyin0719:markdown-multiplatform-table:<version>")
+    implementation("io.github.feiyin0719:markdown-multiplatform-image:<version>")
+    implementation("io.github.feiyin0719:markdown-multiplatform-html:<version>")
 }
 ```
 
 ## 快速开始
 
 ```kotlin
-import com.iffly.compose.markdown.multiplatform.MarkdownView
+import io.github.feiyin0719.markdown.multiplatform.MarkdownView
 
 @Composable
 fun SimpleMarkdownExample() {

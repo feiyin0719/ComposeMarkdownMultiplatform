@@ -32,8 +32,6 @@ A Compose Multiplatform Markdown rendering library that supports Android, iOS, D
 
 ## Installation
 
-> **Note:** This library will be published to **Maven Central**. Publication is in progress — the coordinates below are placeholders.
-
 ### System Requirements
 
 - **Kotlin**: 2.0.21+
@@ -51,7 +49,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.iffly.compose:markdown-multiplatform:<version>")
+                implementation("io.github.feiyin0719:markdown-multiplatform:<version>")
             }
         }
     }
@@ -68,16 +66,16 @@ kotlin {
 
 ```kotlin
 dependencies {
-    implementation("com.iffly.compose:markdown-multiplatform-table:<version>")
-    implementation("com.iffly.compose:markdown-multiplatform-image:<version>")
-    implementation("com.iffly.compose:markdown-multiplatform-html:<version>")
+    implementation("io.github.feiyin0719:markdown-multiplatform-table:<version>")
+    implementation("io.github.feiyin0719:markdown-multiplatform-image:<version>")
+    implementation("io.github.feiyin0719:markdown-multiplatform-html:<version>")
 }
 ```
 
 ## Quick Start
 
 ```kotlin
-import com.iffly.compose.markdown.multiplatform.MarkdownView
+import io.github.feiyin0719.markdown.multiplatform.MarkdownView
 
 @Composable
 fun SimpleMarkdownExample() {
