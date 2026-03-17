@@ -30,8 +30,12 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Publishing version: $VERSION"
 
+      - name: Decode GPG key
+        run: echo "${{ secrets.GPG_SIGNING_KEY }}" | base64 --decode > /tmp/secring.asc
+
       - name: Publish to Maven Central
         run: |
+          export ORG_GRADLE_PROJECT_signingInMemoryKey=$(cat /tmp/secring.asc)
           ./gradlew publishAllPublicationsToMavenCentralRepository \
             -PVERSION_NAME=${{ steps.version.outputs.version }} \
             --no-configuration-cache \
@@ -39,5 +43,4 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.SONATYPE_PASSWORD }}
-          ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.GPG_SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.GPG_SIGNING_PASSWORD }}
