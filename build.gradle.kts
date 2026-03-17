@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.compose.multiplatform) apply false
     alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.maven.publish) apply false
 }
 
 subprojects {
@@ -27,6 +28,13 @@ subprojects {
         filter {
             exclude("**/generated/**")
             include("**/kotlin/**")
+        }
+    }
+
+    pluginManager.withPlugin("com.vanniktech.maven.publish") {
+        configure<com.vanniktech.maven.publish.MavenPublishBaseExtension> {
+            publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+            signAllPublications()
         }
     }
 }

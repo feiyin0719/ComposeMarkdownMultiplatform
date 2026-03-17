@@ -5,7 +5,7 @@
 A Compose Multiplatform Markdown rendering library that supports Android, iOS, Desktop (JVM), and WebAssembly (Wasm).
 
 > **Looking for Android-only with richer Markdown compatibility?**
-> Check out [ComposeMarkdown](https://github.com/niceFuture0723/ComposeMarkdown) — it offers deeper Markdown spec support (powered by Flexmark) and more rendering features for Android projects.
+> Check out [ComposeMarkdown](https://github.com/feiyin0719/ComposeMarkdown) — it offers deeper Markdown spec support (powered by Flexmark) and more rendering features for Android projects.
 
 ## Sample Screenshots
 

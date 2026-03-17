@@ -5,7 +5,7 @@
 一个 Compose Multiplatform Markdown 渲染库，支持 Android、iOS、Desktop (JVM) 和 WebAssembly (Wasm)。
 
 > **如果只需要 Android 平台和更好的 Markdown 兼容性？**
-> 请使用 [ComposeMarkdown](https://github.com/niceFuture0723/ComposeMarkdown) — 它基于 Flexmark 解析引擎，拥有更深入的 Markdown 规范支持和更丰富的渲染特性。
+> 请使用 [ComposeMarkdown](https://github.com/feiyin0719/ComposeMarkdown) — 它基于 Flexmark 解析引擎，拥有更深入的 Markdown 规范支持和更丰富的渲染特性。
 
 ## 示例截图
 
