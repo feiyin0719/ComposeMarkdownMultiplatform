@@ -28,63 +28,63 @@ fun LinkInteractionExample(
     ) {
         SelectionContainer {
             MarkdownView(
-            text =
-                """
-                # Link Interaction Example
+                text =
+                    """
+                    # Link Interaction Example
 
-                This example demonstrates different types of link handling:
+                    This example demonstrates different types of link handling:
 
-                ## External Links
-                [GitHub](https://github.com) - Will open in browser
+                    ## External Links
+                    [GitHub](https://github.com) - Will open in browser
 
-                [Google](https://google.com) - Another external link
+                    [Google](https://google.com) - Another external link
 
-                ## Internal Links
-                [Internal Page A](/internal/page-a) - In-app navigation
+                    ## Internal Links
+                    [Internal Page A](/internal/page-a) - In-app navigation
 
-                [Internal Page B](/internal/page-b) - Another internal page
+                    [Internal Page B](/internal/page-b) - Another internal page
 
-                ## Special Links
-                [Email Contact](mailto:example@example.com) - Email link
+                    ## Special Links
+                    [Email Contact](mailto:example@example.com) - Email link
 
-                [Phone Contact](tel:+1234567890) - Phone link
+                    [Phone Contact](tel:+1234567890) - Phone link
 
-                ## Custom Protocol
-                [Open App](myapp://custom/action) - Custom protocol
+                    ## Custom Protocol
+                    [Open App](myapp://custom/action) - Custom protocol
 
-                Different links will be handled in different ways!
-                """.trimIndent(),
-            modifier = Modifier.padding(16.dp),
-            actionHandler =
-                object : ActionHandler {
-                    override fun handleUrlClick(
-                        url: String,
-                        node: ASTNode,
-                    ) {
-                        when {
-                            url.startsWith("http") -> {
-                                println("LinkInteraction: Open external link: $url")
-                            }
+                    Different links will be handled in different ways!
+                    """.trimIndent(),
+                modifier = Modifier.padding(16.dp),
+                actionHandler =
+                    object : ActionHandler {
+                        override fun handleUrlClick(
+                            url: String,
+                            node: ASTNode,
+                        ) {
+                            when {
+                                url.startsWith("http") -> {
+                                    println("LinkInteraction: Open external link: $url")
+                                }
 
-                            url.startsWith("/internal") -> {
-                                println("LinkInteraction: Navigate to internal page: $url")
-                            }
+                                url.startsWith("/internal") -> {
+                                    println("LinkInteraction: Navigate to internal page: $url")
+                                }
 
-                            url.startsWith("mailto:") -> {
-                                println("LinkInteraction: Open email: $url")
-                            }
+                                url.startsWith("mailto:") -> {
+                                    println("LinkInteraction: Open email: $url")
+                                }
 
-                            url.startsWith("tel:") -> {
-                                println("LinkInteraction: Dial phone: $url")
-                            }
+                                url.startsWith("tel:") -> {
+                                    println("LinkInteraction: Dial phone: $url")
+                                }
 
-                            else -> {
-                                println("LinkInteraction: Other link: $url")
+                                else -> {
+                                    println("LinkInteraction: Other link: $url")
+                                }
                             }
                         }
-                    }
-                },
-        )
+                    },
+            )
         }
     }
 }

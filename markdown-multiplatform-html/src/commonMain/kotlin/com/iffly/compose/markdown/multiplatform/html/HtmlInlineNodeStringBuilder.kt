@@ -48,8 +48,11 @@ class HtmlInlineNodeStringBuilder(
         }
 
         val tagName =
-            TAG_NAME_REGEX.find(text)
-                ?.groupValues?.get(1)?.lowercase() ?: return
+            TAG_NAME_REGEX
+                .find(text)
+                ?.groupValues
+                ?.get(1)
+                ?.lowercase() ?: return
 
         val handler = tagHandlers[tagName] ?: return
 

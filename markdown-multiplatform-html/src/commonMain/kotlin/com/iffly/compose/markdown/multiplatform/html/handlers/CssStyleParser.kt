@@ -116,6 +116,7 @@ internal object CssStyleParser {
                 val b = h[2].toString().repeat(2).toIntOrNull(16) ?: return null
                 Color(r, g, b)
             }
+
             6 -> {
                 val colorInt = h.toLongOrNull(16) ?: return null
                 Color(
@@ -124,6 +125,7 @@ internal object CssStyleParser {
                     blue = (colorInt and 0xFF).toInt(),
                 )
             }
+
             8 -> {
                 val colorInt = h.toLongOrNull(16) ?: return null
                 Color(
@@ -133,7 +135,10 @@ internal object CssStyleParser {
                     alpha = (colorInt and 0xFF).toInt(),
                 )
             }
-            else -> null
+
+            else -> {
+                null
+            }
         }
     }
 

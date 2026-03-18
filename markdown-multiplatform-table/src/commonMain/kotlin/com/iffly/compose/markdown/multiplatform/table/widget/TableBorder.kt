@@ -20,10 +20,13 @@ import kotlinx.collections.immutable.ImmutableList
 enum class TableBorderMode {
     /** No borders are drawn. */
     NONE,
+
     /** Only horizontal borders between rows are drawn. */
     HORIZONTAL,
+
     /** Only vertical borders between columns are drawn. */
     VERTICAL,
+
     /** Both horizontal and vertical borders are drawn. */
     ALL,
 }

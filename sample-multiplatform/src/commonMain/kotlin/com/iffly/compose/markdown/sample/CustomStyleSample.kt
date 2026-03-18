@@ -89,33 +89,33 @@ fun CustomStyleExample(
     ) {
         SelectionContainer {
             MarkdownView(
-            text =
-                """
-                # Custom Style Example
+                text =
+                    """
+                    # Custom Style Example
 
-                This example demonstrates how to customize Markdown typography styles.
+                    This example demonstrates how to customize Markdown typography styles.
 
-                ## Colored Headers
+                    ## Colored Headers
 
-                ### Third-level headers also have different colors
+                    ### Third-level headers also have different colors
 
-                **Bold text is now blue**
+                    **Bold text is now blue**
 
-                *Italic text is now purple*
+                    *Italic text is now purple*
 
-                `Inline code has green background`
+                    `Inline code has green background`
 
-                Body text is now dark green, showcasing a fully customizable style system.
+                    Body text is now dark green, showcasing a fully customizable style system.
 
-                ```kotlin
-                // Code blocks maintain original style
-                val customStyle = "beautiful"
-                println("Custom style: ${'$'}customStyle")
-                ```
-                """.trimIndent(),
-            markdownRenderConfig = config,
-            modifier = Modifier.padding(16.dp),
-        )
+                    ```kotlin
+                    // Code blocks maintain original style
+                    val customStyle = "beautiful"
+                    println("Custom style: ${'$'}customStyle")
+                    ```
+                    """.trimIndent(),
+                markdownRenderConfig = config,
+                modifier = Modifier.padding(16.dp),
+            )
         }
     }
 }

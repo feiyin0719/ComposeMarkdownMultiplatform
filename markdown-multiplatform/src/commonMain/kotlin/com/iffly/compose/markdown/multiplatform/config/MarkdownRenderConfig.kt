@@ -141,9 +141,7 @@ class MarkdownRenderConfig {
          *
          * @param provider the marker block provider to add
          */
-        fun addMarkerBlockProvider(
-            provider: MarkerBlockProvider<MarkerProcessor.StateInfo>,
-        ): Builder {
+        fun addMarkerBlockProvider(provider: MarkerBlockProvider<MarkerProcessor.StateInfo>): Builder {
             markerBlockProviders.add(provider)
             return this
         }
@@ -223,7 +221,6 @@ private class ExtensibleGFMFlavourDescriptor(
     private val extraMarkerBlockProviders: List<MarkerBlockProvider<MarkerProcessor.StateInfo>>,
     private val extraSequentialParsers: List<SequentialParser>,
 ) : GFMFlavourDescriptor() {
-
     override val sequentialParserManager =
         object : SequentialParserManager() {
             override fun getParserSequence(): List<SequentialParser> =
@@ -243,13 +240,12 @@ private class ExtensibleGFMFlavourDescriptor(
 private class ExtensibleGFMMarkerProcessorFactory(
     private val extraMarkerBlockProviders: List<MarkerBlockProvider<MarkerProcessor.StateInfo>>,
 ) : MarkerProcessorFactory {
-    override fun createMarkerProcessor(productionHolder: ProductionHolder): MarkerProcessor<*> {
-        return ExtensibleGFMMarkerProcessor(
+    override fun createMarkerProcessor(productionHolder: ProductionHolder): MarkerProcessor<*> =
+        ExtensibleGFMMarkerProcessor(
             productionHolder,
             GFMConstraints.BASE,
             extraMarkerBlockProviders,
         )
-    }
 }
 
 /**
@@ -264,13 +260,11 @@ private class ExtensibleGFMMarkerProcessor(
     constraintsBase: GFMConstraints,
     extraMarkerBlockProviders: List<MarkerBlockProvider<StateInfo>>,
 ) : org.intellij.markdown.flavours.commonmark.CommonMarkMarkerProcessor(productionHolder, constraintsBase) {
-
     // Mirrors GFMMarkerProcessor: super providers + table provider, with extras prepended
     private val allMarkerBlockProviders =
         extraMarkerBlockProviders + super.getMarkerBlockProviders() + GitHubTableMarkerProvider()
 
-    override fun getMarkerBlockProviders(): List<MarkerBlockProvider<StateInfo>> =
-        allMarkerBlockProviders
+    override fun getMarkerBlockProviders(): List<MarkerBlockProvider<StateInfo>> = allMarkerBlockProviders
 
     override fun populateConstraintsTokens(
         pos: LookaheadText.Position,
@@ -292,16 +286,18 @@ private class ExtensibleGFMMarkerProcessor(
             return
         }
 
-        val type = when (constraints.types.lastOrNull()) {
-            '>' -> MarkdownTokenTypes.BLOCK_QUOTE
-            '.', ')' -> MarkdownTokenTypes.LIST_NUMBER
-            else -> MarkdownTokenTypes.LIST_BULLET
-        }
+        val type =
+            when (constraints.types.lastOrNull()) {
+                '>' -> MarkdownTokenTypes.BLOCK_QUOTE
+                '.', ')' -> MarkdownTokenTypes.LIST_NUMBER
+                else -> MarkdownTokenTypes.LIST_BULLET
+            }
         val middleOffset = pos.offset - pos.offsetInCurrentLine + offset
-        val endOffset = kotlin.math.min(
-            pos.offset - pos.offsetInCurrentLine + constraints.getCharsEaten(pos.currentLine),
-            pos.nextLineOrEofOffset,
-        )
+        val endOffset =
+            kotlin.math.min(
+                pos.offset - pos.offsetInCurrentLine + constraints.getCharsEaten(pos.currentLine),
+                pos.nextLineOrEofOffset,
+            )
 
         productionHolder.addProduction(
             listOf(

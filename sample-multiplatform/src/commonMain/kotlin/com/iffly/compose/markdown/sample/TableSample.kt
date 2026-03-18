@@ -28,53 +28,53 @@ fun TableExample(
     ) {
         SelectionContainer {
             MarkdownView(
-            text =
-                """
-                # GFM Table Example
+                text =
+                    """
+                    # GFM Table Example
 
-                ## Basic Table
+                    ## Basic Table
 
-                | Header 1 | Header 2 | Header 3 |
-                |----------|----------|----------|
-                | Cell 1   | Cell 2   | Cell 3   |
-                | Cell 4   | Cell 5   | Cell 6   |
+                    | Header 1 | Header 2 | Header 3 |
+                    |----------|----------|----------|
+                    | Cell 1   | Cell 2   | Cell 3   |
+                    | Cell 4   | Cell 5   | Cell 6   |
 
-                ## Aligned Table
+                    ## Aligned Table
 
-                | Left | Center | Right |
-                |:-----|:------:|------:|
-                | L1   | C1     | R1    |
-                | L2   | C2     | R2    |
+                    | Left | Center | Right |
+                    |:-----|:------:|------:|
+                    | L1   | C1     | R1    |
+                    | L2   | C2     | R2    |
 
-                ## Table with Inline Formatting
+                    ## Table with Inline Formatting
 
-                | Feature | Status | Notes |
-                |---------|--------|-------|
-                | **Bold** | `done` | Works *great* |
-                | ~~Removed~~ | `pending` | Simple text |
-                | Normal | `active` | [link](https://example.com) |
+                    | Feature | Status | Notes |
+                    |---------|--------|-------|
+                    | **Bold** | `done` | Works *great* |
+                    | ~~Removed~~ | `pending` | Simple text |
+                    | Normal | `active` | [link](https://example.com) |
 
-                ## Wide Table
+                    ## Wide Table
 
-                | Col 1 | Col 2 | Col 3 | Col 4 | Col 5 | Col 6 | Col 7 | Col 8 |
-                |-------|-------|-------|-------|-------|-------|-------|-------|
-                | A | B | C | D | E | F | G | H |
-                | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+                    | Col 1 | Col 2 | Col 3 | Col 4 | Col 5 | Col 6 | Col 7 | Col 8 |
+                    |-------|-------|-------|-------|-------|-------|-------|-------|
+                    | A | B | C | D | E | F | G | H |
+                    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 
-                ## Two Column Table
+                    ## Two Column Table
 
-                | Key | Value |
-                |-----|-------|
-                | Name | Compose Multiplatform |
-                | Version | 1.8.0 |
-                """.trimIndent(),
-            markdownRenderConfig =
-                MarkdownRenderConfig
-                    .Builder()
-                    .addPlugin(TableMarkdownPlugin())
-                    .build(),
-            modifier = Modifier.padding(16.dp),
-        )
+                    | Key | Value |
+                    |-----|-------|
+                    | Name | Compose Multiplatform |
+                    | Version | 1.8.0 |
+                    """.trimIndent(),
+                markdownRenderConfig =
+                    MarkdownRenderConfig
+                        .Builder()
+                        .addPlugin(TableMarkdownPlugin())
+                        .build(),
+                modifier = Modifier.padding(16.dp),
+            )
         }
     }
 }

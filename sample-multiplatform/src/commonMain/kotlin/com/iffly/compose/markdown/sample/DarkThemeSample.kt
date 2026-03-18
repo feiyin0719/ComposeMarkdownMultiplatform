@@ -96,47 +96,47 @@ fun DarkThemeExample(
         ) {
             SelectionContainer {
                 MarkdownView(
-                text =
-                    """
-                    # Dark Theme Example
+                    text =
+                        """
+                        # Dark Theme Example
 
-                    This example demonstrates Markdown styles specifically designed for dark mode.
+                        This example demonstrates Markdown styles specifically designed for dark mode.
 
-                    ## Key Features
+                        ## Key Features
 
-                    **Blue bold text** is easier to read on dark backgrounds
+                        **Blue bold text** is easier to read on dark backgrounds
 
-                    *Purple italic text* provides elegant emphasis effects
+                        *Purple italic text* provides elegant emphasis effects
 
-                    `Green code text` is clearly visible on dark backgrounds
+                        `Green code text` is clearly visible on dark backgrounds
 
-                    ### Level 3 headings use purple
+                        ### Level 3 headings use purple
 
-                    Dark theme is not just color inversion, but a color scheme specifically optimized for nighttime reading.
+                        Dark theme is not just color inversion, but a color scheme specifically optimized for nighttime reading.
 
-                    ## Code Block Example
+                        ## Code Block Example
 
-                    ```kotlin
-                    // Code display under dark theme
-                    val darkTheme = MarkdownTheme(
-                        textStyle = TextStyle(color = Color.White),
-                        code = TextStyle(
-                            color = Color(0xFF81C784),
-                            background = Color(0xFF2E2E2E)
+                        ```kotlin
+                        // Code display under dark theme
+                        val darkTheme = MarkdownTheme(
+                            textStyle = TextStyle(color = Color.White),
+                            code = TextStyle(
+                                color = Color(0xFF81C784),
+                                background = Color(0xFF2E2E2E)
+                            )
                         )
-                    )
-                    ```
+                        ```
 
-                    ## Advantages
+                        ## Advantages
 
-                    - Reduces eye strain
-                    - Saves battery life (OLED screens)
-                    - Modern design style
-                    - Matches system theme
-                    """.trimIndent(),
-                markdownRenderConfig = config,
-                modifier = Modifier.padding(16.dp),
-            )
+                        - Reduces eye strain
+                        - Saves battery life (OLED screens)
+                        - Modern design style
+                        - Matches system theme
+                        """.trimIndent(),
+                    markdownRenderConfig = config,
+                    modifier = Modifier.padding(16.dp),
+                )
             }
         }
     }

@@ -64,9 +64,9 @@ fun LazyMarkdownColumn(
                     node = node,
                     modifier = Modifier,
                 )
-                if (index != children.lastIndex
-                    && theme.spacerTheme.showSpacer
-                    && renderRegistry.getBlockRenderer(node.type) != null
+                if (index != children.lastIndex &&
+                    theme.spacerTheme.showSpacer &&
+                    renderRegistry.getBlockRenderer(node.type) != null
                 ) {
                     Spacer(Modifier.height(theme.spacerTheme.spacerHeight))
                 }

@@ -28,138 +28,140 @@ fun BasicSyntaxExample(
     ) {
         SelectionContainer {
             MarkdownView(
-            text =
-                """
-                # Basic Syntax Example
+                text =
+                    """
+                    # Basic Syntax Example
 
-                This is an example demonstrating basic Markdown syntax.
+                    This is an example demonstrating basic Markdown syntax.
 
-                ## Text Formatting
+                    ## Text Formatting
 
-                **Bold text** and *italic text* as well as `inline code`
+                    **Bold text** and *italic text* as well as `inline code`
 
-                ## Lists
+                    ## Lists
 
-                ### Ordered Lists
-                1. First item
-                2. Second item
-                   1. Nested item
-                      - 1
-                      - 2
-                   2. Another nested item
-                3. Third item
-                4. 1. Fourth item with number
-                   2. Another fourth item
+                    ### Ordered Lists
+                    1. First item
+                    2. Second item
+                       1. Nested item
+                          - 1
+                          - 2
+                       2. Another nested item
+                    3. Third item
+                    4. 1. Fourth item with number
+                       2. Another fourth item
 
-                ### Loose List
-                1. Item 1
+                    ### Loose List
+                    1. Item 1
 
-                    This is a loose list item with multiple paragraphs.
+                        This is a loose list item with multiple paragraphs.
 
-                    Another paragraph in the same list item.
+                        Another paragraph in the same list item.
 
-                    > Blockquote inside loose list item.
-                    > Another line of blockquote.
+                        > other blockquote line.
+                        > empty blockquote line.
+                        >> text after empty blockquote line.  
+                        >> empty blockquote line after text.
 
-                    1. Nested ordered list inside loose item.
+                        1. Nested ordered list inside loose item.
 
-                    2. ``` kotlin
-                       val x = 10
-                       val y = 10
+                        2. ``` kotlin
+                           val x = 10
+                           val y = 10
+                           ```
+
+                    2. > quote as second item
+                       >> another line of quote
+
+                       test paragraph after quote.
+
+                       ```java
+                         System.out.println("Hello, World!");
                        ```
 
-                2. > quote as second item
-                   >> another line of quote
 
-                   test paragraph after quote.
+                    ### Unordered Lists
+                    - Item A
+                    - Item B
+                      - Nested item
+                      - Another nested item
+                    - Item C
 
-                   ```java
-                     System.out.println("Hello, World!");
-                   ```
+                    ## Quotes
 
+                    > This is a quote block  
+                    > Can contain multiple lines of content
+                    
+                    > This is a blockquote. 
+                      It can span multiple lines.
+                    >
+                    > > Nested blockquote.
 
-                ### Unordered Lists
-                - Item A
-                - Item B
-                  - Nested item
-                  - Another nested item
-                - Item C
+                    ### Quote with List
+                    > - Quote list item 1
+                    > - Quote list item 2
+                    > 1. Nested quote list item
+                    > 2. Another nested quote list item
+                    >    new line for nested quote list item
+                    >>  - Nested quote list item
+                    >>  - Another nested quote list item
+                    > # Quote with Heading1
+                    > ## Quote with Heading2
+                    > Regular paragraph inside quote.
+                    > ```python
+                    > def hello():
+                    >     print("Hello from quote!")
+                    > ```
 
-                ## Quotes
+                    ## Dividers
 
-                > This is a quote block
-                > Can contain multiple lines of content
-                
-                > This is a blockquote. 
-                > It can span multiple lines.
-                >
-                > > Nested blockquote.
+                    ---
 
-                ### Quote with List
-                > - Quote list item 1
-                > - Quote list item 2
-                > 1. Nested quote list item
-                > 2. Another nested quote list item
-                >    new line for nested quote list item
-                >>  - Nested quote list item
-                >>  - Another nested quote list item
-                > # Quote with Heading1
-                > ## Quote with Heading2
-                > Regular paragraph inside quote.
-                > ```python
-                > def hello():
-                >     print("Hello from quote!")
-                > ```
+                    ## Links
 
-                ## Dividers
+                    [GitHub](https://github.com) | [Google](https://google.com)
 
-                ---
+                    ### Reference Links
 
-                ## Links
+                    This is a [reference link][ref1].
 
-                [GitHub](https://github.com) | [Google](https://google.com)
+                    This is another [reference link][ref2].
 
-                ### Reference Links
+                    [ref1]: https://kotlinlang.org
+                    [ref2]: https://android.com
 
-                This is a [reference link][ref1].
+                    ### Collapsed Reference Links
 
-                This is another [reference link][ref2].
+                    This is a [collapsed reference link][].
 
-                [ref1]: https://kotlinlang.org
-                [ref2]: https://android.com
+                    [collapsed reference link]: https://compose.google.com
 
-                ### Collapsed Reference Links
+                    ### Shortcut Reference Links
 
-                This is a [collapsed reference link][].
+                    [Shortcut Link]
 
-                [collapsed reference link]: https://compose.google.com
+                    [Shortcut Link]: https://developer.android.com
 
-                ### Shortcut Reference Links
+                    ## Code
 
-                [Shortcut Link]
-
-                [Shortcut Link]: https://developer.android.com
-
-                ## Code
-
-                ```kotlin
-                fun greetUser(name: String) {
-                    println("Hello, ${'$'}name!")
-                }
-
-                greetUser("Compose")
-                """.trimIndent(),
-            modifier = Modifier.padding(16.dp),
-            actionHandler =
-                object : ActionHandler {
-                    override fun handleUrlClick(
-                        url: String,
-                        node: ASTNode,
-                    ) {
-                        println("BasicSyntax: Clicked link: $url")
+                    ```kotlin
+                    fun greetUser(name: String) {
+                        println("Hello, ${'$'}name!")
                     }
-                },
-        )
+
+                    greetUser("Compose")
+                    """.trimIndent(),
+                modifier = Modifier.padding(16.dp),
+                actionHandler =
+                    object : ActionHandler {
+                        override fun handleUrlClick(
+                            url: String,
+                            node: ASTNode,
+                        ) {
+                            println("BasicSyntax: Clicked link: $url")
+                        }
+                    },
+            )
         }
     }
 }
