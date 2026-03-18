@@ -67,7 +67,8 @@ class BlockQuoteRenderer : IBlockRenderer {
                     parent.children.lastOrNull {
                         it.type != MarkdownTokenTypes.EOL &&
                             it.type != MarkdownTokenTypes.WHITE_SPACE &&
-                            it.type != MarkdownTokenTypes.BLOCK_QUOTE
+                            it.type != MarkdownTokenTypes.BLOCK_QUOTE &&
+                            it.type != MarkdownTokenTypes.GT
                     }
                 if (lastChild?.type != MarkdownElementTypes.BLOCK_QUOTE) {
                     Spacer(modifier = Modifier.height(spacerHeight))

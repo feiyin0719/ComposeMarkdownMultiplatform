@@ -163,3 +163,33 @@ fun ASTNode.previousSibling(): ASTNode? {
     val index = siblings.indexOf(this)
     return if (index > 0) siblings[index - 1] else null
 }
+
+/**
+ * Returns true if this GT token is a blockquote continuation marker that was
+ * incorrectly tokenized by intellij-markdown.
+ *
+ * When a multi-line blockquote is nested inside a list item, continuation `>`
+ * markers may be tokenized as [MarkdownTokenTypes.GT] instead of
+ * [MarkdownTokenTypes.BLOCK_QUOTE]. This function detects that case by walking
+ * backwards through previous siblings, skipping [MarkdownTokenTypes.WHITE_SPACE]
+ * and other [MarkdownTokenTypes.GT] tokens, and checking whether an
+ * [MarkdownTokenTypes.EOL] is found — indicating this GT is at the logical start
+ * of a line inside a BLOCK_QUOTE element.
+ */
+fun ASTNode.isBlockQuoteContinuationMarker(): Boolean {
+    if (type != MarkdownTokenTypes.GT) return false
+    if (!isInQuoteBlock()) return false
+    var current = previousSibling()
+    while (current != null) {
+        when (current.type) {
+            MarkdownTokenTypes.WHITE_SPACE,
+            MarkdownTokenTypes.GT,
+            -> current = current.previousSibling()
+
+            MarkdownTokenTypes.EOL -> return true
+
+            else -> return false
+        }
+    }
+    return false
+}

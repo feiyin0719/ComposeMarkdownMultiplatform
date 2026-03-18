@@ -8,6 +8,7 @@ import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.contentText
+import com.iffly.compose.markdown.multiplatform.util.isBlockQuoteContinuationMarker
 import com.iffly.compose.markdown.multiplatform.util.previousSibling
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.MarkdownTokenTypes
@@ -163,7 +164,15 @@ class LtNodeStringBuilder : IInlineNodeStringBuilder {
     }
 }
 
-/** Inline node string builder that appends a greater-than character (`>`). */
+/**
+ * Inline node string builder that appends a greater-than character (`>`).
+ *
+ * When a multi-line blockquote is nested inside a list item, the intellij-markdown
+ * parser may tokenize continuation `>` markers as [MarkdownTokenTypes.GT] instead
+ * of [MarkdownTokenTypes.BLOCK_QUOTE]. This builder detects that case (GT following
+ * an EOL inside a BLOCK_QUOTE element) and suppresses the token so it is not
+ * rendered as a literal `>` character.
+ */
 class GtNodeStringBuilder : IInlineNodeStringBuilder {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: ASTNode,
@@ -176,6 +185,9 @@ class GtNodeStringBuilder : IInlineNodeStringBuilder {
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
+        if (node.isBlockQuoteContinuationMarker()) {
+            return
+        }
         append('>')
     }
 }
@@ -262,7 +274,9 @@ class EmphTokenNodeStringBuilder : IInlineNodeStringBuilder {
  * Inline node string builder for whitespace tokens.
  *
  * Appends a single space unless the preceding sibling is a block quote marker,
- * in which case the whitespace is suppressed.
+ * in which case the whitespace is suppressed. Also suppresses whitespace after
+ * a GT token that serves as a blockquote continuation marker (GT following EOL
+ * inside a BLOCK_QUOTE element).
  *
  * @see IInlineNodeStringBuilder
  */
@@ -278,9 +292,15 @@ class WhiteSpaceNodeStringBuilder : IInlineNodeStringBuilder {
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        if (node.previousSibling()?.type != MarkdownTokenTypes.BLOCK_QUOTE) {
-            append(' ')
+        val prevSibling = node.previousSibling()
+        if (prevSibling?.type == MarkdownTokenTypes.BLOCK_QUOTE) {
+            return
         }
+        // Also suppress whitespace after a GT that is a blockquote continuation marker
+        if (prevSibling != null && prevSibling.isBlockQuoteContinuationMarker()) {
+            return
+        }
+        append(' ')
     }
 }
 
