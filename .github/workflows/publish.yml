@@ -33,6 +33,9 @@ jobs:
       - name: Decode GPG key
         run: echo "${{ secrets.GPG_SIGNING_KEY }}" | base64 --decode > /tmp/secring.asc
 
+      - name: Lint check
+        run: ./gradlew ktlintCheck --no-configuration-cache
+
       - name: Build and sign all artifacts
         run: |
           export ORG_GRADLE_PROJECT_signingInMemoryKey=$(cat /tmp/secring.asc)
