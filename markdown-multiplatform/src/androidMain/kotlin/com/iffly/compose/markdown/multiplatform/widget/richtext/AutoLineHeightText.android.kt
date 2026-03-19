@@ -39,6 +39,7 @@ import kotlinx.coroutines.withContext
 @Composable
 actual fun AutoLineHeightText(
     text: AnnotatedString,
+    style: TextStyle,
     modifier: Modifier,
     color: Color,
     fontSize: TextUnit,
@@ -53,9 +54,8 @@ actual fun AutoLineHeightText(
     softWrap: Boolean,
     maxLines: Int,
     minLines: Int,
-    inlineContent: ImmutableMap<String, InlineTextContent>,
     onTextLayout: (TextLayoutResult) -> Unit,
-    style: TextStyle,
+    inlineContent: ImmutableMap<String, InlineTextContent>,
 ) {
     val (adjustedText, textLayoutResultState) =
         rememberAdjustedText(

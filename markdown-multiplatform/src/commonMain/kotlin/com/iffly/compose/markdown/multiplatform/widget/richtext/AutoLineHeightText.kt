@@ -31,6 +31,7 @@ import kotlinx.collections.immutable.persistentMapOf
 @Composable
 expect fun AutoLineHeightText(
     text: AnnotatedString,
+    style: TextStyle,
     modifier: Modifier = Modifier,
     color: Color = Color.Unspecified,
     fontSize: TextUnit = TextUnit.Unspecified,
@@ -45,7 +46,6 @@ expect fun AutoLineHeightText(
     softWrap: Boolean = true,
     maxLines: Int = Int.MAX_VALUE,
     minLines: Int = 1,
-    inlineContent: ImmutableMap<String, InlineTextContent> = persistentMapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
-    style: TextStyle,
+    inlineContent: ImmutableMap<String, InlineTextContent> = persistentMapOf(),
 )
