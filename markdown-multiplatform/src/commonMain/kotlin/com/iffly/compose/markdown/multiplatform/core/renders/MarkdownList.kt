@@ -13,30 +13,20 @@ import androidx.compose.ui.Modifier
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.MarkdownChildren
+import com.iffly.compose.markdown.multiplatform.render.childNodes
 import com.iffly.compose.markdown.multiplatform.util.StringExt.FIGURE_SPACE
 import com.iffly.compose.markdown.multiplatform.util.getIndentLevel
 import com.iffly.compose.markdown.multiplatform.util.getMarkerText
 import com.iffly.compose.markdown.multiplatform.util.isInQuoteBlock
 import com.iffly.compose.markdown.multiplatform.util.isLooseList
 import com.iffly.compose.markdown.multiplatform.widget.SelectionFormatText
-import org.intellij.markdown.MarkdownElementTypes
-import org.intellij.markdown.MarkdownTokenTypes
-import org.intellij.markdown.ast.ASTNode
+import org.commonmark.node.ListItem
+import org.commonmark.node.Node
 
-/**
- * Block renderer for ordered and unordered list containers.
- *
- * Renders the list items as vertical children, adjusting spacing based on
- * whether the list is loose (items separated by blank lines) or tight.
- *
- * @see IBlockRenderer
- * @see ListItemRenderer
- */
-class ListBlockRenderer : IBlockRenderer {
+class ListBlockRenderer : IBlockRenderer<Node> {
     @Composable
     override fun Invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: Node,
         modifier: Modifier,
     ) {
         val theme = currentTheme()
@@ -45,8 +35,7 @@ class ListBlockRenderer : IBlockRenderer {
             if (isLoose) theme.spacerTheme.spacerHeight else theme.listTheme.tightListSpacerHeight
         MarkdownChildren(
             parent = node,
-            children = node.children.filter { it.type == MarkdownElementTypes.LIST_ITEM },
-            sourceText = sourceText,
+            children = node.childNodes().filterIsInstance<ListItem>(),
             modifier = modifier,
             verticalArrangement = Arrangement.Top,
             spacerHeight = spacerHeight,
@@ -54,21 +43,10 @@ class ListBlockRenderer : IBlockRenderer {
     }
 }
 
-/**
- * Block renderer for individual list item elements.
- *
- * Renders each list item in a horizontal row with the appropriate bullet or number
- * marker, indentation based on nesting level, and the item's content. Supports both
- * loose and tight list spacing and respects blockquote context styling.
- *
- * @see IBlockRenderer
- * @see ListBlockRenderer
- */
-class ListItemRenderer : IBlockRenderer {
+class ListItemRenderer : IBlockRenderer<ListItem> {
     @Composable
     override fun Invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: ListItem,
         modifier: Modifier,
     ) {
         val theme = currentTheme()
@@ -93,9 +71,7 @@ class ListItemRenderer : IBlockRenderer {
                     .wrapContentHeight(),
         ) {
             val isFirstChild =
-                node.parent
-                    ?.children
-                    ?.firstOrNull { it.type == MarkdownElementTypes.LIST_ITEM } == node
+                node.parent?.childNodes()?.firstOrNull { it is ListItem } == node
             if (!isFirstChild && indentLevel > 0) {
                 SelectionFormatText(FIGURE_SPACE.repeat(indentLevel))
             }
@@ -107,18 +83,11 @@ class ListItemRenderer : IBlockRenderer {
             Spacer(modifier = Modifier.width(listTheme.markerSpacerWidth))
             MarkdownChildren(
                 parent = node,
-                sourceText = sourceText,
                 modifier = Modifier.wrapContentSize(),
                 verticalArrangement = Arrangement.Top,
                 spacerHeight = spacerHeight,
                 onBeforeChild = { child, parent ->
-                    val firstContentChild =
-                        parent.children.firstOrNull {
-                            it.type != MarkdownTokenTypes.EOL &&
-                                it.type != MarkdownTokenTypes.WHITE_SPACE &&
-                                it.type != MarkdownTokenTypes.LIST_BULLET &&
-                                it.type != MarkdownTokenTypes.LIST_NUMBER
-                        }
+                    val firstContentChild = parent.childNodes().firstOrNull()
                     if (child != firstContentChild) {
                         SelectionFormatText(FIGURE_SPACE.repeat(indentLevel + 1))
                     }

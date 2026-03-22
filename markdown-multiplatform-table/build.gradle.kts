@@ -47,6 +47,7 @@ kotlin {
                 implementation(compose.ui)
                 implementation(libs.kotlin.immutable.collections)
                 implementation(project(":markdown-multiplatform"))
+                implementation(libs.commonmark.kotlin.ext.gfm.tables)
             }
         }
 

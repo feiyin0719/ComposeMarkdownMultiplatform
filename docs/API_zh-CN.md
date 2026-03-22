@@ -131,7 +131,7 @@ fun LazyExample() {
 ```kotlin
 @Composable
 fun MarkdownContent(
-    node: ASTNode,
+    node: Node,
     modifier: Modifier = Modifier,
 )
 ```
@@ -149,28 +149,26 @@ fun MarkdownContent(
 ```kotlin
 @Composable
 fun MarkdownChildren(
-    parent: ASTNode,
+    parent: Node,
     modifier: Modifier = Modifier,
-    children: List<ASTNode> = parent.children,
-    sourceText: String = currentSourceText(),
+    children: List<Node>? = null,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     spacerHeight: Dp = currentTheme().spacerTheme.spacerHeight,
     showSpacer: Boolean = currentTheme().spacerTheme.showSpacer,
-    childModifierFactory: (child: ASTNode) -> Modifier = {
+    childModifierFactory: (child: Node) -> Modifier = {
         Modifier.wrapContentHeight().fillMaxWidth()
     },
-    onBeforeChild: (@Composable (child: ASTNode, parent: ASTNode) -> Unit)? = null,
-    onAfterChild: (@Composable (child: ASTNode, parent: ASTNode) -> Unit)? = null,
-    onBeforeAll: (@Composable (parent: ASTNode) -> Unit)? = null,
-    onAfterAll: (@Composable (parent: ASTNode) -> Unit)? = null,
+    onBeforeChild: (@Composable (child: Node, parent: Node) -> Unit)? = null,
+    onAfterChild: (@Composable (child: Node, parent: Node) -> Unit)? = null,
+    onBeforeAll: (@Composable (parent: Node) -> Unit)? = null,
+    onAfterAll: (@Composable (parent: Node) -> Unit)? = null,
 )
 ```
 
 **参数说明**
 
-- `parent`：需要渲染子节点的 `ASTNode` 对象。
-- `children`：要渲染的子节点列表（默认为 `parent.children`）。
-- `sourceText`：原始 Markdown 源文本。
+- `parent`：需要渲染子节点的 `Node` 对象。
+- `children`：要渲染的子节点列表（默认为 `parent` 的子节点）。
 - `spacerHeight`：子节点间的垂直间距。默认为 `theme.spacerTheme.spacerHeight`。
 - `showSpacer`：是否插入间距。默认为 `theme.spacerTheme.showSpacer`。
 - `onBeforeChild` / `onAfterChild`：可选的 Composable 回调，在渲染每个子节点前/后调用。
@@ -191,7 +189,7 @@ fun MarkdownChildren(
 ```kotlin
 @Composable
 fun MarkdownText(
-    parent: ASTNode,
+    parent: Node,
     modifier: Modifier = Modifier,
     textAlign: TextAlign = TextAlign.Start,
     textStyle: TextStyle? = null,
@@ -213,7 +211,7 @@ fun MarkdownText(
 `MarkdownRenderConfig` 包含解析和渲染 Markdown 所需的一切：
 
 - 一个 `MarkdownTheme`，描述排版、颜色和组件样式。
-- 一个 `MarkdownParser`（基于 `intellij-markdown`）。
+- 一个 `MarkdownParser`（基于 `commonmark-kotlin`）。
 - 一个 `RenderRegistry`，描述如何渲染各类节点。
 
 实例通过 `MarkdownRenderConfig.Builder` 创建：
@@ -222,17 +220,6 @@ fun MarkdownText(
 val config = MarkdownRenderConfig.Builder()
     // 配置主题、插件、渲染器等...
     .build()
-```
-
-**DSL 快捷方式：**
-
-```kotlin
-val config = markdownRenderConfig(
-    markdownTheme = MarkdownTheme(),
-) {
-    addPlugin(TableMarkdownPlugin())
-    // ...
-}
 ```
 
 ---
@@ -248,18 +235,15 @@ class MarkdownRenderConfig {
     class Builder {
         fun markdownTheme(markdownTheme: MarkdownTheme): Builder
         fun addPlugin(plugin: IMarkdownRenderPlugin): Builder
-        fun addInlineNodeStringBuilder(
-            elementType: IElementType,
-            builder: IInlineNodeStringBuilder,
+        fun <T : Node> addInlineNodeStringBuilder(
+            nodeClass: KClass<T>,
+            builder: IInlineNodeStringBuilder<T>,
         ): Builder
-        fun addBlockRenderer(
-            elementType: IElementType,
-            renderer: IBlockRenderer,
+        fun <T : Node> addBlockRenderer(
+            nodeClass: KClass<T>,
+            renderer: IBlockRenderer<T>,
         ): Builder
-        fun addMarkerBlockProvider(
-            provider: MarkerBlockProvider<MarkerProcessor.StateInfo>,
-        ): Builder
-        fun addSequentialParser(parser: SequentialParser): Builder
+        fun addExtension(extension: Extension): Builder
         fun markdownTextRenderer(renderer: MarkdownTextRenderer): Builder
         fun markdownContentRenderer(renderer: MarkdownContentRenderer): Builder
         fun build(): MarkdownRenderConfig
@@ -273,21 +257,18 @@ class MarkdownRenderConfig {
 
 #### addPlugin(plugin: IMarkdownRenderPlugin)
 
-注册渲染插件。插件可以提供自定义解析器、块渲染器和内联字符串构建器。
+注册渲染插件。插件可以提供自定义解析器扩展、块渲染器和内联字符串构建器。
 
 #### addInlineNodeStringBuilder / addBlockRenderer
 
 自定义特定节点类型渲染逻辑的底层钩子：
 
-- `addInlineNodeStringBuilder(elementType, builder)`：定义某个内联节点类型如何被转换为文本 span。
-- `addBlockRenderer(elementType, renderer)`：定义某个块节点类型如何被渲染为 Compose UI。
+- `addInlineNodeStringBuilder(nodeClass, builder)`：定义某个内联节点类型如何被转换为文本 span。
+- `addBlockRenderer(nodeClass, renderer)`：定义某个块节点类型如何被渲染为 Compose UI。
 
-#### addMarkerBlockProvider / addSequentialParser
+#### addExtension(extension: Extension)
 
-`intellij-markdown` 解析器的扩展 API：
-
-- `addMarkerBlockProvider`：注册自定义块解析 provider。
-- `addSequentialParser`：注册自定义顺序解析器（用于内联语法）。
+直接注册 commonmark 解析器扩展（例如 `TablesExtension.create()`）。通过插件注册的扩展也会被自动收集。
 
 #### markdownTextRenderer / markdownContentRenderer
 
@@ -300,7 +281,7 @@ class MarkdownRenderConfig {
 
 ### MarkdownTheme
 
-`MarkdownTheme`（来自 `io.github.feiyin0719.markdown.multiplatform.style.MarkdownTheme`）是控制 Markdown 内容在 Compose 中如何呈现的**核心主题模型**。
+`MarkdownTheme` 是控制 Markdown 内容在 Compose 中如何呈现的**核心主题模型**。
 
 #### 数据结构
 
@@ -349,7 +330,7 @@ data class MarkdownTheme(
 
 #### 标题级别
 
-标题通过 `headStyle` 映射配置。key 为 1–6 的整数，通过常量暴露：
+标题通过 `headStyle` 映射配置。key 为 1-6 的整数，通过常量暴露：
 
 ```kotlin
 MarkdownTheme.HEAD1 // H1
@@ -471,16 +452,15 @@ val config = MarkdownRenderConfig.Builder()
 
 ```kotlin
 interface IMarkdownRenderPlugin {
-    fun markerBlockProviders(): List<MarkerBlockProvider<MarkerProcessor.StateInfo>> = emptyList()
-    fun sequentialParsers(): List<SequentialParser> = emptyList()
-    fun blockRenderers(): Map<IElementType, IBlockRenderer> = emptyMap()
-    fun inlineNodeStringBuilders(): Map<IElementType, IInlineNodeStringBuilder> = emptyMap()
+    fun parserExtensions(): List<Extension> = emptyList()
+    fun blockRenderers(): Map<KClass<out Node>, IBlockRenderer<*>> = emptyMap()
+    fun inlineNodeStringBuilders(): Map<KClass<out Node>, IInlineNodeStringBuilder<*>> = emptyMap()
 }
 ```
 
 插件可以：
 
-- 提供自定义解析器扩展（`markerBlockProviders`、`sequentialParsers`）。
+- 通过 `parserExtensions()` 提供自定义解析器扩展（例如 `TablesExtension.create()` 用于 GFM 表格）。
 - 注册块渲染器和内联字符串构建器。
 
 插件通过 `MarkdownRenderConfig.Builder.addPlugin()` 添加。
@@ -489,8 +469,9 @@ interface IMarkdownRenderPlugin {
 
 ```kotlin
 abstract class AbstractMarkdownRenderPlugin : IMarkdownRenderPlugin {
-    override fun blockRenderers(): Map<IElementType, IBlockRenderer> = emptyMap()
-    override fun inlineNodeStringBuilders(): Map<IElementType, IInlineNodeStringBuilder> = emptyMap()
+    override fun parserExtensions(): List<Extension> = emptyList()
+    override fun blockRenderers(): Map<KClass<out Node>, IBlockRenderer<*>> = emptyMap()
+    override fun inlineNodeStringBuilders(): Map<KClass<out Node>, IInlineNodeStringBuilder<*>> = emptyMap()
 }
 ```
 
@@ -501,11 +482,10 @@ abstract class AbstractMarkdownRenderPlugin : IMarkdownRenderPlugin {
 负责将特定的块节点渲染为 Compose UI。
 
 ```kotlin
-interface IBlockRenderer {
+interface IBlockRenderer<T : Node> {
     @Composable
     fun Invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: T,
         modifier: Modifier,
     )
 }
@@ -513,8 +493,7 @@ interface IBlockRenderer {
 
 **参数说明**
 
-- `node`：要渲染的 AST 节点。
-- `sourceText`：原始 Markdown 源文本。
+- `node`：要渲染的 commonmark AST 节点。
 - `modifier`：来自父布局的 Modifier。实现时应优先应用该 modifier 以保持布局一致性。
 
 **实现建议**
@@ -530,10 +509,9 @@ interface IBlockRenderer {
 负责将内联节点转换为 `AnnotatedString` 中的带样式文本 span。
 
 ```kotlin
-interface IInlineNodeStringBuilder {
+interface IInlineNodeStringBuilder<T : Node> {
     fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
+        node: T,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -548,8 +526,7 @@ interface IInlineNodeStringBuilder {
 **参数说明**
 
 - `node`：内联 AST 节点。
-- `sourceText`：原始源文本。
-- `inlineContentMap`：用于注册富内联内容的可变 Map（key → `MarkdownInlineView`）。
+- `inlineContentMap`：用于注册富内联内容的可变 Map（key -> `MarkdownInlineView`）。
 - `markdownTheme`：当前主题，用于读取样式。
 - `actionHandler`：可选的交互处理器。
 - `renderRegistry`：用于递归构建子节点字符串。
@@ -558,9 +535,9 @@ interface IInlineNodeStringBuilder {
 **辅助类：**
 
 ```kotlin
-open class CompositeChildNodeStringBuilder : IInlineNodeStringBuilder {
-    open fun getSpanStyle(node: ASTNode, markdownTheme: MarkdownTheme): SpanStyle? = null
-    open fun getParagraphStyle(node: ASTNode, markdownTheme: MarkdownTheme): ParagraphStyle? = null
+open class CompositeChildNodeStringBuilder : IInlineNodeStringBuilder<Node> {
+    open fun getSpanStyle(node: Node, markdownTheme: MarkdownTheme): SpanStyle? = null
+    open fun getParagraphStyle(node: Node, markdownTheme: MarkdownTheme): ParagraphStyle? = null
 }
 ```
 
@@ -580,8 +557,8 @@ sealed interface MarkdownInlineView {
 
 `RichTextInlineContent` 有两种形态：
 
-- **`EmbeddedRichTextInlineContent`** — 小型内联元素（图标、徽章），与文本处于同一行。
-- **`StandaloneInlineContent`** — 全宽块级元素（卡片、媒体），作为独立段落渲染。
+- **`EmbeddedRichTextInlineContent`** -- 小型内联元素（图标、徽章），与文本处于同一行。
+- **`StandaloneInlineContent`** -- 全宽块级元素（卡片、媒体），作为独立段落渲染。
 
 ---
 
@@ -591,13 +568,13 @@ sealed interface MarkdownInlineView {
 
 ```kotlin
 data class RenderRegistry(
-    private val blockRenderers: Map<IElementType, IBlockRenderer>,
-    private val inlineNodeStringBuilders: Map<IElementType, IInlineNodeStringBuilder>,
+    private val blockRenderers: Map<KClass<out Node>, IBlockRenderer<*>>,
+    private val inlineNodeStringBuilders: Map<KClass<out Node>, IInlineNodeStringBuilder<*>>,
     val markdownContentRenderer: MarkdownContentRenderer? = null,
     val markdownTextRenderer: MarkdownTextRenderer? = null,
 ) {
-    fun getBlockRenderer(elementType: IElementType): IBlockRenderer?
-    fun getInlineNodeStringBuilder(elementType: IElementType): IInlineNodeStringBuilder?
+    fun getBlockRenderer(nodeClass: KClass<out Node>): IBlockRenderer<*>?
+    fun getInlineNodeStringBuilder(nodeClass: KClass<out Node>): IInlineNodeStringBuilder<*>?
 }
 ```
 
@@ -608,14 +585,13 @@ data class RenderRegistry(
 ```kotlin
 fun interface MarkdownContentRenderer {
     @Composable
-    operator fun invoke(node: ASTNode, sourceText: String, modifier: Modifier)
+    operator fun invoke(node: Node, modifier: Modifier)
 }
 
 fun interface MarkdownTextRenderer {
     @Composable
     operator fun invoke(
-        parent: ASTNode,
-        sourceText: String,
+        parent: Node,
         modifier: Modifier,
         textAlign: TextAlign,
         textStyle: TextStyle?,
@@ -629,7 +605,7 @@ fun interface MarkdownTextRenderer {
 
 ### TableMarkdownPlugin
 
-提供 GFM 表格渲染支持。
+提供 GFM 表格渲染支持。使用 `commonmark-kotlin-ext-gfm-tables` 进行解析。
 
 **模块：** `markdown-multiplatform-table`
 
@@ -661,14 +637,14 @@ data class TableTheme(
 ```kotlin
 fun interface TableWidgetRenderer {
     @Composable
-    operator fun invoke(node: ASTNode, sourceText: String, modifier: Modifier)
+    operator fun invoke(node: Node, modifier: Modifier)
 }
 
 class TableRenderer(
     private val tableTheme: TableTheme = TableTheme(),
     tableTitleRenderer: TableWidgetRenderer? = null,
     tableCellRenderer: TableWidgetRenderer? = null,
-) : IBlockRenderer
+) : IBlockRenderer<TableBlock>
 ```
 
 **示例：**
@@ -727,7 +703,7 @@ fun interface ImageWidgetRenderer {
     operator fun invoke(
         url: String,
         contentDescription: String?,
-        node: ASTNode,
+        node: Node,
         modifier: Modifier,
     )
 }
@@ -789,7 +765,7 @@ interface HtmlInlineTagHandler {
 
 ```kotlin
 data class HtmlInlineTagContext(
-    val node: ASTNode,
+    val node: Node,
     val inlineContentMap: MutableMap<String, MarkdownInlineView>,
     val markdownTheme: MarkdownTheme,
     val actionHandler: ActionHandler?,
@@ -837,10 +813,10 @@ val config = MarkdownRenderConfig.Builder()
 
 ```kotlin
 interface ActionHandler {
-    fun handleUrlClick(url: String, node: ASTNode) {}
-    fun handleCopyClick(node: ASTNode) {}
-    fun handleImageClick(imageUrl: String, node: ASTNode) {}
-    fun handleCustomEvent(event: CustomEvent, node: ASTNode) {}
+    fun handleUrlClick(url: String, node: Node) {}
+    fun handleCopyClick(node: Node) {}
+    fun handleImageClick(imageUrl: String, node: Node) {}
+    fun handleCustomEvent(event: CustomEvent, node: Node) {}
 }
 
 interface CustomEvent
@@ -850,10 +826,10 @@ interface CustomEvent
 
 ```kotlin
 val handler = object : ActionHandler {
-    override fun handleUrlClick(url: String, node: ASTNode) {
+    override fun handleUrlClick(url: String, node: Node) {
         // 在浏览器中打开 URL
     }
-    override fun handleCopyClick(node: ASTNode) {
+    override fun handleCopyClick(node: Node) {
         // 复制代码块内容
     }
 }
@@ -915,7 +891,6 @@ data class SystemContext(
 @Composable @ReadOnlyComposable fun currentRenderRegistry(): RenderRegistry
 @Composable @ReadOnlyComposable fun currentActionHandler(): ActionHandler?
 @Composable @ReadOnlyComposable fun isShowNotSupported(): Boolean
-@Composable @ReadOnlyComposable fun currentSourceText(): String
 ```
 
 ---
@@ -965,3 +940,4 @@ MarkdownView(
   - 设置 `markdownTheme` 以匹配你的设计体系。
   - 添加插件以支持扩展语法。
   - 按需注册自定义块渲染器或内联构建器。
+  - 使用 `addExtension()` 注册自定义 commonmark 解析器扩展。

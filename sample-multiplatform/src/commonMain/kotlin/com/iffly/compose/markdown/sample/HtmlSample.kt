@@ -20,14 +20,6 @@ fun HtmlExample(
     paddingValues: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
-    val htmlConfig =
-        remember {
-            MarkdownRenderConfig
-                .Builder()
-                .addPlugin(HtmlMarkdownPlugin())
-                .build()
-        }
-
     Box(
         modifier =
             modifier
@@ -36,6 +28,11 @@ fun HtmlExample(
                 .verticalScroll(rememberScrollState()),
     ) {
         SelectionContainer {
+            val markdownRenderConfig = remember {
+                MarkdownRenderConfig.Builder()
+                    .addPlugin(HtmlMarkdownPlugin())
+                    .build()
+            }
             MarkdownView(
                 text =
                     """
@@ -77,17 +74,14 @@ fun HtmlExample(
 
                     **Bold markdown** with <span style="color: red">red span</span> and *italic markdown* together.
 
-                    A paragraph with <b>HTML bold</b>, **Markdown bold**, <i>HTML italic</i>, and *Markdown italic* all mixed.
-
-                    ## Back to Markdown
-
-                    This is regular **Markdown** content after the HTML sections.
+                    ## Lists
 
                     - Markdown list item 1
                     - Markdown list item 2
+                    - Markdown list item 3
                     """.trimIndent(),
-                markdownRenderConfig = htmlConfig,
                 modifier = Modifier.padding(16.dp),
+                markdownRenderConfig = markdownRenderConfig,
             )
         }
     }

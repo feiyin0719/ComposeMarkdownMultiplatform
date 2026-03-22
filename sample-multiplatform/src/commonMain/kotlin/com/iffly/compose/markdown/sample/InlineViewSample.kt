@@ -34,11 +34,9 @@ import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.widget.richtext.RichTextInlineContent
-import org.intellij.markdown.IElementType
-import org.intellij.markdown.MarkdownElementTypes
-import org.intellij.markdown.MarkdownTokenTypes
-import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.ast.getTextInNode
+import org.commonmark.node.Code
+import org.commonmark.node.Node
+import kotlin.reflect.KClass
 
 @Composable
 fun InlineViewExample(
@@ -96,14 +94,13 @@ fun InlineViewExample(
  * - Other code → default inline code rendering
  */
 private class InlineViewPlugin : IMarkdownRenderPlugin {
-    override fun inlineNodeStringBuilders(): Map<IElementType, IInlineNodeStringBuilder> =
-        mapOf(MarkdownElementTypes.CODE_SPAN to InlineViewCodeNodeStringBuilder())
+    override fun inlineNodeStringBuilders(): Map<KClass<out Node>, IInlineNodeStringBuilder<*>> =
+        mapOf(Code::class to InlineViewCodeNodeStringBuilder())
 }
 
-private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder {
+private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
+        node: Code,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -112,10 +109,7 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder {
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        val codeText =
-            node.children
-                .filter { it.type != MarkdownTokenTypes.BACKTICK }
-                .joinToString("") { it.getTextInNode(sourceText).toString() }
+        val codeText = node.literal
 
         when {
             codeText.startsWith("status:") -> {

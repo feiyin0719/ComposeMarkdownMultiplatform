@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.iffly.compose.markdown.multiplatform.MarkdownView
@@ -27,6 +28,11 @@ fun TableExample(
                 .verticalScroll(rememberScrollState()),
     ) {
         SelectionContainer {
+            val markdownRenderConfig = remember {
+                MarkdownRenderConfig.Builder()
+                    .addPlugin(TableMarkdownPlugin())
+                    .build()
+            }
             MarkdownView(
                 text =
                     """
@@ -68,12 +74,8 @@ fun TableExample(
                     | Name | Compose Multiplatform |
                     | Version | 1.8.0 |
                     """.trimIndent(),
-                markdownRenderConfig =
-                    MarkdownRenderConfig
-                        .Builder()
-                        .addPlugin(TableMarkdownPlugin())
-                        .build(),
                 modifier = Modifier.padding(16.dp),
+                markdownRenderConfig = markdownRenderConfig,
             )
         }
     }

@@ -8,8 +8,7 @@ import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.StringExt
-import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.ast.getTextInNode
+import org.commonmark.node.HtmlInline
 
 /**
  * Inline node string builder for HTML tags within markdown content.
@@ -23,15 +22,14 @@ import org.intellij.markdown.ast.getTextInNode
  */
 class HtmlInlineNodeStringBuilder(
     private val tagHandlers: Map<String, HtmlInlineTagHandler>,
-) : IInlineNodeStringBuilder {
+) : IInlineNodeStringBuilder<HtmlInline> {
     companion object {
         private val BR_REGEX = Regex("""<br\s*/?>""", RegexOption.IGNORE_CASE)
         private val TAG_NAME_REGEX = Regex("""</?(\w+)""")
     }
 
     override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
+        node: HtmlInline,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -40,7 +38,7 @@ class HtmlInlineNodeStringBuilder(
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        val text = node.getTextInNode(sourceText).toString().trim()
+        val text = node.literal?.trim() ?: return
 
         if (BR_REGEX.matches(text)) {
             append(StringExt.LINE_SEPARATOR)

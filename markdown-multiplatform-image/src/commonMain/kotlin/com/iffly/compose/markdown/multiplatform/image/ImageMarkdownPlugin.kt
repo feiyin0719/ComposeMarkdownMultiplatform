@@ -11,8 +11,9 @@ import androidx.compose.ui.unit.dp
 import com.iffly.compose.markdown.multiplatform.config.IMarkdownRenderPlugin
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
-import org.intellij.markdown.IElementType
-import org.intellij.markdown.MarkdownElementTypes
+import org.commonmark.node.Image
+import org.commonmark.node.Node
+import kotlin.reflect.KClass
 
 /**
  * Theme configuration for markdown image rendering, controlling alignment, scaling, shape, and error appearance.
@@ -33,7 +34,7 @@ data class ImageTheme(
 )
 
 /**
- * Markdown render plugin that adds inline image support for [MarkdownElementTypes.IMAGE] nodes.
+ * Markdown render plugin that adds inline image support for [Image] nodes.
  *
  * Registers an [ImageNodeStringBuilder] as the inline node string builder for image elements.
  *
@@ -50,11 +51,11 @@ class ImageMarkdownPlugin(
     private val errorView: ImageWidgetRenderer =
         errorView ?: ErrorImageWidgetRenderer(imageTheme)
 
-    override fun blockRenderers(): Map<IElementType, IBlockRenderer> = emptyMap()
+    override fun blockRenderers(): Map<KClass<out Node>, IBlockRenderer<*>> = emptyMap()
 
-    override fun inlineNodeStringBuilders(): Map<IElementType, IInlineNodeStringBuilder> =
+    override fun inlineNodeStringBuilders(): Map<KClass<out Node>, IInlineNodeStringBuilder<*>> =
         mapOf(
-            MarkdownElementTypes.IMAGE to
+            Image::class to
                 ImageNodeStringBuilder(imageTheme, loadingView, this.errorView),
         )
 }

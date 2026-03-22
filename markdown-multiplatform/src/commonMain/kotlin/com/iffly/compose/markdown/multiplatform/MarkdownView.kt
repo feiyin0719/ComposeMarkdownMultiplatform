@@ -1,8 +1,5 @@
 package com.iffly.compose.markdown.multiplatform
 
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -12,10 +9,8 @@ import com.iffly.compose.markdown.multiplatform.config.LocalMarkdownThemeProvide
 import com.iffly.compose.markdown.multiplatform.config.LocalParserProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalRenderRegistryProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalShowNotSupportedProvider
-import com.iffly.compose.markdown.multiplatform.config.LocalSourceTextProvider
 import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContent
-import org.intellij.markdown.ast.ASTNode
 
 /**
  * A Composable that renders markdown text into native Compose UI elements.
@@ -44,7 +39,6 @@ fun MarkdownView(
 
     ProvideMarkdownLocals(
         markdownRenderConfig = markdownRenderConfig,
-        sourceText = text,
         actionHandler = actionHandler,
         showNotSupported = showNotSupported,
     ) {
@@ -57,11 +51,10 @@ fun MarkdownView(
 
 /**
  * Provides markdown-related [CompositionLocalProvider] values to the composition tree.
- * This sets up the theme, parser, render registry, action handler, and source text
+ * This sets up the theme, parser, render registry, and action handler
  * so that child composables can access them via composition locals.
  *
  * @param markdownRenderConfig The render configuration supplying theme, parser, and registry.
- * @param sourceText The raw markdown source text.
  * @param actionHandler Optional handler for user interaction events.
  * @param showNotSupported Whether to show unsupported element placeholders.
  * @param content The composable content that will have access to the provided locals.
@@ -69,7 +62,6 @@ fun MarkdownView(
 @Composable
 fun ProvideMarkdownLocals(
     markdownRenderConfig: MarkdownRenderConfig,
-    sourceText: String,
     actionHandler: ActionHandler? = null,
     showNotSupported: Boolean = false,
     content: @Composable () -> Unit,
@@ -80,7 +72,6 @@ fun ProvideMarkdownLocals(
         LocalRenderRegistryProvider provides markdownRenderConfig.renderRegistry,
         LocalActionHandlerProvider provides actionHandler,
         LocalShowNotSupportedProvider provides showNotSupported,
-        LocalSourceTextProvider provides sourceText,
     ) {
         content()
     }

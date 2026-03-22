@@ -14,7 +14,7 @@ import coil3.request.CachePolicy
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.iffly.compose.markdown.multiplatform.config.currentActionHandler
-import org.intellij.markdown.ast.ASTNode
+import org.commonmark.node.Node
 
 /**
  * Composable that asynchronously loads and displays a markdown image using Coil,
@@ -22,7 +22,7 @@ import org.intellij.markdown.ast.ASTNode
  *
  * @param url The URL of the image to load.
  * @param contentDescription Accessibility description for the image.
- * @param node The AST node representing this image element.
+ * @param node The commonmark node representing this image element.
  * @param errorView Renderer displayed when the image fails to load.
  * @param loadingView Renderer displayed while the image is loading.
  * @param modifier Modifier applied to the image.
@@ -33,7 +33,7 @@ import org.intellij.markdown.ast.ASTNode
 fun MarkdownImage(
     url: String,
     contentDescription: String?,
-    node: ASTNode,
+    node: Node,
     errorView: ImageWidgetRenderer,
     loadingView: ImageWidgetRenderer,
     modifier: Modifier = Modifier,

@@ -15,6 +15,7 @@ dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
     repositories {
         google()
+        mavenLocal()
         mavenCentral()
         exclusiveContent {
             forRepository {
@@ -53,6 +54,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ComposeMarkdownMultiplatform"
+
 include(":markdown-multiplatform")
 include(":markdown-multiplatform-table")
 include(":markdown-multiplatform-image")

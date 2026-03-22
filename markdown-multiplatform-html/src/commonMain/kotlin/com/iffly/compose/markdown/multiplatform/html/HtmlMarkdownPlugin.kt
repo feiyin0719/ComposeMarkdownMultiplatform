@@ -3,15 +3,16 @@ package com.iffly.compose.markdown.multiplatform.html
 import com.iffly.compose.markdown.multiplatform.config.IMarkdownRenderPlugin
 import com.iffly.compose.markdown.multiplatform.html.handlers.defaultHtmlInlineTagHandlers
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
-import org.intellij.markdown.IElementType
-import org.intellij.markdown.MarkdownTokenTypes
+import org.commonmark.node.HtmlInline
+import org.commonmark.node.Node
+import kotlin.reflect.KClass
 
 /**
  * Markdown render plugin that adds inline HTML tag support.
  *
  * Combines the [defaultHtmlInlineTagHandlers] with any custom handlers provided,
  * where custom handlers override defaults for the same tag names. Registers an
- * [HtmlInlineNodeStringBuilder] for [MarkdownTokenTypes.HTML_TAG] elements.
+ * [HtmlInlineNodeStringBuilder] for [HtmlInline] nodes.
  *
  * @param customTagHandlers Additional or overriding HTML inline tag handlers.
  * @see IMarkdownRenderPlugin
@@ -37,6 +38,6 @@ class HtmlMarkdownPlugin(
         tagHandlerMap = map.toMap()
     }
 
-    override fun inlineNodeStringBuilders(): Map<IElementType, IInlineNodeStringBuilder> =
-        mapOf(MarkdownTokenTypes.HTML_TAG to HtmlInlineNodeStringBuilder(tagHandlerMap))
+    override fun inlineNodeStringBuilders(): Map<KClass<out Node>, IInlineNodeStringBuilder<*>> =
+        mapOf(HtmlInline::class to HtmlInlineNodeStringBuilder(tagHandlerMap))
 }

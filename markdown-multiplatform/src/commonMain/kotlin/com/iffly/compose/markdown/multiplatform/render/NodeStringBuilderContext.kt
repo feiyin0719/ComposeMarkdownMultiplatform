@@ -31,17 +31,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import com.iffly.compose.markdown.multiplatform.config.currentParser
 import kotlinx.coroutines.CoroutineScope
-import org.intellij.markdown.ast.ASTNode
+import org.commonmark.node.Node
 
-/** Functional interface for parsing markdown source text into an AST. */
+/** Functional interface for parsing markdown source text into a node tree. */
 fun interface MarkdownParser {
     /**
-     * Parses the given markdown source text into an AST node tree.
+     * Parses the given markdown source text into a node tree.
      *
      * @param sourceText The raw markdown text to parse.
-     * @return The root [ASTNode] of the parsed tree.
+     * @return The root [Node] of the parsed tree.
      */
-    fun parse(sourceText: String): ASTNode
+    fun parse(sourceText: String): Node
 }
 
 /**

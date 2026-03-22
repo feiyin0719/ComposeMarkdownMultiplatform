@@ -13,9 +13,12 @@ import androidx.compose.ui.unit.sp
 import com.iffly.compose.markdown.multiplatform.config.IMarkdownRenderPlugin
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
-import org.intellij.markdown.IElementType
-import org.intellij.markdown.flavours.gfm.GFMElementTypes
-import org.intellij.markdown.flavours.gfm.GFMTokenTypes
+import org.commonmark.Extension
+import org.commonmark.ext.gfm.tables.TableBlock
+import org.commonmark.ext.gfm.tables.TableCell
+import org.commonmark.ext.gfm.tables.TablesExtension
+import org.commonmark.node.Node
+import kotlin.reflect.KClass
 
 /**
  * Theme configuration for markdown table rendering, controlling colors, text styles, shape, and padding.
@@ -50,10 +53,11 @@ data class TableTheme(
 )
 
 /**
- * Markdown render plugin that adds GFM (GitHub Flavored Markdown) table support.
+ * Markdown render plugin that adds GFM (GitHub Flavored Markdown) table support
+ * using the commonmark-kotlin table extension.
  *
- * Registers a block renderer for [GFMElementTypes.TABLE] and an inline node string builder
- * for [GFMTokenTypes.CELL].
+ * Registers a parser extension for table parsing, a block renderer for [TableBlock],
+ * and an inline node string builder for [TableCell].
  *
  * @param tableTheme Theme configuration controlling the visual appearance of tables.
  * @see IMarkdownRenderPlugin
@@ -61,13 +65,15 @@ data class TableTheme(
 class TableMarkdownPlugin(
     private val tableTheme: TableTheme = TableTheme(),
 ) : IMarkdownRenderPlugin {
-    override fun blockRenderers(): Map<IElementType, IBlockRenderer> =
+    override fun parserExtensions(): List<Extension> = listOf(TablesExtension.create())
+
+    override fun blockRenderers(): Map<KClass<out Node>, IBlockRenderer<*>> =
         mapOf(
-            GFMElementTypes.TABLE to TableRenderer(tableTheme),
+            TableBlock::class to TableRenderer(tableTheme),
         )
 
-    override fun inlineNodeStringBuilders(): Map<IElementType, IInlineNodeStringBuilder> =
+    override fun inlineNodeStringBuilders(): Map<KClass<out Node>, IInlineNodeStringBuilder<*>> =
         mapOf(
-            GFMTokenTypes.CELL to TableCellNodeStringBuilder(tableTheme),
+            TableCell::class to TableCellNodeStringBuilder(tableTheme),
         )
 }

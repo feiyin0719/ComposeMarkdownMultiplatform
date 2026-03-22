@@ -6,13 +6,13 @@ import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
-import org.intellij.markdown.ast.ASTNode
+import org.commonmark.node.Node
 
 /**
- * Context provided to [HtmlInlineTagHandler] callbacks, containing the current AST node,
+ * Context provided to [HtmlInlineTagHandler] callbacks, containing the current node,
  * inline content map, theme, and other rendering state.
  *
- * @param node The AST node representing the HTML tag.
+ * @param node The node representing the HTML tag.
  * @param inlineContentMap Mutable map of inline content keyed by unique identifiers.
  * @param markdownTheme The current markdown theme providing text styles.
  * @param actionHandler Optional handler for user interactions such as link clicks.
@@ -22,7 +22,7 @@ import org.intellij.markdown.ast.ASTNode
  * @param nodeStringBuilderContext Context for building node strings.
  */
 data class HtmlInlineTagContext(
-    val node: ASTNode,
+    val node: Node,
     val inlineContentMap: MutableMap<String, MarkdownInlineView>,
     val markdownTheme: MarkdownTheme,
     val actionHandler: ActionHandler?,

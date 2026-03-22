@@ -43,19 +43,19 @@ val markdownExamples =
         },
         MarkdownExample(
             title = "Table Example",
-            description = "Demonstrates GFM table rendering with the table plugin",
+            description = "Demonstrates GFM table rendering",
         ) { paddingValues ->
             TableExample(paddingValues)
         },
         MarkdownExample(
             title = "Image Example",
-            description = "Demonstrates image rendering with the image plugin",
+            description = "Demonstrates image rendering",
         ) { paddingValues ->
             ImageExample(paddingValues)
         },
         MarkdownExample(
             title = "HTML Example",
-            description = "Demonstrates HTML rendering with the HTML plugin",
+            description = "Demonstrates HTML rendering",
         ) { paddingValues ->
             HtmlExample(paddingValues)
         },
@@ -70,5 +70,11 @@ val markdownExamples =
             description = "Demonstrates FixedSize and DynamicSize inline views in markdown",
         ) { paddingValues ->
             InlineViewExample(paddingValues)
+        },
+        MarkdownExample(
+            title = "Custom Plugin Example",
+            description = "Demonstrates custom block/inline parser extensions",
+        ) { paddingValues ->
+            CustomPluginExample(paddingValues)
         },
     )

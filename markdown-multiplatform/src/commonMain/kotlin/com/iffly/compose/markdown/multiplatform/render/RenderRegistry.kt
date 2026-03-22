@@ -1,34 +1,32 @@
 package com.iffly.compose.markdown.multiplatform.render
 
-import org.intellij.markdown.IElementType
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import org.commonmark.node.Node
+import kotlin.reflect.KClass
 
-/**
- * Registry that maps markdown element types to their corresponding renderers and inline string builders.
- * Provides lookup for both block-level renderers ([IBlockRenderer]) and inline node string builders
- * ([IInlineNodeStringBuilder]), as well as optional custom content and text renderers.
- *
- * @property markdownContentRenderer Optional custom renderer for top-level markdown content.
- * @property markdownTextRenderer Optional custom renderer for inline markdown text.
- */
 data class RenderRegistry(
-    private val blockRenderers: Map<IElementType, IBlockRenderer>,
-    private val inlineNodeStringBuilders: Map<IElementType, IInlineNodeStringBuilder>,
+    private val blockRenderers: Map<KClass<out Node>, IBlockRenderer<*>>,
+    private val inlineNodeStringBuilders: Map<KClass<out Node>, IInlineNodeStringBuilder<*>>,
     val markdownContentRenderer: MarkdownContentRenderer? = null,
     val markdownTextRenderer: MarkdownTextRenderer? = null,
 ) {
-    /**
-     * Returns the [IBlockRenderer] registered for the given element type, or null if none is registered.
-     *
-     * @param elementType The markdown element type to look up.
-     * @return The registered block renderer, or null.
-     */
-    fun getBlockRenderer(elementType: IElementType): IBlockRenderer? = blockRenderers[elementType]
+    fun getBlockRenderer(nodeClass: KClass<out Node>): IBlockRenderer<*>? = blockRenderers[nodeClass]
 
-    /**
-     * Returns the [IInlineNodeStringBuilder] registered for the given element type, or null if none is registered.
-     *
-     * @param elementType The markdown element type to look up.
-     * @return The registered inline node string builder, or null.
-     */
-    fun getInlineNodeStringBuilder(elementType: IElementType): IInlineNodeStringBuilder? = inlineNodeStringBuilders[elementType]
+    fun getBlockRenderer(node: Node): IBlockRenderer<*>? = blockRenderers[node::class]
+
+    fun getInlineNodeStringBuilder(nodeClass: KClass<out Node>): IInlineNodeStringBuilder<*>? = inlineNodeStringBuilders[nodeClass]
+
+    fun getInlineNodeStringBuilder(node: Node): IInlineNodeStringBuilder<*>? = inlineNodeStringBuilders[node::class]
+
+    @Composable
+    fun invokeBlockRenderer(
+        node: Node,
+        modifier: Modifier = Modifier,
+    ): Boolean {
+        val renderer = getBlockRenderer(node) ?: return false
+        @Suppress("UNCHECKED_CAST")
+        (renderer as IBlockRenderer<Node>).Invoke(node, modifier)
+        return true
+    }
 }

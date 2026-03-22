@@ -17,14 +17,27 @@ import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
-import com.iffly.compose.markdown.multiplatform.util.findChildOfType
 import com.iffly.compose.markdown.multiplatform.widget.LoadingView
 import com.iffly.compose.markdown.multiplatform.widget.richtext.RichTextInlineContent
 import com.iffly.compose.markdown.multiplatform.widget.richtext.appendStandaloneInlineTextContent
-import org.intellij.markdown.MarkdownElementTypes
-import org.intellij.markdown.MarkdownTokenTypes
-import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.ast.getTextInNode
+import org.commonmark.node.Image
+import org.commonmark.node.Node
+
+/**
+ * Returns the text content of this node by concatenating the [literal][org.commonmark.node.Text.literal]
+ * of all direct [Text][org.commonmark.node.Text] children.
+ */
+fun Node.textContent(): String {
+    val sb = StringBuilder()
+    var child = firstChild
+    while (child != null) {
+        if (child is org.commonmark.node.Text) {
+            sb.append(child.literal)
+        }
+        child = child.next
+    }
+    return sb.toString()
+}
 
 /**
  * Functional interface for rendering an image widget as a Composable, used for loading
@@ -39,7 +52,7 @@ fun interface ImageWidgetRenderer {
     operator fun invoke(
         url: String,
         contentDescription: String?,
-        node: ASTNode,
+        node: Node,
         modifier: Modifier,
     )
 }
@@ -53,7 +66,7 @@ class LoadingImageWidgetRenderer : ImageWidgetRenderer {
     override fun invoke(
         url: String,
         contentDescription: String?,
-        node: ASTNode,
+        node: Node,
         modifier: Modifier,
     ) {
         LoadingView(modifier)
@@ -73,7 +86,7 @@ class ErrorImageWidgetRenderer(
     override fun invoke(
         url: String,
         contentDescription: String?,
-        node: ASTNode,
+        node: Node,
         modifier: Modifier,
     ) {
         MarkdownImageErrorView(
@@ -112,8 +125,8 @@ fun MarkdownImageErrorView(
 }
 
 /**
- * Inline node string builder for markdown image elements that extracts the image URL
- * and alt text from the AST, then appends a standalone inline content placeholder
+ * Inline node string builder for markdown [Image] elements that extracts the image URL
+ * and alt text from the commonmark node, then appends a standalone inline content placeholder
  * that renders the image via [MarkdownImage].
  *
  * @param imageTheme Theme controlling the image appearance.
@@ -125,13 +138,12 @@ class ImageNodeStringBuilder(
     private val imageTheme: ImageTheme = ImageTheme(),
     private val loadingView: ImageWidgetRenderer = LoadingImageWidgetRenderer(),
     errorView: ImageWidgetRenderer? = null,
-) : IInlineNodeStringBuilder {
+) : IInlineNodeStringBuilder<Image> {
     private val errorView: ImageWidgetRenderer =
         errorView ?: ErrorImageWidgetRenderer(imageTheme)
 
     override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
+        node: Image,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -140,21 +152,8 @@ class ImageNodeStringBuilder(
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        val linkNode = node.findChildOfType(MarkdownElementTypes.INLINE_LINK)
-        val destinationNode =
-            linkNode?.findChildOfType(MarkdownElementTypes.LINK_DESTINATION)
-                ?: node.findChildOfType(MarkdownElementTypes.LINK_DESTINATION)
-        val textNode =
-            linkNode?.findChildOfType(MarkdownElementTypes.LINK_TEXT)
-                ?: node.findChildOfType(MarkdownElementTypes.LINK_TEXT)
-
-        val url = destinationNode?.getTextInNode(sourceText)?.toString()?.trim() ?: ""
-        val altText =
-            textNode
-                ?.children
-                ?.filter { it.type != MarkdownTokenTypes.LBRACKET && it.type != MarkdownTokenTypes.RBRACKET }
-                ?.joinToString("") { it.getTextInNode(sourceText).toString() }
-                ?.trim()
+        val url = node.destination.trim()
+        val altText = node.textContent().takeIf { it.isNotBlank() }
 
         if (url.isNotBlank()) {
             val imageId = "image_$url"

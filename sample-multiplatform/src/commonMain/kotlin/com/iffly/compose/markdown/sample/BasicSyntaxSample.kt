@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.iffly.compose.markdown.multiplatform.ActionHandler
 import com.iffly.compose.markdown.multiplatform.MarkdownView
-import org.intellij.markdown.ast.ASTNode
+import org.commonmark.node.Node
 
 @Composable
 fun BasicSyntaxExample(
@@ -156,7 +156,7 @@ fun BasicSyntaxExample(
                     object : ActionHandler {
                         override fun handleUrlClick(
                             url: String,
-                            node: ASTNode,
+                            node: Node,
                         ) {
                             println("BasicSyntax: Clicked link: $url")
                         }

@@ -7,21 +7,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
-import org.intellij.markdown.ast.ASTNode
+import org.commonmark.node.ThematicBreak
 
-/**
- * Block renderer for horizontal rule / thematic break elements (`---`, `***`, `___`).
- *
- * Renders a horizontal divider line using the break line color and height
- * from the current [MarkdownTheme].
- *
- * @see IBlockRenderer
- */
-class BreakLineRenderer : IBlockRenderer {
+class BreakLineRenderer : IBlockRenderer<ThematicBreak> {
     @Composable
     override fun Invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: ThematicBreak,
         modifier: Modifier,
     ) {
         val theme = currentTheme()

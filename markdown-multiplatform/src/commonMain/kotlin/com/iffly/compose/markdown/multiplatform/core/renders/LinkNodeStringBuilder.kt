@@ -11,24 +11,16 @@ import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.render.buildChildNodeAnnotatedString
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
-import com.iffly.compose.markdown.multiplatform.util.findChildOfType
-import org.intellij.markdown.MarkdownElementTypes
-import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.ast.getTextInNode
+import org.commonmark.node.Image
+import org.commonmark.node.Link
 
 /**
- * Inline node string builder for inline link elements (`[text](url)`).
- *
- * Extracts the link destination URL and link text, applies a [LinkAnnotation] with
- * the configured link styles from [MarkdownTheme], and optionally attaches an
- * [ActionHandler]-based interaction listener for click handling.
- *
- * @see IInlineNodeStringBuilder
+ * Inline node string builder for Link nodes.
+ * Extracts the link destination and builds linked text content.
  */
-class LinkNodeStringBuilder : IInlineNodeStringBuilder {
+class LinkNodeStringBuilder : IInlineNodeStringBuilder<Link> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
+        node: Link,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -37,9 +29,7 @@ class LinkNodeStringBuilder : IInlineNodeStringBuilder {
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        val destinationNode = node.findChildOfType(MarkdownElementTypes.LINK_DESTINATION)
-        val textNode = node.findChildOfType(MarkdownElementTypes.LINK_TEXT)
-        val url = destinationNode?.getTextInNode(sourceText)?.toString() ?: ""
+        val url = node.destination
 
         val linkInteractionListener =
             actionHandler?.let {
@@ -52,11 +42,10 @@ class LinkNodeStringBuilder : IInlineNodeStringBuilder {
                 linkInteractionListener = linkInteractionListener,
             )
 
-        if (textNode != null) {
+        if (node.firstChild != null) {
             withLink(linkAnnotation) {
                 buildChildNodeAnnotatedString(
-                    parent = textNode,
-                    sourceText = sourceText,
+                    parent = node,
                     indentLevel = indentLevel,
                     inlineContentMap = inlineContentMap,
                     markdownTheme = markdownTheme,
@@ -75,17 +64,12 @@ class LinkNodeStringBuilder : IInlineNodeStringBuilder {
 }
 
 /**
- * Inline node string builder for short reference link elements (`[text]`).
- *
- * Renders the link text content without resolving the reference, since reference
- * resolution is not yet supported.
- *
- * @see IInlineNodeStringBuilder
+ * Inline node string builder for Image nodes.
+ * Renders the alt text as linked text (image rendering handled by plugin).
  */
-class ShortReferenceLinkNodeStringBuilder : IInlineNodeStringBuilder {
+class ImageNodeStringBuilder : IInlineNodeStringBuilder<Image> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
+        node: Image,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -94,43 +78,19 @@ class ShortReferenceLinkNodeStringBuilder : IInlineNodeStringBuilder {
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        val textNode = node.findChildOfType(MarkdownElementTypes.LINK_TEXT)
-        val linkText = textNode?.getTextInNode(sourceText)?.toString()?.removeSurrounding("[", "]") ?: ""
-        // For short reference links, just render the text (reference resolution not supported yet)
-        buildChildNodeAnnotatedString(
-            parent = textNode ?: node,
-            sourceText = sourceText,
-            indentLevel = indentLevel,
-            inlineContentMap = inlineContentMap,
-            markdownTheme = markdownTheme,
-            renderRegistry = renderRegistry,
-            actionHandler = actionHandler,
-            isShowNotSupported = isShowNotSupported,
-            nodeStringBuilderContext = nodeStringBuilderContext,
-        )
-    }
-}
-
-/**
- * Inline node string builder for link definition elements (`[label]: url`).
- *
- * Link definitions do not produce any visible output; this builder intentionally
- * appends nothing.
- *
- * @see IInlineNodeStringBuilder
- */
-class LinkDefinitionNodeStringBuilder : IInlineNodeStringBuilder {
-    override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
-        markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
-        indentLevel: Int,
-        isShowNotSupported: Boolean,
-        renderRegistry: RenderRegistry,
-        nodeStringBuilderContext: NodeStringBuilderContext,
-    ) {
-        // Link definitions do not render any visible text
+        if (node.firstChild != null) {
+            buildChildNodeAnnotatedString(
+                parent = node,
+                indentLevel = indentLevel,
+                inlineContentMap = inlineContentMap,
+                markdownTheme = markdownTheme,
+                renderRegistry = renderRegistry,
+                actionHandler = actionHandler,
+                isShowNotSupported = isShowNotSupported,
+                nodeStringBuilderContext = nodeStringBuilderContext,
+            )
+        } else {
+            append(node.destination)
+        }
     }
 }

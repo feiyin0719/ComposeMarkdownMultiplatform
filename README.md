@@ -17,8 +17,8 @@ A Compose Multiplatform Markdown rendering library that supports Android, iOS, D
 
 - **Kotlin Multiplatform** — Single codebase for Android, iOS, Desktop, and Web
 - **Compose Multiplatform** — Built on JetBrains Compose Multiplatform
-- **CommonMark Support** — Powered by `intellij-markdown` parser
-- **Plugin System** — Modular plugin architecture for tables, images, HTML, and more
+- **CommonMark Support** — Powered by `commonmark-kotlin` parser (pure Kotlin Multiplatform)
+- **Plugin System** — Modular plugin architecture for tables, images, HTML, and more; supports custom parser extensions
 - **Customizable Themes** — Full control over typography, colors, and component styles
 
 ## Supported Platforms
@@ -102,7 +102,7 @@ fun SimpleMarkdownExample() {
 | Technology | Purpose |
 |------------|---------|
 | **Compose Multiplatform** | Cross-platform UI framework |
-| **intellij-markdown** | Markdown parsing engine (pure Kotlin) |
+| **commonmark-kotlin** | Markdown parsing engine (pure Kotlin Multiplatform) |
 | **Kotlin Coroutines** | Asynchronous processing |
 | **Material Design 3** | Design language specification |
 

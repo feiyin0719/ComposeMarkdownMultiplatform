@@ -7,12 +7,15 @@ import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
-import com.iffly.compose.markdown.multiplatform.util.StringExt
-import org.commonmark.node.HardLineBreak
+import org.commonmark.node.SoftLineBreak
 
-class HardLineBreakNodeStringBuilder : IInlineNodeStringBuilder<HardLineBreak> {
+/**
+ * Inline node string builder for SoftLineBreak nodes.
+ * Appends a single space to join lines.
+ */
+class SoftLineBreakNodeStringBuilder : IInlineNodeStringBuilder<SoftLineBreak> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: HardLineBreak,
+        node: SoftLineBreak,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -21,6 +24,6 @@ class HardLineBreakNodeStringBuilder : IInlineNodeStringBuilder<HardLineBreak> {
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        append(StringExt.LINE_SEPARATOR)
+        append(' ')
     }
 }

@@ -17,8 +17,8 @@
 
 - **Kotlin Multiplatform** — 一套代码同时支持 Android、iOS、Desktop 和 Web
 - **Compose Multiplatform** — 基于 JetBrains Compose Multiplatform 构建
-- **CommonMark 支持** — 使用 `intellij-markdown` 解析器（纯 Kotlin）
-- **插件系统** — 模块化的插件架构，支持表格、图片、HTML 等扩展
+- **CommonMark 支持** — 使用 `commonmark-kotlin` 解析器（纯 Kotlin Multiplatform）
+- **插件系统** — 模块化的插件架构，支持表格、图片、HTML 等扩展；支持自定义解析器扩展
 - **可定制主题** — 完全控制排版、颜色和组件样式
 
 ## 支持的平台
@@ -102,7 +102,7 @@ fun SimpleMarkdownExample() {
 | 技术 | 作用 |
 |------------|---------|
 | **Compose Multiplatform** | 跨平台 UI 框架 |
-| **intellij-markdown** | Markdown 解析引擎（纯 Kotlin） |
+| **commonmark-kotlin** | Markdown 解析引擎（纯 Kotlin Multiplatform） |
 | **Kotlin Coroutines** | 异步处理 |
 | **Material Design 3** | 设计语言规范 |
 

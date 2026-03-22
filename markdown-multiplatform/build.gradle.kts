@@ -46,7 +46,7 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.ui)
                 api(libs.kotlin.immutable.collections)
-                api(libs.intellij.markdown)
+                api(libs.commonmark.kotlin)
             }
         }
 

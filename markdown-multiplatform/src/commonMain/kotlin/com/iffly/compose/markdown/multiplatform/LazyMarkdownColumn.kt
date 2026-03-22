@@ -13,19 +13,8 @@ import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.config.currentRenderRegistry
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContent
+import com.iffly.compose.markdown.multiplatform.render.childNodes
 
-/**
- * A Composable that displays markdown content using LazyColumn.
- * Parses markdown upfront and uses LazyColumn for efficient rendering
- * of the parsed nodes.
- *
- * @param text The markdown content as a String.
- * @param modifier Modifier to be applied to the LazyColumn.
- * @param markdownRenderConfig Configuration for rendering the markdown.
- * @param actionHandler An optional ActionHandler to handle actions within the markdown content.
- * @param showNotSupported Whether to show text for unsupported elements.
- * @param lazyListState The state of the LazyColumn for scroll control.
- */
 @Composable
 fun LazyMarkdownColumn(
     text: String,
@@ -44,12 +33,11 @@ fun LazyMarkdownColumn(
 
     val children =
         remember(rootNode) {
-            rootNode.children
+            rootNode.childNodes()
         }
 
     ProvideMarkdownLocals(
         markdownRenderConfig = markdownRenderConfig,
-        sourceText = text,
         actionHandler = actionHandler,
         showNotSupported = showNotSupported,
     ) {
@@ -66,7 +54,7 @@ fun LazyMarkdownColumn(
                 )
                 if (index != children.lastIndex &&
                     theme.spacerTheme.showSpacer &&
-                    renderRegistry.getBlockRenderer(node.type) != null
+                    renderRegistry.getBlockRenderer(node) != null
                 ) {
                     Spacer(Modifier.height(theme.spacerTheme.spacerHeight))
                 }

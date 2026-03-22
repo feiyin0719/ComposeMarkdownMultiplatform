@@ -13,24 +13,14 @@ import androidx.compose.ui.geometry.Offset
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.MarkdownChildren
-import org.intellij.markdown.MarkdownElementTypes
-import org.intellij.markdown.MarkdownTokenTypes
-import org.intellij.markdown.ast.ASTNode
+import com.iffly.compose.markdown.multiplatform.render.childNodes
+import org.commonmark.node.BlockQuote
+import org.commonmark.node.Node
 
-/**
- * Block renderer for blockquote elements (`> text`).
- *
- * Renders the quoted content with a left border line drawn behind the content,
- * a configurable background color, and appropriate padding. Supports nested
- * blockquotes. Theming is controlled via [MarkdownTheme.blockQuoteTheme].
- *
- * @see IBlockRenderer
- */
-class BlockQuoteRenderer : IBlockRenderer {
+class BlockQuoteRenderer : IBlockRenderer<BlockQuote> {
     @Composable
     override fun Invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: BlockQuote,
         modifier: Modifier,
     ) {
         val theme = currentTheme()
@@ -40,7 +30,6 @@ class BlockQuoteRenderer : IBlockRenderer {
 
         MarkdownChildren(
             parent = node,
-            sourceText = sourceText,
             modifier =
                 modifier
                     .fillMaxWidth()
@@ -63,14 +52,8 @@ class BlockQuoteRenderer : IBlockRenderer {
                 Spacer(modifier = Modifier.height(spacerHeight))
             },
             onAfterAll = { parent ->
-                val lastChild =
-                    parent.children.lastOrNull {
-                        it.type != MarkdownTokenTypes.EOL &&
-                            it.type != MarkdownTokenTypes.WHITE_SPACE &&
-                            it.type != MarkdownTokenTypes.BLOCK_QUOTE &&
-                            it.type != MarkdownTokenTypes.GT
-                    }
-                if (lastChild?.type != MarkdownElementTypes.BLOCK_QUOTE) {
+                val lastChild = parent.childNodes().lastOrNull()
+                if (lastChild !is BlockQuote) {
                     Spacer(modifier = Modifier.height(spacerHeight))
                 }
             },

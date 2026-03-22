@@ -1,7 +1,5 @@
 package com.iffly.compose.markdown.multiplatform.util
 
-import org.intellij.markdown.html.entities.Entities
-
 /**
  * Utility for replacing HTML entities and backslash escapes in markdown text.
  *

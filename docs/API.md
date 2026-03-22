@@ -131,7 +131,7 @@ Renders a single parsed AST node and dispatches to the appropriate block rendere
 ```kotlin
 @Composable
 fun MarkdownContent(
-    node: ASTNode,
+    node: Node,
     modifier: Modifier = Modifier,
 )
 ```
@@ -149,28 +149,26 @@ A utility composable for iterating and rendering all children of a parent node w
 ```kotlin
 @Composable
 fun MarkdownChildren(
-    parent: ASTNode,
+    parent: Node,
     modifier: Modifier = Modifier,
-    children: List<ASTNode> = parent.children,
-    sourceText: String = currentSourceText(),
+    children: List<Node>? = null,
     verticalArrangement: Arrangement.Vertical = Arrangement.Top,
     spacerHeight: Dp = currentTheme().spacerTheme.spacerHeight,
     showSpacer: Boolean = currentTheme().spacerTheme.showSpacer,
-    childModifierFactory: (child: ASTNode) -> Modifier = {
+    childModifierFactory: (child: Node) -> Modifier = {
         Modifier.wrapContentHeight().fillMaxWidth()
     },
-    onBeforeChild: (@Composable (child: ASTNode, parent: ASTNode) -> Unit)? = null,
-    onAfterChild: (@Composable (child: ASTNode, parent: ASTNode) -> Unit)? = null,
-    onBeforeAll: (@Composable (parent: ASTNode) -> Unit)? = null,
-    onAfterAll: (@Composable (parent: ASTNode) -> Unit)? = null,
+    onBeforeChild: (@Composable (child: Node, parent: Node) -> Unit)? = null,
+    onAfterChild: (@Composable (child: Node, parent: Node) -> Unit)? = null,
+    onBeforeAll: (@Composable (parent: Node) -> Unit)? = null,
+    onAfterAll: (@Composable (parent: Node) -> Unit)? = null,
 )
 ```
 
 **Parameters**
 
-- `parent`: The `ASTNode` whose children to render.
-- `children`: Override list of children to render (defaults to `parent.children`).
-- `sourceText`: The original Markdown source text.
+- `parent`: The `Node` whose children to render.
+- `children`: Override list of children to render (defaults to `parent`'s children).
 - `spacerHeight`: Vertical spacing between children. Defaults to `theme.spacerTheme.spacerHeight`.
 - `showSpacer`: Whether to insert spacers. Defaults to `theme.spacerTheme.showSpacer`.
 - `onBeforeChild` / `onAfterChild`: Optional composable callbacks before/after each child.
@@ -191,7 +189,7 @@ Renders the inline children of a block node as styled text using `AnnotatedStrin
 ```kotlin
 @Composable
 fun MarkdownText(
-    parent: ASTNode,
+    parent: Node,
     modifier: Modifier = Modifier,
     textAlign: TextAlign = TextAlign.Start,
     textStyle: TextStyle? = null,
@@ -213,7 +211,7 @@ fun MarkdownText(
 `MarkdownRenderConfig` holds everything needed for parsing and rendering Markdown:
 
 - A `MarkdownTheme` describing typography, colors and component styles.
-- A `MarkdownParser` (powered by `intellij-markdown`).
+- A `MarkdownParser` (powered by `commonmark-kotlin`).
 - A `RenderRegistry` mapping node types to renderers.
 
 Instances are created via `MarkdownRenderConfig.Builder`:
@@ -222,17 +220,6 @@ Instances are created via `MarkdownRenderConfig.Builder`:
 val config = MarkdownRenderConfig.Builder()
     // configure theme, plugins, renderers...
     .build()
-```
-
-**DSL shortcut:**
-
-```kotlin
-val config = markdownRenderConfig(
-    markdownTheme = MarkdownTheme(),
-) {
-    addPlugin(TableMarkdownPlugin())
-    // ...
-}
 ```
 
 ---
@@ -248,18 +235,15 @@ class MarkdownRenderConfig {
     class Builder {
         fun markdownTheme(markdownTheme: MarkdownTheme): Builder
         fun addPlugin(plugin: IMarkdownRenderPlugin): Builder
-        fun addInlineNodeStringBuilder(
-            elementType: IElementType,
-            builder: IInlineNodeStringBuilder,
+        fun <T : Node> addInlineNodeStringBuilder(
+            nodeClass: KClass<T>,
+            builder: IInlineNodeStringBuilder<T>,
         ): Builder
-        fun addBlockRenderer(
-            elementType: IElementType,
-            renderer: IBlockRenderer,
+        fun <T : Node> addBlockRenderer(
+            nodeClass: KClass<T>,
+            renderer: IBlockRenderer<T>,
         ): Builder
-        fun addMarkerBlockProvider(
-            provider: MarkerBlockProvider<MarkerProcessor.StateInfo>,
-        ): Builder
-        fun addSequentialParser(parser: SequentialParser): Builder
+        fun addExtension(extension: Extension): Builder
         fun markdownTextRenderer(renderer: MarkdownTextRenderer): Builder
         fun markdownContentRenderer(renderer: MarkdownContentRenderer): Builder
         fun build(): MarkdownRenderConfig
@@ -273,21 +257,18 @@ Sets the visual theme. If not set, uses default `MarkdownTheme()`.
 
 #### addPlugin(plugin: IMarkdownRenderPlugin)
 
-Registers a rendering plugin. Plugins can provide custom parsers, block renderers and inline string builders.
+Registers a rendering plugin. Plugins can provide custom parser extensions, block renderers and inline string builders.
 
 #### addInlineNodeStringBuilder / addBlockRenderer
 
 Low-level hooks for customizing rendering of specific node types:
 
-- `addInlineNodeStringBuilder(elementType, builder)`: Defines how an inline node type is converted to styled text spans.
-- `addBlockRenderer(elementType, renderer)`: Defines how a block node type is rendered as Compose UI.
+- `addInlineNodeStringBuilder(nodeClass, builder)`: Defines how an inline node type is converted to styled text spans.
+- `addBlockRenderer(nodeClass, renderer)`: Defines how a block node type is rendered as Compose UI.
 
-#### addMarkerBlockProvider / addSequentialParser
+#### addExtension(extension: Extension)
 
-Parser-level extension APIs for the `intellij-markdown` parser:
-
-- `addMarkerBlockProvider`: Register custom block parsing providers.
-- `addSequentialParser`: Register custom sequential parsers for inline syntax.
+Register a commonmark parser extension directly (e.g., `TablesExtension.create()`). Extensions registered via plugins are also collected automatically.
 
 #### markdownTextRenderer / markdownContentRenderer
 
@@ -300,7 +281,7 @@ Advanced overrides:
 
 ### MarkdownTheme
 
-`MarkdownTheme` (from `io.github.feiyin0719.markdown.multiplatform.style.MarkdownTheme`) is the **core theme model** controlling how Markdown content appears in Compose.
+`MarkdownTheme` is the **core theme model** controlling how Markdown content appears in Compose.
 
 #### Data Structure
 
@@ -349,7 +330,7 @@ data class MarkdownTheme(
 
 #### Heading Levels
 
-Headings are configured via the `headStyle` map. Keys are integers 1–6, exposed as constants:
+Headings are configured via the `headStyle` map. Keys are integers 1-6, exposed as constants:
 
 ```kotlin
 MarkdownTheme.HEAD1 // H1
@@ -471,16 +452,15 @@ The entry point for adding functionality to the Markdown engine.
 
 ```kotlin
 interface IMarkdownRenderPlugin {
-    fun markerBlockProviders(): List<MarkerBlockProvider<MarkerProcessor.StateInfo>> = emptyList()
-    fun sequentialParsers(): List<SequentialParser> = emptyList()
-    fun blockRenderers(): Map<IElementType, IBlockRenderer> = emptyMap()
-    fun inlineNodeStringBuilders(): Map<IElementType, IInlineNodeStringBuilder> = emptyMap()
+    fun parserExtensions(): List<Extension> = emptyList()
+    fun blockRenderers(): Map<KClass<out Node>, IBlockRenderer<*>> = emptyMap()
+    fun inlineNodeStringBuilders(): Map<KClass<out Node>, IInlineNodeStringBuilder<*>> = emptyMap()
 }
 ```
 
 A plugin can:
 
-- Provide custom parser extensions (`markerBlockProviders`, `sequentialParsers`).
+- Provide custom parser extensions via `parserExtensions()` (e.g., `TablesExtension.create()` for GFM tables).
 - Register block renderers and inline string builders.
 
 Plugins are added via `MarkdownRenderConfig.Builder.addPlugin()`.
@@ -489,8 +469,9 @@ You can also extend `AbstractMarkdownRenderPlugin` for convenience:
 
 ```kotlin
 abstract class AbstractMarkdownRenderPlugin : IMarkdownRenderPlugin {
-    override fun blockRenderers(): Map<IElementType, IBlockRenderer> = emptyMap()
-    override fun inlineNodeStringBuilders(): Map<IElementType, IInlineNodeStringBuilder> = emptyMap()
+    override fun parserExtensions(): List<Extension> = emptyList()
+    override fun blockRenderers(): Map<KClass<out Node>, IBlockRenderer<*>> = emptyMap()
+    override fun inlineNodeStringBuilders(): Map<KClass<out Node>, IInlineNodeStringBuilder<*>> = emptyMap()
 }
 ```
 
@@ -501,11 +482,10 @@ abstract class AbstractMarkdownRenderPlugin : IMarkdownRenderPlugin {
 Renders a specific block node as Compose UI.
 
 ```kotlin
-interface IBlockRenderer {
+interface IBlockRenderer<T : Node> {
     @Composable
     fun Invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: T,
         modifier: Modifier,
     )
 }
@@ -513,8 +493,7 @@ interface IBlockRenderer {
 
 **Parameters**
 
-- `node`: The AST node to render.
-- `sourceText`: The original Markdown source text.
+- `node`: The commonmark AST node to render.
 - `modifier`: Modifier from the parent layout. Implementations should apply it to preserve layout consistency.
 
 **Implementation Tips**
@@ -530,10 +509,9 @@ interface IBlockRenderer {
 Converts an inline node into styled text spans within an `AnnotatedString`.
 
 ```kotlin
-interface IInlineNodeStringBuilder {
+interface IInlineNodeStringBuilder<T : Node> {
     fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
+        node: T,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -548,8 +526,7 @@ interface IInlineNodeStringBuilder {
 **Parameters**
 
 - `node`: The inline AST node.
-- `sourceText`: The original source text.
-- `inlineContentMap`: Mutable map for registering rich inline content (key → `MarkdownInlineView`).
+- `inlineContentMap`: Mutable map for registering rich inline content (key -> `MarkdownInlineView`).
 - `markdownTheme`: Current theme for reading styles.
 - `actionHandler`: Optional interaction handler for links, etc.
 - `renderRegistry`: Used for recursively building child node strings.
@@ -558,9 +535,9 @@ interface IInlineNodeStringBuilder {
 **Helper class:**
 
 ```kotlin
-open class CompositeChildNodeStringBuilder : IInlineNodeStringBuilder {
-    open fun getSpanStyle(node: ASTNode, markdownTheme: MarkdownTheme): SpanStyle? = null
-    open fun getParagraphStyle(node: ASTNode, markdownTheme: MarkdownTheme): ParagraphStyle? = null
+open class CompositeChildNodeStringBuilder : IInlineNodeStringBuilder<Node> {
+    open fun getSpanStyle(node: Node, markdownTheme: MarkdownTheme): SpanStyle? = null
+    open fun getParagraphStyle(node: Node, markdownTheme: MarkdownTheme): ParagraphStyle? = null
 }
 ```
 
@@ -580,8 +557,8 @@ sealed interface MarkdownInlineView {
 
 `RichTextInlineContent` has two variants:
 
-- **`EmbeddedRichTextInlineContent`** — Small inline elements (icons, badges) that sit within the text flow.
-- **`StandaloneInlineContent`** — Full-width block elements (cards, media) rendered as separate sections.
+- **`EmbeddedRichTextInlineContent`** -- Small inline elements (icons, badges) that sit within the text flow.
+- **`StandaloneInlineContent`** -- Full-width block elements (cards, media) rendered as separate sections.
 
 ---
 
@@ -591,13 +568,13 @@ sealed interface MarkdownInlineView {
 
 ```kotlin
 data class RenderRegistry(
-    private val blockRenderers: Map<IElementType, IBlockRenderer>,
-    private val inlineNodeStringBuilders: Map<IElementType, IInlineNodeStringBuilder>,
+    private val blockRenderers: Map<KClass<out Node>, IBlockRenderer<*>>,
+    private val inlineNodeStringBuilders: Map<KClass<out Node>, IInlineNodeStringBuilder<*>>,
     val markdownContentRenderer: MarkdownContentRenderer? = null,
     val markdownTextRenderer: MarkdownTextRenderer? = null,
 ) {
-    fun getBlockRenderer(elementType: IElementType): IBlockRenderer?
-    fun getInlineNodeStringBuilder(elementType: IElementType): IInlineNodeStringBuilder?
+    fun getBlockRenderer(nodeClass: KClass<out Node>): IBlockRenderer<*>?
+    fun getInlineNodeStringBuilder(nodeClass: KClass<out Node>): IInlineNodeStringBuilder<*>?
 }
 ```
 
@@ -608,14 +585,13 @@ You typically interact with it indirectly via `Builder.addBlockRenderer(...)` an
 ```kotlin
 fun interface MarkdownContentRenderer {
     @Composable
-    operator fun invoke(node: ASTNode, sourceText: String, modifier: Modifier)
+    operator fun invoke(node: Node, modifier: Modifier)
 }
 
 fun interface MarkdownTextRenderer {
     @Composable
     operator fun invoke(
-        parent: ASTNode,
-        sourceText: String,
+        parent: Node,
         modifier: Modifier,
         textAlign: TextAlign,
         textStyle: TextStyle?,
@@ -629,7 +605,7 @@ fun interface MarkdownTextRenderer {
 
 ### TableMarkdownPlugin
 
-Provides GFM table rendering support.
+Provides GFM table rendering support. Uses `commonmark-kotlin-ext-gfm-tables` for parsing.
 
 **Module:** `markdown-multiplatform-table`
 
@@ -661,14 +637,14 @@ data class TableTheme(
 ```kotlin
 fun interface TableWidgetRenderer {
     @Composable
-    operator fun invoke(node: ASTNode, sourceText: String, modifier: Modifier)
+    operator fun invoke(node: Node, modifier: Modifier)
 }
 
 class TableRenderer(
     private val tableTheme: TableTheme = TableTheme(),
     tableTitleRenderer: TableWidgetRenderer? = null,
     tableCellRenderer: TableWidgetRenderer? = null,
-) : IBlockRenderer
+) : IBlockRenderer<TableBlock>
 ```
 
 **Example:**
@@ -727,7 +703,7 @@ fun interface ImageWidgetRenderer {
     operator fun invoke(
         url: String,
         contentDescription: String?,
-        node: ASTNode,
+        node: Node,
         modifier: Modifier,
     )
 }
@@ -789,7 +765,7 @@ interface HtmlInlineTagHandler {
 
 ```kotlin
 data class HtmlInlineTagContext(
-    val node: ASTNode,
+    val node: Node,
     val inlineContentMap: MutableMap<String, MarkdownInlineView>,
     val markdownTheme: MarkdownTheme,
     val actionHandler: ActionHandler?,
@@ -837,10 +813,10 @@ Interface for handling user interactions within rendered Markdown content.
 
 ```kotlin
 interface ActionHandler {
-    fun handleUrlClick(url: String, node: ASTNode) {}
-    fun handleCopyClick(node: ASTNode) {}
-    fun handleImageClick(imageUrl: String, node: ASTNode) {}
-    fun handleCustomEvent(event: CustomEvent, node: ASTNode) {}
+    fun handleUrlClick(url: String, node: Node) {}
+    fun handleCopyClick(node: Node) {}
+    fun handleImageClick(imageUrl: String, node: Node) {}
+    fun handleCustomEvent(event: CustomEvent, node: Node) {}
 }
 
 interface CustomEvent
@@ -850,10 +826,10 @@ interface CustomEvent
 
 ```kotlin
 val handler = object : ActionHandler {
-    override fun handleUrlClick(url: String, node: ASTNode) {
+    override fun handleUrlClick(url: String, node: Node) {
         // Open URL in browser
     }
-    override fun handleCopyClick(node: ASTNode) {
+    override fun handleCopyClick(node: Node) {
         // Copy code block content
     }
 }
@@ -915,7 +891,6 @@ Convenience functions for accessing current rendering context within custom rend
 @Composable @ReadOnlyComposable fun currentRenderRegistry(): RenderRegistry
 @Composable @ReadOnlyComposable fun currentActionHandler(): ActionHandler?
 @Composable @ReadOnlyComposable fun isShowNotSupported(): Boolean
-@Composable @ReadOnlyComposable fun currentSourceText(): String
 ```
 
 ---
@@ -965,3 +940,4 @@ MarkdownView(
   - Set `markdownTheme` to match your design system.
   - Add plugins for extended syntax.
   - Register custom block renderers or inline builders as needed.
+  - Use `addExtension()` for custom commonmark parser extensions.

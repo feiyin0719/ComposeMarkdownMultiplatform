@@ -26,37 +26,26 @@ import com.iffly.compose.markdown.multiplatform.util.StringExt
 import com.iffly.compose.markdown.multiplatform.widget.DisableSelectionWrapper
 import com.iffly.compose.markdown.multiplatform.widget.LineNumberText
 import com.iffly.compose.markdown.multiplatform.widget.SelectionFormatText
-import org.intellij.markdown.MarkdownElementTypes
-import org.intellij.markdown.MarkdownTokenTypes
-import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.ast.getTextInNode
+import org.commonmark.node.FencedCodeBlock
+import org.commonmark.node.IndentedCodeBlock
+import org.commonmark.node.Node
 
-/**
- * Block renderer for fenced code blocks (` ``` `) and indented code blocks.
- *
- * Renders a styled container with an optional header showing the language name and
- * a copy button, followed by the code content with optional line numbers and scrolling.
- * Theming is controlled via [MarkdownTheme.codeBlockTheme].
- *
- * @see IBlockRenderer
- */
-class CodeBlockRenderer : IBlockRenderer {
+class CodeBlockRenderer : IBlockRenderer<Node> {
     @Composable
     override fun Invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: Node,
         modifier: Modifier,
     ) {
         val codeBlockTheme = currentTheme().codeBlockTheme
         val language =
-            when (node.type) {
-                MarkdownElementTypes.CODE_FENCE -> node.getCodeFenceLanguage(sourceText)
+            when (node) {
+                is FencedCodeBlock -> node.info?.trim() ?: ""
                 else -> "Text"
             }
         val codeText =
-            when (node.type) {
-                MarkdownElementTypes.CODE_FENCE -> node.getCodeFenceContent(sourceText)
-                MarkdownElementTypes.CODE_BLOCK -> node.getIndentedCodeContent(sourceText)
+            when (node) {
+                is FencedCodeBlock -> node.literal?.trimEnd('\n') ?: ""
+                is IndentedCodeBlock -> node.literal?.trimEnd('\n') ?: ""
                 else -> return
             }
 
@@ -82,7 +71,7 @@ class CodeBlockRenderer : IBlockRenderer {
 
 @Composable
 private fun CodeHeader(
-    node: ASTNode,
+    node: Node,
     language: String,
 ) {
     val actionHandler = currentActionHandler()
@@ -159,24 +148,4 @@ private fun CodeContent(codeText: String) {
         )
         SelectionFormatText(StringExt.LINE_SEPARATOR)
     }
-}
-
-private fun ASTNode.getCodeFenceLanguage(sourceText: String): String {
-    val langNode = children.firstOrNull { it.type == MarkdownTokenTypes.FENCE_LANG }
-    return langNode?.getTextInNode(sourceText)?.toString()?.trim() ?: ""
-}
-
-private fun ASTNode.getCodeFenceContent(sourceText: String): String {
-    val contentLines =
-        children
-            .filter { it.type == MarkdownTokenTypes.CODE_FENCE_CONTENT || it.type == MarkdownTokenTypes.EOL }
-            .dropWhile { it.type == MarkdownTokenTypes.EOL }
-            .dropLastWhile { it.type == MarkdownTokenTypes.EOL }
-    if (contentLines.isEmpty()) return ""
-    return contentLines.joinToString("") { it.getTextInNode(sourceText).toString() }
-}
-
-private fun ASTNode.getIndentedCodeContent(sourceText: String): String {
-    val codeLines = children.filter { it.type == MarkdownTokenTypes.CODE_LINE }
-    return codeLines.joinToString("") { it.getTextInNode(sourceText).toString() }
 }

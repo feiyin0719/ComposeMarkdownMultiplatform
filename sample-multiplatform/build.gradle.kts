@@ -35,9 +35,9 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.ui)
                 implementation(project(":markdown-multiplatform"))
-                implementation(project(":markdown-multiplatform-table"))
-                implementation(project(":markdown-multiplatform-image"))
-                implementation(project(":markdown-multiplatform-html"))
+                 implementation(project(":markdown-multiplatform-table"))
+                 implementation(project(":markdown-multiplatform-image"))
+                 implementation(project(":markdown-multiplatform-html"))
             }
         }
 

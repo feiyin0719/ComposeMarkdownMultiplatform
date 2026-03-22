@@ -44,10 +44,39 @@ import com.iffly.compose.markdown.multiplatform.table.widget.TableBorderMode
 import com.iffly.compose.markdown.multiplatform.table.widget.TableScope
 import com.iffly.compose.markdown.multiplatform.widget.DisableSelectionWrapper
 import kotlinx.collections.immutable.toImmutableList
-import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.ast.getTextInNode
-import org.intellij.markdown.flavours.gfm.GFMElementTypes
-import org.intellij.markdown.flavours.gfm.GFMTokenTypes
+import org.commonmark.ext.gfm.tables.TableBlock
+import org.commonmark.ext.gfm.tables.TableBody
+import org.commonmark.ext.gfm.tables.TableCell
+import org.commonmark.ext.gfm.tables.TableHead
+import org.commonmark.ext.gfm.tables.TableRow
+import org.commonmark.node.Node
+
+// -- Node tree traversal helper --
+
+/**
+ * Returns the direct children of a commonmark [Node] as a list.
+ */
+private fun Node.childNodesList(): List<Node> {
+    val result = mutableListOf<Node>()
+    var child = firstChild
+    while (child != null) {
+        result.add(child)
+        child = child.next
+    }
+    return result
+}
+
+/**
+ * Converts a [TableCell.Alignment] to [TextAlign].
+ */
+private fun TableCell.Alignment?.toTextAlign(): TextAlign =
+    when (this) {
+        TableCell.Alignment.CENTER -> TextAlign.Center
+        TableCell.Alignment.RIGHT -> TextAlign.End
+        else -> TextAlign.Start
+    }
+
+// -- Renderer interfaces --
 
 /**
  * Functional interface for rendering a table widget section (title or cell) as a Composable.
@@ -59,8 +88,7 @@ fun interface TableWidgetRenderer {
     @Suppress("ComposableNaming")
     @Composable
     operator fun invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: Node,
         modifier: Modifier,
     )
 }
@@ -76,8 +104,7 @@ class TableTitleRenderer(
     @Suppress("ComposableNaming")
     @Composable
     override fun invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: Node,
         modifier: Modifier,
     ) {
         TableTitle(tableNode = node, modifier = modifier, tableTheme = tableTheme)
@@ -91,8 +118,7 @@ class TableCellRenderer : TableWidgetRenderer {
     @Suppress("ComposableNaming")
     @Composable
     override fun invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: Node,
         modifier: Modifier,
     ) {
         SelectionContainer {
@@ -106,7 +132,8 @@ class TableCellRenderer : TableWidgetRenderer {
 }
 
 /**
- * Block renderer for GFM table elements, delegating to [TableTitleRenderer] and [TableCellRenderer]
+ * Block renderer for GFM table elements using commonmark-kotlin table extension,
+ * delegating to [TableTitleRenderer] and [TableCellRenderer]
  * for the title bar and cell content respectively.
  *
  * @param tableTheme Theme configuration for the table visual appearance.
@@ -118,7 +145,7 @@ class TableRenderer(
     private val tableTheme: TableTheme = TableTheme(),
     tableTitleRenderer: TableWidgetRenderer? = null,
     tableCellRenderer: TableWidgetRenderer? = null,
-) : IBlockRenderer {
+) : IBlockRenderer<TableBlock> {
     private val tableTitleRenderer: TableWidgetRenderer =
         tableTitleRenderer ?: TableTitleRenderer(tableTheme)
     private val tableCellRenderer: TableWidgetRenderer =
@@ -126,13 +153,11 @@ class TableRenderer(
 
     @Composable
     override fun Invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: TableBlock,
         modifier: Modifier,
     ) {
         MarkdownTable(
             tableNode = node,
-            sourceText = sourceText,
             modifier = modifier,
             tableTitleRenderer = tableTitleRenderer,
             tableCellRenderer = tableCellRenderer,
@@ -143,7 +168,7 @@ class TableRenderer(
 
 /**
  * Inline node string builder for table cells that applies header or body text styles
- * from the [TableTheme] based on the cell's position in the table.
+ * from the [TableTheme] based on the cell's [TableCell.isHeader] property.
  *
  * @param tableTheme Theme providing the text styles for header and body cells.
  * @see CompositeChildNodeStringBuilder
@@ -152,10 +177,10 @@ class TableCellNodeStringBuilder(
     private val tableTheme: TableTheme,
 ) : CompositeChildNodeStringBuilder() {
     override fun getSpanStyle(
-        node: ASTNode,
+        node: Node,
         markdownTheme: MarkdownTheme,
     ): SpanStyle? {
-        val isHeader = node.parent?.type == GFMElementTypes.HEADER
+        val isHeader = (node as? TableCell)?.isHeader == true
         return if (isHeader) {
             tableTheme.headerTextStyle?.toSpanStyle()
         } else {
@@ -164,10 +189,10 @@ class TableCellNodeStringBuilder(
     }
 
     override fun getParagraphStyle(
-        node: ASTNode,
+        node: Node,
         markdownTheme: MarkdownTheme,
     ): ParagraphStyle? {
-        val isHeader = node.parent?.type == GFMElementTypes.HEADER
+        val isHeader = (node as? TableCell)?.isHeader == true
         return if (isHeader) {
             tableTheme.headerTextStyle?.toParagraphStyle()
         } else {
@@ -176,14 +201,84 @@ class TableCellNodeStringBuilder(
     }
 }
 
+// -- Data classes for parsed table structure --
+
+private data class TableCellData(
+    val node: TableCell,
+    val alignment: TextAlign,
+)
+
+private data class ParsedTableData(
+    val cells: List<List<TableCellData>>,
+    val alignments: List<TextAlign>,
+)
+
+// -- AST parsing for commonmark-kotlin table nodes --
+
+/**
+ * Extracts [ParsedTableData] from a [TableBlock] by walking its child nodes:
+ * [TableHead] -> [TableRow] -> [TableCell] and [TableBody] -> [TableRow] -> [TableCell].
+ */
+private fun parseTableBlock(tableNode: TableBlock): ParsedTableData {
+    val rows = mutableListOf<List<TableCellData>>()
+    val alignments = mutableListOf<TextAlign>()
+
+    for (child in tableNode.childNodesList()) {
+        when (child) {
+            is TableHead -> {
+                for (row in child.childNodesList()) {
+                    if (row is TableRow) {
+                        val cellDataList =
+                            row
+                                .childNodesList()
+                                .filterIsInstance<TableCell>()
+                                .map { cell ->
+                                    TableCellData(
+                                        node = cell,
+                                        alignment = cell.alignment.toTextAlign(),
+                                    )
+                                }
+                        rows.add(cellDataList)
+                        // Capture alignments from the first header row
+                        if (alignments.isEmpty()) {
+                            alignments.addAll(cellDataList.map { it.alignment })
+                        }
+                    }
+                }
+            }
+
+            is TableBody -> {
+                for (row in child.childNodesList()) {
+                    if (row is TableRow) {
+                        val cellDataList =
+                            row
+                                .childNodesList()
+                                .filterIsInstance<TableCell>()
+                                .mapIndexed { index, cell ->
+                                    TableCellData(
+                                        node = cell,
+                                        alignment =
+                                            cell.alignment?.toTextAlign()
+                                                ?: alignments.getOrElse(index) { TextAlign.Start },
+                                    )
+                                }
+                        rows.add(cellDataList)
+                    }
+                }
+            }
+        }
+    }
+
+    return ParsedTableData(cells = rows, alignments = alignments)
+}
+
 /**
  * Composable that renders a GFM markdown table with a title bar, header row, and body rows.
  *
- * Parses the table AST node to extract cell data and column alignments, then renders
+ * Parses the [TableBlock] AST node to extract cell data and column alignments, then renders
  * using the custom [Table] layout with borders and scrolling support.
  *
- * @param tableNode The AST node representing the GFM table element.
- * @param sourceText The full markdown source text.
+ * @param tableNode The commonmark [TableBlock] node representing the GFM table element.
  * @param tableTitleRenderer Renderer for the table title bar.
  * @param tableCellRenderer Renderer for individual cell content.
  * @param modifier Modifier applied to the outer table container.
@@ -191,14 +286,13 @@ class TableCellNodeStringBuilder(
  */
 @Composable
 fun MarkdownTable(
-    tableNode: ASTNode,
-    sourceText: String,
+    tableNode: TableBlock,
     tableTitleRenderer: TableWidgetRenderer,
     tableCellRenderer: TableWidgetRenderer,
     modifier: Modifier = Modifier,
     tableTheme: TableTheme = TableTheme(),
 ) {
-    val tableData = parseTableCells(tableNode, sourceText)
+    val tableData = parseTableBlock(tableNode)
     val columnsCount = tableData.cells.firstOrNull()?.size ?: 0
     if (columnsCount == 0 || tableData.cells.isEmpty()) return
     val borderColor = tableTheme.borderColor
@@ -215,7 +309,7 @@ fun MarkdownTable(
                     tableTheme.shape,
                 ),
     ) {
-        tableTitleRenderer(tableNode, sourceText, Modifier.fillMaxWidth())
+        tableTitleRenderer(tableNode, Modifier.fillMaxWidth())
         Spacer(
             Modifier
                 .fillMaxWidth()
@@ -249,7 +343,6 @@ fun MarkdownTable(
                         modifier = cellModifier,
                         backgroundColor = tableTheme.tableHeaderBackgroundColor,
                         cellContent = tableCellRenderer,
-                        sourceText = sourceText,
                     )
                     val bodyCells =
                         if (tableData.cells.size > 1) {
@@ -264,7 +357,6 @@ fun MarkdownTable(
                             modifier = cellModifier,
                             backgroundColor = tableTheme.tableCellBackgroundColor,
                             cellContent = tableCellRenderer,
-                            sourceText = sourceText,
                         )
                     }
                 }
@@ -275,7 +367,7 @@ fun MarkdownTable(
 
 @Composable
 private fun TableTitle(
-    tableNode: ASTNode,
+    tableNode: Node,
     modifier: Modifier = Modifier,
     tableTheme: TableTheme = TableTheme(),
 ) {
@@ -300,85 +392,6 @@ private fun TableTitle(
             )
         }
     }
-}
-
-// -- AST Parsing helpers for intellij-markdown GFM tables --
-
-private data class TableCellData(
-    val node: ASTNode,
-    val alignment: TextAlign,
-)
-
-private data class ParsedTableData(
-    val cells: List<List<TableCellData>>,
-    val alignments: List<TextAlign>,
-)
-
-private fun parseTableCells(
-    tableNode: ASTNode,
-    sourceText: String,
-): ParsedTableData {
-    val rows = mutableListOf<List<TableCellData>>()
-    var alignments = emptyList<TextAlign>()
-
-    for (child in tableNode.children) {
-        when (child.type) {
-            GFMElementTypes.HEADER -> {
-                if (alignments.isEmpty()) {
-                    // Parse alignments from the separator row that follows header
-                    alignments = findAlignments(tableNode, sourceText)
-                }
-                val cellNodes = child.children.filter { it.type == GFMTokenTypes.CELL }
-                rows.add(
-                    cellNodes.mapIndexed { index, node ->
-                        TableCellData(
-                            node = node,
-                            alignment = alignments.getOrElse(index) { TextAlign.Start },
-                        )
-                    },
-                )
-            }
-
-            GFMElementTypes.ROW -> {
-                val cellNodes = child.children.filter { it.type == GFMTokenTypes.CELL }
-                rows.add(
-                    cellNodes.mapIndexed { index, node ->
-                        TableCellData(
-                            node = node,
-                            alignment = alignments.getOrElse(index) { TextAlign.Start },
-                        )
-                    },
-                )
-            }
-        }
-    }
-
-    return ParsedTableData(cells = rows, alignments = alignments)
-}
-
-private fun findAlignments(
-    tableNode: ASTNode,
-    sourceText: String,
-): List<TextAlign> {
-    val separatorNode =
-        tableNode.children.firstOrNull {
-            it.type == GFMTokenTypes.TABLE_SEPARATOR
-        } ?: return emptyList()
-
-    val text = separatorNode.getTextInNode(sourceText).toString()
-    return text
-        .split('|')
-        .map { it.trim() }
-        .filter { it.isNotEmpty() }
-        .map { segment ->
-            val left = segment.startsWith(':')
-            val right = segment.endsWith(':')
-            when {
-                left && right -> TextAlign.Center
-                right -> TextAlign.End
-                else -> TextAlign.Start
-            }
-        }
 }
 
 // -- Modifier helpers --
@@ -421,14 +434,12 @@ private fun TableScope.tableHeader(
     modifier: Modifier,
     backgroundColor: androidx.compose.ui.graphics.Color,
     cellContent: TableWidgetRenderer,
-    sourceText: String,
 ) {
     header(modifier = Modifier.background(backgroundColor)) {
         tableCell(
             cells = headerCells,
             modifier = modifier,
             cellContent = cellContent,
-            sourceText = sourceText,
         )
     }
 }
@@ -439,7 +450,6 @@ private fun TableScope.tableBody(
     modifier: Modifier,
     backgroundColor: androidx.compose.ui.graphics.Color,
     cellContent: TableWidgetRenderer,
-    sourceText: String,
 ) {
     body {
         tableRow(
@@ -447,7 +457,6 @@ private fun TableScope.tableBody(
             modifier = modifier,
             backgroundColor = backgroundColor,
             cellContent = cellContent,
-            sourceText = sourceText,
         )
     }
 }
@@ -457,7 +466,6 @@ private fun BodyScope.tableRow(
     modifier: Modifier,
     backgroundColor: androidx.compose.ui.graphics.Color,
     cellContent: TableWidgetRenderer,
-    sourceText: String,
 ) {
     rows.forEach { rowCells ->
         row(Modifier.background(backgroundColor)) {
@@ -465,7 +473,6 @@ private fun BodyScope.tableRow(
                 cells = rowCells,
                 modifier = modifier,
                 cellContent = cellContent,
-                sourceText = sourceText,
             )
         }
     }
@@ -475,11 +482,10 @@ private fun RowScope.tableCell(
     cells: List<TableCellData>,
     modifier: Modifier,
     cellContent: TableWidgetRenderer,
-    sourceText: String,
 ) {
     cells.forEach { cellData ->
         cell(alignment = cellData.alignment.toTableAlignment(), modifier = modifier) {
-            cellContent(cellData.node, sourceText, Modifier)
+            cellContent(cellData.node, Modifier)
         }
     }
 }

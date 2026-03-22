@@ -8,22 +8,15 @@ import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
-import org.intellij.markdown.MarkdownTokenTypes
-import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.ast.getTextInNode
+import org.commonmark.node.Code
 
 /**
- * Inline node string builder for inline code span elements (`` `code` ``).
- *
- * Extracts the code text by filtering out backtick tokens, then applies the
- * inline code [SpanStyle] from [MarkdownTheme] with surrounding spaces for visual padding.
- *
- * @see IInlineNodeStringBuilder
+ * Inline node string builder for inline code span elements.
+ * Extracts the code literal and applies the inline code style.
  */
-class CodeNodeStringBuilder : IInlineNodeStringBuilder {
+class CodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
+        node: Code,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -32,12 +25,8 @@ class CodeNodeStringBuilder : IInlineNodeStringBuilder {
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        val codeText =
-            node.children
-                .filter { it.type != MarkdownTokenTypes.BACKTICK }
-                .joinToString("") { it.getTextInNode(sourceText).toString() }
         withStyle(markdownTheme.code.toSpanStyle()) {
-            append(" $codeText ")
+            append(" ${node.literal} ")
         }
     }
 }

@@ -6,26 +6,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.MarkdownChildren
-import org.intellij.markdown.ast.ASTNode
+import org.commonmark.node.Document
 
-/**
- * Block renderer for the root document node (`MARKDOWN_FILE`).
- *
- * Serves as the top-level container that renders all child block elements
- * in a vertical arrangement.
- *
- * @see IBlockRenderer
- */
-class DocumentRenderer : IBlockRenderer {
+class DocumentRenderer : IBlockRenderer<Document> {
     @Composable
     override fun Invoke(
-        node: ASTNode,
-        sourceText: String,
+        node: Document,
         modifier: Modifier,
     ) {
         MarkdownChildren(
             parent = node,
-            sourceText = sourceText,
             modifier = modifier.wrapContentSize(),
             verticalArrangement = Arrangement.Top,
             childModifierFactory = { Modifier },

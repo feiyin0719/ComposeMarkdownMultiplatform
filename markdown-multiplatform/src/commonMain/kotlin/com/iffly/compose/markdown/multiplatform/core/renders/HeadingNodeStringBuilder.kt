@@ -11,22 +11,15 @@ import com.iffly.compose.markdown.multiplatform.render.buildChildNodeAnnotatedSt
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.getNodeParagraphStyle
 import com.iffly.compose.markdown.multiplatform.util.getNodeSpanStyle
-import org.intellij.markdown.MarkdownTokenTypes
-import org.intellij.markdown.ast.ASTNode
+import org.commonmark.node.Heading
 
 /**
- * Inline node string builder for ATX and Setext heading elements (h1--h6).
- *
- * Extracts the heading content (excluding leading/trailing whitespace), then applies
- * the heading-level-specific [SpanStyle] and [ParagraphStyle] from the [MarkdownTheme]
- * before recursively building child inline content.
- *
- * @see IInlineNodeStringBuilder
+ * Inline node string builder for heading elements (h1-h6).
+ * Applies heading-level-specific styles before recursively building child inline content.
  */
-class HeadingNodeStringBuilder : IInlineNodeStringBuilder {
+class HeadingNodeStringBuilder : IInlineNodeStringBuilder<Heading> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
+        node: Heading,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -35,25 +28,13 @@ class HeadingNodeStringBuilder : IInlineNodeStringBuilder {
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        val atxContent =
-            node.children.firstOrNull {
-                it.type == MarkdownTokenTypes.ATX_CONTENT ||
-                    it.type == MarkdownTokenTypes.SETEXT_CONTENT
-            } ?: return
-
-        val trimmedChildren =
-            atxContent.children
-                .dropWhile { it.type == MarkdownTokenTypes.WHITE_SPACE }
-                .dropLastWhile { it.type == MarkdownTokenTypes.WHITE_SPACE }
-
         val spanStyle = markdownTheme.getNodeSpanStyle(node)
         val paragraphStyle = markdownTheme.getNodeParagraphStyle(node)
 
         withStyle(paragraphStyle) {
             withStyle(spanStyle) {
                 buildChildNodeAnnotatedString(
-                    parent = atxContent,
-                    sourceText = sourceText,
+                    parent = node,
                     indentLevel = indentLevel,
                     inlineContentMap = inlineContentMap,
                     markdownTheme = markdownTheme,
@@ -61,7 +42,6 @@ class HeadingNodeStringBuilder : IInlineNodeStringBuilder {
                     actionHandler = actionHandler,
                     isShowNotSupported = isShowNotSupported,
                     nodeStringBuilderContext = nodeStringBuilderContext,
-                    children = trimmedChildren,
                 )
             }
         }

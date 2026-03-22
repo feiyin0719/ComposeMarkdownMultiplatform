@@ -8,25 +8,15 @@ import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.StringExt
-import org.intellij.markdown.ast.ASTNode
-import org.intellij.markdown.ast.getTextInNode
+import org.commonmark.node.HtmlInline
 
-/**
- * Inline node string builder for inline HTML tag tokens.
- *
- * Currently only handles `<br>` / `<br/>` tags by appending a line separator.
- * All other HTML tags are silently ignored.
- *
- * @see IInlineNodeStringBuilder
- */
-class HtmlInlineNodeStringBuilder : IInlineNodeStringBuilder {
+class HtmlInlineNodeStringBuilder : IInlineNodeStringBuilder<HtmlInline> {
     companion object {
         private val BR_REGEX = Regex("""<br\s*/?>""", RegexOption.IGNORE_CASE)
     }
 
     override fun AnnotatedString.Builder.buildInlineNodeString(
-        node: ASTNode,
-        sourceText: String,
+        node: HtmlInline,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandler?,
@@ -35,7 +25,7 @@ class HtmlInlineNodeStringBuilder : IInlineNodeStringBuilder {
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        val text = node.getTextInNode(sourceText).toString().trim()
+        val text = node.literal?.trim() ?: return
         if (BR_REGEX.matches(text)) {
             append(StringExt.LINE_SEPARATOR)
         }
