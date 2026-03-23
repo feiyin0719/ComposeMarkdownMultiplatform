@@ -5,7 +5,8 @@ plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
+    alias(libs.plugins.maven.publish)
 }
 
 kotlin {
@@ -21,10 +22,20 @@ kotlin {
         }
     }
 
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64(),
+    ).forEach {
+        it.binaries.framework {
+            baseName = "markdown-multiplatform-autolink"
+            isStatic = true
+        }
+    }
+
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         browser()
-        binaries.executable()
     }
 
     sourceSets {
@@ -35,46 +46,32 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.ui)
                 implementation(project(":markdown-multiplatform"))
-                implementation(project(":markdown-multiplatform-table"))
-                implementation(project(":markdown-multiplatform-image"))
-                implementation(project(":markdown-multiplatform-html"))
-                implementation(project(":markdown-multiplatform-autolink"))
-                implementation(project(":markdown-multiplatform-task"))
+                implementation(libs.commonmark.kotlin.ext.autolink)
             }
         }
 
-        val androidMain by getting {
-            dependencies {
-                implementation(libs.androidx.activity.compose)
-            }
-        }
+        val desktopMain by getting
 
-        val desktopMain by getting {
-            dependencies {
-                implementation(compose.desktop.currentOs)
-            }
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+        val iosMain by creating {
+            dependsOn(commonMain)
+            iosX64Main.dependsOn(this)
+            iosArm64Main.dependsOn(this)
+            iosSimulatorArm64Main.dependsOn(this)
         }
 
         val wasmJsMain by getting
     }
 }
 
-compose.desktop {
-    application {
-        mainClass = "com.iffly.compose.markdown.sample.MainKt"
-    }
-}
-
 android {
-    namespace = "com.iffly.compose.markdown.sample"
+    namespace = "com.iffly.compose.markdown.multiplatform.autolink"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.iffly.compose.markdown.sample"
         minSdk = 24
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
     }
 
     compileOptions {

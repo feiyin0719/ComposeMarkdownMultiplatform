@@ -77,4 +77,16 @@ val markdownExamples =
         ) { paddingValues ->
             CustomPluginExample(paddingValues)
         },
+        MarkdownExample(
+            title = "Autolink Example",
+            description = "Demonstrates automatic URL and email link detection",
+        ) { paddingValues ->
+            AutolinkExample(paddingValues)
+        },
+        MarkdownExample(
+            title = "Task List Example",
+            description = "Demonstrates task list items with checkboxes",
+        ) { paddingValues ->
+            TaskListExample(paddingValues)
+        },
     )

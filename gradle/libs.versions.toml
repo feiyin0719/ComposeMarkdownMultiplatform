@@ -14,6 +14,8 @@ maven-publish = "0.30.0"
 [libraries]
 commonmark-kotlin = { group = "io.github.feiyin0719", name = "commonmark", version.ref = "commonmark-kotlin" }
 commonmark-kotlin-ext-gfm-tables = { group = "io.github.feiyin0719", name = "commonmark-ext-gfm-tables", version.ref = "commonmark-kotlin" }
+commonmark-kotlin-ext-autolink = { group = "io.github.feiyin0719", name = "commonmark-ext-autolink", version.ref = "commonmark-kotlin" }
+commonmark-kotlin-ext-task-list-items = { group = "io.github.feiyin0719", name = "commonmark-ext-task-list-items", version.ref = "commonmark-kotlin" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 kotlin-immutable-collections = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "immutable-collections" }
