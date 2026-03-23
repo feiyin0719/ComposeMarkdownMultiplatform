@@ -457,8 +457,7 @@ class BadgeNodeStringBuilder : IInlineNodeStringBuilder<BadgeNode> {
 class CustomMarkdownPlugin : AbstractMarkdownRenderPlugin() {
     override fun parserExtensions(): List<Extension> = listOf(CustomPluginExtension())
 
-    override fun blockRenderers(): Map<KClass<out Node>, IBlockRenderer<*>> =
-        mapOf(AlertBlock::class to AlertBlockRenderer())
+    override fun blockRenderers(): Map<KClass<out Node>, IBlockRenderer<*>> = mapOf(AlertBlock::class to AlertBlockRenderer())
 
     override fun inlineNodeStringBuilders(): Map<KClass<out Node>, IInlineNodeStringBuilder<*>> =
         mapOf(

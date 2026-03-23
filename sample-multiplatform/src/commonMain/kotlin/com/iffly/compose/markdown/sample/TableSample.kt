@@ -28,11 +28,13 @@ fun TableExample(
                 .verticalScroll(rememberScrollState()),
     ) {
         SelectionContainer {
-            val markdownRenderConfig = remember {
-                MarkdownRenderConfig.Builder()
-                    .addPlugin(TableMarkdownPlugin())
-                    .build()
-            }
+            val markdownRenderConfig =
+                remember {
+                    MarkdownRenderConfig
+                        .Builder()
+                        .addPlugin(TableMarkdownPlugin())
+                        .build()
+                }
             MarkdownView(
                 text =
                     """

@@ -28,11 +28,13 @@ fun HtmlExample(
                 .verticalScroll(rememberScrollState()),
     ) {
         SelectionContainer {
-            val markdownRenderConfig = remember {
-                MarkdownRenderConfig.Builder()
-                    .addPlugin(HtmlMarkdownPlugin())
-                    .build()
-            }
+            val markdownRenderConfig =
+                remember {
+                    MarkdownRenderConfig
+                        .Builder()
+                        .addPlugin(HtmlMarkdownPlugin())
+                        .build()
+                }
             MarkdownView(
                 text =
                     """
