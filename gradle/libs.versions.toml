@@ -7,7 +7,8 @@ activityCompose = "1.10.1"
 immutable-collections = "0.4.0"
 coil3 = "3.3.0"
 ktor = "3.1.0"
-commonmark-kotlin = "0.0.1"
+commonmark-kotlin = "0.0.2"
+commonmark-ext-html-converter = "0.0.2"
 ktlint = "12.1.1"
 maven-publish = "0.30.0"
 
@@ -16,6 +17,7 @@ commonmark-kotlin = { group = "io.github.feiyin0719", name = "commonmark", versi
 commonmark-kotlin-ext-gfm-tables = { group = "io.github.feiyin0719", name = "commonmark-ext-gfm-tables", version.ref = "commonmark-kotlin" }
 commonmark-kotlin-ext-autolink = { group = "io.github.feiyin0719", name = "commonmark-ext-autolink", version.ref = "commonmark-kotlin" }
 commonmark-kotlin-ext-task-list-items = { group = "io.github.feiyin0719", name = "commonmark-ext-task-list-items", version.ref = "commonmark-kotlin" }
+commonmark-ext-html-converter = { group = "io.github.feiyin0719", name = "commonmark-ext-html-converter", version.ref = "commonmark-ext-html-converter" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 kotlin-immutable-collections = { group = "org.jetbrains.kotlinx", name = "kotlinx-collections-immutable", version.ref = "immutable-collections" }

@@ -46,6 +46,7 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.ui)
                 implementation(project(":markdown-multiplatform"))
+                implementation(libs.commonmark.ext.html.converter)
             }
         }
 

@@ -60,6 +60,12 @@ val markdownExamples =
             HtmlExample(paddingValues)
         },
         MarkdownExample(
+            title = "HTML Block Example",
+            description = "Demonstrates HTML block rendering with HTML-to-Markdown conversion",
+        ) { paddingValues ->
+            HtmlBlockExample(paddingValues)
+        },
+        MarkdownExample(
             title = "LazyMarkdownColumn Example",
             description = "Renders markdown using LazyColumn for efficient display",
         ) { paddingValues ->
