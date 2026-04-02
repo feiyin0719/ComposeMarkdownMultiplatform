@@ -46,8 +46,7 @@ class HtmlMarkdownPlugin(
         tagHandlerMap = map.toMap()
     }
 
-    override fun blockRenderers(): Map<KClass<out Node>, IBlockRenderer<*>> =
-        mapOf(HtmlBlock::class to HtmlBlockRenderer())
+    override fun blockRenderers(): Map<KClass<out Node>, IBlockRenderer<*>> = mapOf(HtmlBlock::class to HtmlBlockRenderer())
 
     override fun inlineNodeStringBuilders(): Map<KClass<out Node>, IInlineNodeStringBuilder<*>> =
         mapOf(
