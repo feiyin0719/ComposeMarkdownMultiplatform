@@ -45,7 +45,7 @@ private fun DefaultMarkdownContent(
 ) {
     val renderRegistry = currentRenderRegistry()
     if (!renderRegistry.invokeBlockRenderer(node, modifier)) {
-        MarkdownText(node, modifier = modifier)
+        MarkdownInlineText(node, modifier = modifier)
     }
 }
 

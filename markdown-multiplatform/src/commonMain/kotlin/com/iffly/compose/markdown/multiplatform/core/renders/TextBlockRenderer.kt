@@ -3,7 +3,7 @@ package com.iffly.compose.markdown.multiplatform.core.renders
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
-import com.iffly.compose.markdown.multiplatform.render.MarkdownText
+import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineText
 import org.commonmark.node.Node
 
 class TextBlockRenderer : IBlockRenderer<Node> {
@@ -12,6 +12,6 @@ class TextBlockRenderer : IBlockRenderer<Node> {
         node: Node,
         modifier: Modifier,
     ) {
-        MarkdownText(parent = node, modifier = modifier)
+        MarkdownInlineText(parent = node, modifier = modifier)
     }
 }

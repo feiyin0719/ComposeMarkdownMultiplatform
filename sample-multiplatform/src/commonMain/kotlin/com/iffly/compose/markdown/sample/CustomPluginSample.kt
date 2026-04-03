@@ -38,7 +38,7 @@ import com.iffly.compose.markdown.multiplatform.render.CompositeChildNodeStringB
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
 import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
-import com.iffly.compose.markdown.multiplatform.render.MarkdownText
+import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineText
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
@@ -346,7 +346,7 @@ class AlertBlockRenderer : IBlockRenderer<AlertBlock> {
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                     }
-                    MarkdownText(node)
+                    MarkdownInlineText(node)
                 }
             }
         }

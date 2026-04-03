@@ -5,7 +5,7 @@ import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContentRenderer
 import com.iffly.compose.markdown.multiplatform.render.MarkdownParser
-import com.iffly.compose.markdown.multiplatform.render.MarkdownTextRenderer
+import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineTextRenderer
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import org.commonmark.Extension
@@ -63,7 +63,7 @@ class MarkdownRenderConfig {
 
         private var markdownTheme: MarkdownTheme? = null
 
-        private var markdownTextRenderer: MarkdownTextRenderer? = null
+        private var markdownInlineTextRenderer: MarkdownInlineTextRenderer? = null
 
         private var markdownContentRenderer: MarkdownContentRenderer? = null
 
@@ -100,8 +100,8 @@ class MarkdownRenderConfig {
             return this
         }
 
-        fun markdownTextRenderer(renderer: MarkdownTextRenderer): Builder {
-            this.markdownTextRenderer = renderer
+        fun markdownInlineTextRenderer(renderer: MarkdownInlineTextRenderer): Builder {
+            this.markdownInlineTextRenderer = renderer
             return this
         }
 
@@ -141,7 +141,7 @@ class MarkdownRenderConfig {
                     blockRenderers.toMap(),
                     inlineNodeStringBuilders.toMap(),
                     markdownContentRenderer,
-                    markdownTextRenderer,
+                    markdownInlineTextRenderer,
                 ),
             )
         }

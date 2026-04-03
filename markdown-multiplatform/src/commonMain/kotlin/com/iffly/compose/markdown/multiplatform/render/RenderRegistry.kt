@@ -9,7 +9,7 @@ data class RenderRegistry(
     private val blockRenderers: Map<KClass<out Node>, IBlockRenderer<*>>,
     private val inlineNodeStringBuilders: Map<KClass<out Node>, IInlineNodeStringBuilder<*>>,
     val markdownContentRenderer: MarkdownContentRenderer? = null,
-    val markdownTextRenderer: MarkdownTextRenderer? = null,
+    val markdownInlineTextRenderer: MarkdownInlineTextRenderer? = null,
 ) {
     fun getBlockRenderer(nodeClass: KClass<out Node>): IBlockRenderer<*>? = blockRenderers[nodeClass]
 
