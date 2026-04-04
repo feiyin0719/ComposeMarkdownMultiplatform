@@ -13,7 +13,8 @@
   - [LazyMarkdownColumn](#lazymarkdowncolumn)
   - [MarkdownContent](#markdowncontent)
   - [MarkdownChildren](#markdownchildren)
-  - [MarkdownText](#markdowntext)
+  - [MarkdownInlineText](#markdowninlinetext)
+  - [MarkdownText](#markdowntext-1)
 - [配置](#配置)
   - [MarkdownRenderConfig](#markdownrenderconfig)
   - [MarkdownRenderConfig.Builder](#markdownrenderconfigbuilder)
@@ -180,15 +181,15 @@ fun MarkdownChildren(
 
 ---
 
-### MarkdownText
+### MarkdownInlineText
 
 将块节点的内联子节点渲染为带样式的文本（使用 `AnnotatedString`）。
 
-**函数签名**（来自 `MarkdownText.kt`）：
+**函数签名**（来自 `MarkdownInlineText.kt`）：
 
 ```kotlin
 @Composable
-fun MarkdownText(
+fun MarkdownInlineText(
     parent: Node,
     modifier: Modifier = Modifier,
     textAlign: TextAlign = TextAlign.Start,
@@ -201,6 +202,61 @@ fun MarkdownText(
 - `parent`：需要渲染内联子节点的块节点。
 - `textAlign`：文本对齐方式。
 - `textStyle`：覆盖文本样式（默认使用主题样式）。
+
+---
+
+### MarkdownText
+
+基于文本的渲染方式，将整个 Markdown 文档通过单个 `RichText` 可组合函数渲染，支持跨段落文本选择。与 `MarkdownView` 将每个块作为 `Column` 中独立的可组合函数不同，`MarkdownText` 将文本块合并为单个 `AnnotatedString`，并将非文本块（代码块、引用块、列表等）作为内联内容嵌入。
+
+**函数签名**（来自 `MarkdownText.kt`）：
+
+```kotlin
+@Composable
+fun MarkdownText(
+    text: String,
+    modifier: Modifier = Modifier,
+    markdownRenderConfig: MarkdownRenderConfig = remember { MarkdownRenderConfig.Builder().build() },
+    actionHandler: ActionHandler? = null,
+    showNotSupported: Boolean = false,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    textAlign: TextAlign? = null,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+)
+```
+
+**参数说明**
+
+- `text`：要解析和渲染的 Markdown 字符串。
+- `markdownRenderConfig`：解析和渲染的配置。
+- `actionHandler`：可选的链接点击和其他操作处理器。
+- `showNotSupported`：是否显示不支持元素的文本。
+- `overflow`：视觉溢出处理方式（`TextOverflow.Clip`、`Ellipsis` 等）。
+- `softWrap`：是否在软换行处断行。
+- `textAlign`：文本对齐方式。
+- `maxLines` / `minLines`：渲染文本的行数约束。
+- `letterSpacing`：字间距。
+- `textDecoration`：文本装饰（下划线、删除线）。
+- `onTextLayout`：文本布局后的回调，返回 `TextLayoutResult`。
+
+**示例**
+
+```kotlin
+SelectionContainer {
+    MarkdownText(
+        text = markdownContent,
+        markdownRenderConfig = config,
+        modifier = Modifier.padding(16.dp),
+        maxLines = 10,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+```
 
 ---
 

@@ -13,7 +13,8 @@
   - [LazyMarkdownColumn](#lazymarkdowncolumn)
   - [MarkdownContent](#markdowncontent)
   - [MarkdownChildren](#markdownchildren)
-  - [MarkdownText](#markdowntext)
+  - [MarkdownInlineText](#markdowninlinetext)
+  - [MarkdownText](#markdowntext-1)
 - [Configuration](#configuration)
   - [MarkdownRenderConfig](#markdownrenderconfig)
   - [MarkdownRenderConfig.Builder](#markdownrenderconfigbuilder)
@@ -180,15 +181,15 @@ When implementing a custom `IBlockRenderer` (e.g., a custom container block) and
 
 ---
 
-### MarkdownText
+### MarkdownInlineText
 
 Renders the inline children of a block node as styled text using `AnnotatedString`.
 
-**Signature** (from `MarkdownText.kt`):
+**Signature** (from `MarkdownInlineText.kt`):
 
 ```kotlin
 @Composable
-fun MarkdownText(
+fun MarkdownInlineText(
     parent: Node,
     modifier: Modifier = Modifier,
     textAlign: TextAlign = TextAlign.Start,
@@ -201,6 +202,61 @@ fun MarkdownText(
 - `parent`: The block node whose inline children to render as text.
 - `textAlign`: Text alignment.
 - `textStyle`: Override text style (defaults to theme style).
+
+---
+
+### MarkdownText
+
+Text-based rendering that renders the entire Markdown document through a single `RichText` composable, enabling cross-paragraph text selection. Unlike `MarkdownView` which renders each block as a separate composable in a `Column`, `MarkdownText` merges text blocks into a single `AnnotatedString` and embeds non-text blocks (code blocks, block quotes, lists, etc.) as inline content.
+
+**Signature** (from `MarkdownText.kt`):
+
+```kotlin
+@Composable
+fun MarkdownText(
+    text: String,
+    modifier: Modifier = Modifier,
+    markdownRenderConfig: MarkdownRenderConfig = remember { MarkdownRenderConfig.Builder().build() },
+    actionHandler: ActionHandler? = null,
+    showNotSupported: Boolean = false,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    textAlign: TextAlign? = null,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+)
+```
+
+**Parameters**
+
+- `text`: The Markdown string to parse and render.
+- `markdownRenderConfig`: The configuration for parsing and rendering.
+- `actionHandler`: Optional handler for link clicks and other actions.
+- `showNotSupported`: Whether to show text for unsupported elements.
+- `overflow`: How visual overflow is handled (`TextOverflow.Clip`, `Ellipsis`, etc.).
+- `softWrap`: Whether to break text at soft line breaks.
+- `textAlign`: Text alignment.
+- `maxLines` / `minLines`: Line count constraints for the rendered text.
+- `letterSpacing`: Spacing between characters.
+- `textDecoration`: Text decorations (underline, strikethrough).
+- `onTextLayout`: Callback invoked with `TextLayoutResult` after text layout.
+
+**Example**
+
+```kotlin
+SelectionContainer {
+    MarkdownText(
+        text = markdownContent,
+        markdownRenderConfig = config,
+        modifier = Modifier.padding(16.dp),
+        maxLines = 10,
+        overflow = TextOverflow.Ellipsis,
+    )
+}
+```
 
 ---
 

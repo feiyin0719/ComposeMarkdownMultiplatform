@@ -4,8 +4,8 @@ import com.iffly.compose.markdown.multiplatform.core.plugins.CorePlugin
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContentRenderer
-import com.iffly.compose.markdown.multiplatform.render.MarkdownParser
 import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineTextRenderer
+import com.iffly.compose.markdown.multiplatform.render.MarkdownParser
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import org.commonmark.Extension

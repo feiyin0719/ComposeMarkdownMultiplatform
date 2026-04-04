@@ -20,6 +20,7 @@ A Compose Multiplatform Markdown rendering library that supports Android, iOS, D
 - **CommonMark Support** — Powered by `commonmark-kotlin` parser (pure Kotlin Multiplatform)
 - **Plugin System** — Modular plugin architecture for tables, images, HTML, and more; supports custom parser extensions
 - **Customizable Themes** — Full control over typography, colors, and component styles
+- **MarkdownText** — Text-based rendering that works like Compose `Text` with `maxLines` / `overflow` support and cross-paragraph text selection
 
 ## Supported Platforms
 

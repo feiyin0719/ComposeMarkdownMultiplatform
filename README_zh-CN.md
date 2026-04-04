@@ -20,6 +20,7 @@
 - **CommonMark 支持** — 使用 `commonmark-kotlin` 解析器（纯 Kotlin Multiplatform）
 - **插件系统** — 模块化的插件架构，支持表格、图片、HTML 等扩展；支持自定义解析器扩展
 - **可定制主题** — 完全控制排版、颜色和组件样式
+- **MarkdownText** — 基于文本的渲染模式，像 Compose `Text` 一样支持 `maxLines` / `overflow` 行数限制和跨段落文本选择
 
 ## 支持的平台
 
