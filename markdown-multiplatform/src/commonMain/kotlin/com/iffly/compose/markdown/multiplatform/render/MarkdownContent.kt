@@ -44,10 +44,11 @@ private fun DefaultMarkdownContent(
     modifier: Modifier = Modifier,
 ) {
     val renderRegistry = currentRenderRegistry()
-    if (renderRegistry.shouldSkipRender(node)) return
     val renderer = renderRegistry.getBlockRenderer(node)
     if (renderer != null) {
-        renderer.Invoke(node, modifier)
+        if (!renderer.shouldSkipRender(node)) {
+            renderer.Invoke(node, modifier)
+        }
     } else {
         MarkdownInlineText(node, modifier = modifier)
     }
