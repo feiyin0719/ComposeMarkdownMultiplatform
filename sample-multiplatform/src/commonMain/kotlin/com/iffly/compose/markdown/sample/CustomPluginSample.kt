@@ -37,8 +37,8 @@ import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.render.CompositeChildNodeStringBuilder
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
-import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
 import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineText
+import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
