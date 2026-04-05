@@ -72,18 +72,21 @@ fun MarkdownChildren(
     Column(modifier = modifier, verticalArrangement = verticalArrangement) {
         onBeforeAll?.invoke(parent)
         childList.forEachIndexed { index, child ->
-            key(child) {
-                onBeforeChild?.invoke(child, parent)
-                MarkdownContent(
-                    node = child,
-                    modifier = childModifierFactory(child),
-                )
-                onAfterChild?.invoke(child, parent)
-                if (index != childList.lastIndex &&
-                    showSpacer &&
-                    renderRegistry.getBlockRenderer(child) != null
-                ) {
-                    Spacer(Modifier.height(spacerHeight))
+            val skip = renderRegistry.shouldSkipRender(child)
+            if (!skip) {
+                key(child) {
+                    onBeforeChild?.invoke(child, parent)
+                    MarkdownContent(
+                        node = child,
+                        modifier = childModifierFactory(child),
+                    )
+                    onAfterChild?.invoke(child, parent)
+                    if (index != childList.lastIndex &&
+                        showSpacer &&
+                        renderRegistry.getBlockRenderer(child) != null
+                    ) {
+                        Spacer(Modifier.height(spacerHeight))
+                    }
                 }
             }
         }

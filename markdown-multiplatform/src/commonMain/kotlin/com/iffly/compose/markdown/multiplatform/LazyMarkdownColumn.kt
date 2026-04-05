@@ -48,15 +48,18 @@ fun LazyMarkdownColumn(
             state = lazyListState,
         ) {
             itemsIndexed(children, key = { index, node -> index }) { index, node ->
-                MarkdownContent(
-                    node = node,
-                    modifier = Modifier,
-                )
-                if (index != children.lastIndex &&
-                    theme.spacerTheme.showSpacer &&
-                    renderRegistry.getBlockRenderer(node) != null
-                ) {
-                    Spacer(Modifier.height(theme.spacerTheme.spacerHeight))
+                val skip = renderRegistry.shouldSkipRender(node)
+                if (!skip) {
+                    MarkdownContent(
+                        node = node,
+                        modifier = Modifier,
+                    )
+                    if (index != children.lastIndex &&
+                        theme.spacerTheme.showSpacer &&
+                        renderRegistry.getBlockRenderer(node) != null
+                    ) {
+                        Spacer(Modifier.height(theme.spacerTheme.spacerHeight))
+                    }
                 }
             }
         }

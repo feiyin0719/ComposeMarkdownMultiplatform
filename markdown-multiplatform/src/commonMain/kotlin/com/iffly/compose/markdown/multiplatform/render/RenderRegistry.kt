@@ -16,6 +16,16 @@ data class RenderRegistry(
 
     fun getBlockRenderer(node: Node): IBlockRenderer<*>? = blockRenderers[node::class]
 
+    /**
+     * Checks if the given node should skip rendering.
+     * Returns true if a renderer exists and its [IBlockRenderer.shouldSkipRender] returns true.
+     */
+    @Suppress("UNCHECKED_CAST")
+    fun shouldSkipRender(node: Node): Boolean {
+        val renderer = getBlockRenderer(node) as? IBlockRenderer<Node> ?: return false
+        return renderer.shouldSkipRender(node)
+    }
+
     fun getInlineNodeStringBuilder(nodeClass: KClass<out Node>): IInlineNodeStringBuilder<*>? = inlineNodeStringBuilders[nodeClass]
 
     fun getInlineNodeStringBuilder(node: Node): IInlineNodeStringBuilder<*>? = inlineNodeStringBuilders[node::class]
@@ -26,8 +36,11 @@ data class RenderRegistry(
         modifier: Modifier = Modifier,
     ): Boolean {
         val renderer = getBlockRenderer(node) ?: return false
+
         @Suppress("UNCHECKED_CAST")
-        (renderer as IBlockRenderer<Node>).Invoke(node, modifier)
+        val typedRenderer = renderer as IBlockRenderer<Node>
+        if (typedRenderer.shouldSkipRender(node)) return true
+        typedRenderer.Invoke(node, modifier)
         return true
     }
 
