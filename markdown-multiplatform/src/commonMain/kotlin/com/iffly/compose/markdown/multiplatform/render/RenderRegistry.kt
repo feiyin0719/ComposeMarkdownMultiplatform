@@ -1,7 +1,5 @@
 package com.iffly.compose.markdown.multiplatform.render
 
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import org.commonmark.node.Document
 import org.commonmark.node.Node
 import kotlin.reflect.KClass
@@ -14,35 +12,21 @@ data class RenderRegistry(
 ) {
     fun getBlockRenderer(nodeClass: KClass<out Node>): IBlockRenderer<*>? = blockRenderers[nodeClass]
 
-    fun getBlockRenderer(node: Node): IBlockRenderer<*>? = blockRenderers[node::class]
+    @Suppress("UNCHECKED_CAST")
+    fun getBlockRenderer(node: Node): IBlockRenderer<Node>? = blockRenderers[node::class] as? IBlockRenderer<Node>
 
     /**
      * Checks if the given node should skip rendering.
      * Returns true if a renderer exists and its [IBlockRenderer.shouldSkipRender] returns true.
      */
-    @Suppress("UNCHECKED_CAST")
     fun shouldSkipRender(node: Node): Boolean {
-        val renderer = getBlockRenderer(node) as? IBlockRenderer<Node> ?: return false
+        val renderer = getBlockRenderer(node) ?: return false
         return renderer.shouldSkipRender(node)
     }
 
     fun getInlineNodeStringBuilder(nodeClass: KClass<out Node>): IInlineNodeStringBuilder<*>? = inlineNodeStringBuilders[nodeClass]
 
     fun getInlineNodeStringBuilder(node: Node): IInlineNodeStringBuilder<*>? = inlineNodeStringBuilders[node::class]
-
-    @Composable
-    fun invokeBlockRenderer(
-        node: Node,
-        modifier: Modifier = Modifier,
-    ): Boolean {
-        val renderer = getBlockRenderer(node) ?: return false
-
-        @Suppress("UNCHECKED_CAST")
-        val typedRenderer = renderer as IBlockRenderer<Node>
-        if (typedRenderer.shouldSkipRender(node)) return true
-        typedRenderer.Invoke(node, modifier)
-        return true
-    }
 
     /**
      * Creates an augmented [RenderRegistry] for Text-based rendering ([MarkdownText]).
