@@ -1,27 +1,57 @@
 package com.iffly.compose.markdown.multiplatform.task
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
+import com.iffly.compose.markdown.multiplatform.core.renders.ListItemMarkerRenderer
+import com.iffly.compose.markdown.multiplatform.core.renders.ListItemMarkerRendererImpl
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.MarkdownChildren
 import com.iffly.compose.markdown.multiplatform.render.childNodes
 import com.iffly.compose.markdown.multiplatform.util.StringExt.FIGURE_SPACE
 import com.iffly.compose.markdown.multiplatform.util.getIndentLevel
-import com.iffly.compose.markdown.multiplatform.util.getMarkerText
 import com.iffly.compose.markdown.multiplatform.util.isInQuoteBlock
 import com.iffly.compose.markdown.multiplatform.util.isLooseList
 import com.iffly.compose.markdown.multiplatform.widget.SelectionFormatText
 import org.commonmark.ext.task.list.items.TaskListItemMarker
 import org.commonmark.node.ListItem
+
+/**
+ * Marker renderer for task list items.
+ * Draws a checkbox marker (☑ or ☐) using [drawText].
+ */
+class TaskListMarkerRenderer(
+    private val isChecked: Boolean,
+) : ListItemMarkerRenderer {
+    private fun getMarkerText(): String = if (isChecked) "☑" else "☐"
+
+    override fun measureMarker(
+        textMeasurer: TextMeasurer,
+        node: ListItem,
+        style: TextStyle,
+    ): TextLayoutResult {
+        val marker = getMarkerText()
+        return textMeasurer.measure(marker, style)
+    }
+
+    override fun DrawScope.drawMarker(textLayoutResult: TextLayoutResult) {
+        drawText(textLayoutResult, topLeft = Offset(0f, 0f))
+    }
+}
 
 /**
  * Block renderer for list items that handles both regular and task list items.
@@ -51,11 +81,12 @@ class TaskListItemRenderer : IBlockRenderer<ListItem> {
                 )
 
         val taskMarker = node.childNodes().filterIsInstance<TaskListItemMarker>().firstOrNull()
-        val marker =
+
+        val markerRenderer: ListItemMarkerRenderer =
             if (taskMarker != null) {
-                if (taskMarker.isChecked) "☑" else "☐"
+                TaskListMarkerRenderer(isChecked = taskMarker.isChecked)
             } else {
-                node.getMarkerText()
+                ListItemMarkerRendererImpl()
             }
 
         val contentChildren =
@@ -65,37 +96,65 @@ class TaskListItemRenderer : IBlockRenderer<ListItem> {
                 null
             }
 
-        Row(
+        val textMeasurer = rememberTextMeasurer()
+        val density = LocalDensity.current
+        val spacerWidthPx = with(density) { listTheme.markerSpacerWidth.toPx() }
+
+        val markerTextLayoutResult =
+            markerRenderer.measureMarker(
+                textMeasurer = textMeasurer,
+                node = node,
+                style = mergedTextStyle,
+            )
+        val markerOffset = markerTextLayoutResult.size.width + spacerWidthPx.toInt()
+
+        Layout(
+            content = {
+                val isFirstChild =
+                    node.parent?.childNodes()?.firstOrNull { it is ListItem } == node
+                if (!isFirstChild && indentLevel > 0) {
+                    SelectionFormatText(FIGURE_SPACE.repeat(indentLevel))
+                }
+                MarkdownChildren(
+                    parent = node,
+                    children = contentChildren,
+                    modifier = Modifier.wrapContentSize(),
+                    verticalArrangement = Arrangement.Top,
+                    spacerHeight = spacerHeight,
+                    onBeforeChild = { child, parent ->
+                        val firstContentChild =
+                            (contentChildren ?: parent.childNodes()).firstOrNull()
+                        if (child != firstContentChild) {
+                            SelectionFormatText(FIGURE_SPACE.repeat(indentLevel + 1))
+                        }
+                    },
+                )
+            },
             modifier =
                 modifier
                     .fillMaxWidth()
-                    .wrapContentHeight(),
-        ) {
-            val isFirstChild =
-                node.parent?.childNodes()?.firstOrNull { it is ListItem } == node
-            if (!isFirstChild && indentLevel > 0) {
-                SelectionFormatText(FIGURE_SPACE.repeat(indentLevel))
+                    .wrapContentHeight()
+                    .drawBehind {
+                        with(markerRenderer) {
+                            drawMarker(markerTextLayoutResult)
+                        }
+                    },
+        ) { measurables, constraints ->
+            val contentConstraints =
+                constraints.copy(
+                    maxWidth = (constraints.maxWidth - markerOffset).coerceAtLeast(0),
+                    minWidth = 0,
+                )
+            val placeables = measurables.map { it.measure(contentConstraints) }
+            val height = placeables.sumOf { it.height }
+
+            layout(constraints.maxWidth, height) {
+                var yOffset = 0
+                placeables.forEach { placeable ->
+                    placeable.place(markerOffset, yOffset)
+                    yOffset += placeable.height
+                }
             }
-            Text(
-                text = marker,
-                style = mergedTextStyle,
-                modifier = Modifier.wrapContentHeight(),
-            )
-            Spacer(modifier = Modifier.width(listTheme.markerSpacerWidth))
-            MarkdownChildren(
-                parent = node,
-                children = contentChildren,
-                modifier = Modifier.wrapContentSize(),
-                verticalArrangement = Arrangement.Top,
-                spacerHeight = spacerHeight,
-                onBeforeChild = { child, parent ->
-                    val firstContentChild =
-                        (contentChildren ?: parent.childNodes()).firstOrNull()
-                    if (child != firstContentChild) {
-                        SelectionFormatText(FIGURE_SPACE.repeat(indentLevel + 1))
-                    }
-                },
-            )
         }
     }
 }
