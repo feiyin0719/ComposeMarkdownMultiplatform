@@ -2,15 +2,18 @@ package com.iffly.compose.markdown.multiplatform
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.iffly.compose.markdown.multiplatform.config.LocalActionHandlerProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalMarkdownThemeProvider
+import com.iffly.compose.markdown.multiplatform.config.LocalNodeDataMap
 import com.iffly.compose.markdown.multiplatform.config.LocalParserProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalRenderRegistryProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalShowNotSupportedProvider
 import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContent
+import org.commonmark.node.Node
 
 /**
  * A Composable that renders markdown text into native Compose UI elements.
@@ -66,12 +69,14 @@ fun ProvideMarkdownLocals(
     showNotSupported: Boolean = false,
     content: @Composable () -> Unit,
 ) {
+    val nodeDataMap = remember { mutableStateMapOf<Node, Any>() }
     CompositionLocalProvider(
         LocalMarkdownThemeProvider provides markdownRenderConfig.markdownTheme,
         LocalParserProvider provides markdownRenderConfig.markdownParser,
         LocalRenderRegistryProvider provides markdownRenderConfig.renderRegistry,
         LocalActionHandlerProvider provides actionHandler,
         LocalShowNotSupportedProvider provides showNotSupported,
+        LocalNodeDataMap provides nodeDataMap,
     ) {
         content()
     }

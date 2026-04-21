@@ -16,12 +16,15 @@ import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import com.iffly.compose.markdown.multiplatform.config.LocalNodeDataMap
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
+import com.iffly.compose.markdown.multiplatform.core.renders.FirstLineMetrics
 import com.iffly.compose.markdown.multiplatform.core.renders.ListItemMarkerRenderer
 import com.iffly.compose.markdown.multiplatform.core.renders.ListItemMarkerRendererImpl
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.MarkdownChildren
 import com.iffly.compose.markdown.multiplatform.render.childNodes
+import com.iffly.compose.markdown.multiplatform.style.MarkerAlignment
 import com.iffly.compose.markdown.multiplatform.util.StringExt.FIGURE_SPACE
 import com.iffly.compose.markdown.multiplatform.util.getIndentLevel
 import com.iffly.compose.markdown.multiplatform.util.isInQuoteBlock
@@ -48,8 +51,13 @@ class TaskListMarkerRenderer(
         return textMeasurer.measure(marker, style)
     }
 
-    override fun DrawScope.drawMarker(textLayoutResult: TextLayoutResult) {
-        drawText(textLayoutResult, topLeft = Offset(0f, 0f))
+    override fun DrawScope.drawMarker(
+        textLayoutResult: TextLayoutResult,
+        firstLineMetrics: FirstLineMetrics,
+        alignment: MarkerAlignment,
+    ) {
+        val yOffset = firstLineMetrics.computeMarkerYOffset(textLayoutResult, alignment)
+        drawText(textLayoutResult, topLeft = Offset(0f, yOffset))
     }
 }
 
@@ -108,6 +116,8 @@ class TaskListItemRenderer : IBlockRenderer<ListItem> {
             )
         val markerOffset = markerTextLayoutResult.size.width + spacerWidthPx.toInt()
 
+        val nodeDataMap = LocalNodeDataMap.current
+
         Layout(
             content = {
                 val isFirstChild =
@@ -135,8 +145,10 @@ class TaskListItemRenderer : IBlockRenderer<ListItem> {
                     .fillMaxWidth()
                     .wrapContentHeight()
                     .drawBehind {
+                        val metrics = nodeDataMap[node] as? FirstLineMetrics
+                        val alignment = if (metrics != null) listTheme.markerAlignment else MarkerAlignment.Top
                         with(markerRenderer) {
-                            drawMarker(markerTextLayoutResult)
+                            drawMarker(markerTextLayoutResult, metrics ?: FirstLineMetrics.Unspecified, alignment)
                         }
                     },
         ) { measurables, constraints ->

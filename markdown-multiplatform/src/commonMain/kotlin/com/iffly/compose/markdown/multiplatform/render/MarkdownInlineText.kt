@@ -11,15 +11,18 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import com.iffly.compose.markdown.multiplatform.ActionHandler
+import com.iffly.compose.markdown.multiplatform.config.LocalNodeDataMap
 import com.iffly.compose.markdown.multiplatform.config.currentActionHandler
 import com.iffly.compose.markdown.multiplatform.config.currentRenderRegistry
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
 import com.iffly.compose.markdown.multiplatform.config.isShowNotSupported
+import com.iffly.compose.markdown.multiplatform.core.renders.FirstLineMetrics
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.isInQuoteBlock
 import com.iffly.compose.markdown.multiplatform.util.nodeTextContent
 import com.iffly.compose.markdown.multiplatform.widget.richtext.RichText
 import kotlinx.collections.immutable.toImmutableMap
+import org.commonmark.node.ListItem
 import org.commonmark.node.Node
 
 /**
@@ -140,6 +143,12 @@ private fun DefaultMarkdownInlineText(
             (textStyle ?: theme.textStyle).merge(
                 theme.blockQuoteTheme.textStyle.takeIf { isInQuote },
             )
+
+        val isFirstChildOfListItem =
+            parent.parent is ListItem && parent == parent.parent?.firstChild
+        val listItemNode = if (isFirstChildOfListItem) parent.parent else null
+        val nodeDataMap = if (listItemNode != null) LocalNodeDataMap.current else null
+
         RichText(
             text = text,
             inlineContent = inlineContentMap.toImmutableMap(),
@@ -149,6 +158,14 @@ private fun DefaultMarkdownInlineText(
                     .widthIn(minWidth, maxWidth),
             textAlign = textAlign,
             style = mergedTextStyle,
+            onTextLayout =
+                listItemNode?.let { targetNode ->
+                    { segmentIndex, textLayoutResult ->
+                        if (segmentIndex == 0) {
+                            nodeDataMap?.set(targetNode, FirstLineMetrics.fromTextLayoutResult(textLayoutResult))
+                        }
+                    }
+                },
         )
     }
 }

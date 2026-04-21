@@ -35,6 +35,8 @@ import kotlinx.collections.immutable.toImmutableMap
  * @param text The annotated string to display, possibly containing inline content annotations.
  * @param inlineContent A map of inline content keyed by their annotation IDs.
  * @param onTextLayout Callback invoked when the text layout is computed.
+ * The first parameter is the segment index (0-based) within this RichText,
+ * the second is the [TextLayoutResult].
  * @param style The default text style to apply.
  * @see RichTextInlineContent
  * @see AdaptiveInlineContentText
@@ -57,7 +59,7 @@ fun RichText(
     maxLines: Int = Int.MAX_VALUE,
     minLines: Int = 1,
     inlineContent: ImmutableMap<String, RichTextInlineContent> = persistentMapOf(),
-    onTextLayout: (TextLayoutResult) -> Unit = {},
+    onTextLayout: ((Int, TextLayoutResult) -> Unit)? = null,
     style: TextStyle = LocalTextStyle.current,
 ) {
     val standaloneInlineContent =
@@ -91,9 +93,12 @@ fun RichText(
             .toImmutableMap()
 
     Column(modifier = modifier) {
+        var textSegmentIndex = 0
         textSegments.fastForEach {
             when (it) {
                 is RichTextSegment.Text -> {
+                    val currentIndex = textSegmentIndex
+                    textSegmentIndex++
                     AdaptiveInlineContentText(
                         text = it.text,
                         color = color,
@@ -110,7 +115,10 @@ fun RichText(
                         maxLines = maxLines,
                         minLines = minLines,
                         inlineContent = inlineTextContent,
-                        onTextLayout = onTextLayout,
+                        onTextLayout =
+                            onTextLayout?.let { callback ->
+                                { result -> callback(currentIndex, result) }
+                            } ?: {},
                         style = style,
                         modifier =
                             Modifier
