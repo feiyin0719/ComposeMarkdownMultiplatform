@@ -12,6 +12,14 @@ interface IBlockRenderer<T : Node> {
      */
     fun shouldSkipRender(node: T): Boolean = false
 
+    /**
+     * Whether this block renderer supports text-mode rendering via MarkdownText.
+     * When false, this renderer will not be wrapped as inline content in
+     * [RenderRegistry.textModeRegistry] and the block will not appear in text mode.
+     * Default is true.
+     */
+    fun supportTextMode(): Boolean = true
+
     @Composable
     fun Invoke(
         node: T,
