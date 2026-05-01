@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.iffly.compose.markdown.multiplatform.config.currentActionHandler
 import com.iffly.compose.markdown.multiplatform.config.currentTheme
@@ -30,7 +31,47 @@ import org.commonmark.node.FencedCodeBlock
 import org.commonmark.node.IndentedCodeBlock
 import org.commonmark.node.Node
 
-class CodeBlockRenderer : IBlockRenderer<Node> {
+/**
+ * Transforms raw code text into a styled [AnnotatedString] for display in a code block.
+ *
+ * Implement this interface to apply any kind of per-character or per-token styling —
+ * syntax highlighting, diff coloring, error underlining, etc.
+ *
+ * The [annotate] method is called once per rendered code block. Returning a plain
+ * [AnnotatedString] with no spans is equivalent to unstyled rendering.
+ *
+ * @see BasicSyntaxHighlighter for a ready-made implementation.
+ */
+fun interface CodeAnnotator {
+    /**
+     * Produces a styled [AnnotatedString] for the given code block.
+     *
+     * @param code The raw code text extracted from the block (may include a trailing newline).
+     * @param language The language info string from the fenced code fence (e.g. `"kotlin"`,
+     *   `"python"`). Empty string for indented code blocks or when no language was specified.
+     * @param node The originating AST node, available for advanced use cases such as reading
+     *   custom attributes or node metadata.
+     * @return A styled [AnnotatedString]. Returning [AnnotatedString(code)][AnnotatedString]
+     *   is valid and produces plain text.
+     */
+    fun annotate(
+        code: String,
+        language: String,
+        node: Node,
+    ): AnnotatedString
+}
+
+/**
+ * Renders fenced and indented code blocks with an optional [CodeAnnotator] for styling.
+ *
+ * @param codeAnnotator Optional [CodeAnnotator] that transforms the raw code text into a
+ *   styled [AnnotatedString] (e.g. syntax highlighting). Defaults to [BasicSyntaxHighlighter].
+ *   Pass `null` to disable syntax highlighting (plain text).
+ * @see BasicSyntaxHighlighter
+ */
+class CodeBlockRenderer(
+    private val codeAnnotator: CodeAnnotator? = BasicSyntaxHighlighter(),
+) : IBlockRenderer<Node> {
     @Composable
     override fun Invoke(
         node: Node,
@@ -64,7 +105,7 @@ class CodeBlockRenderer : IBlockRenderer<Node> {
             if (codeBlockTheme.showHeader) {
                 CodeHeader(node = node, language = language)
             }
-            CodeContent(codeText = codeText)
+            CodeContent(codeText = codeText, language = language, node = node, codeAnnotator = codeAnnotator)
         }
     }
 }
@@ -117,8 +158,16 @@ private fun CodeHeader(
 }
 
 @Composable
-private fun CodeContent(codeText: String) {
+private fun CodeContent(
+    codeText: String,
+    language: String,
+    node: Node,
+    codeAnnotator: CodeAnnotator?,
+) {
     val contentTheme = currentTheme().codeBlockTheme.contentTheme
+    val annotatedCode =
+        (codeAnnotator ?: BasicSyntaxHighlighter(colors = currentTheme().codeBlockTheme.codeColors))
+            .annotate(codeText, language, node)
     val scrollModifier =
         if (contentTheme.height != null) {
             val scrollState = rememberScrollState()
@@ -130,7 +179,7 @@ private fun CodeContent(codeText: String) {
         }
     DisableSelectionWrapper(disabled = contentTheme.disableSelection) {
         LineNumberText(
-            text = codeText,
+            text = annotatedCode,
             textStyle = contentTheme.codeTextStyle,
             lineNumberStyle = contentTheme.lineNumberTextStyle,
             contentPadding = contentTheme.contentPadding,

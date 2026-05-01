@@ -657,6 +657,88 @@ fun interface MarkdownTextRenderer {
 
 ---
 
+### CodeBlockRenderer (code blocks)
+
+File: `core/renders/CodeBlockRenderer.kt`
+
+This module contains the composable renderer for fenced and indented code blocks:
+
+- `CodeAnnotator` – fun interface for transforming raw code text into a styled `AnnotatedString`
+  (e.g. syntax highlighting, diff coloring).
+- `CodeBlockRenderer` – `IBlockRenderer` combining a header (language label + copy button) and
+  code content (line numbers, optional scroll).
+
+```kotlin
+fun interface CodeAnnotator {
+    fun annotate(code: String, language: String, node: Node): AnnotatedString
+}
+
+class CodeBlockRenderer(
+    private val codeAnnotator: CodeAnnotator? = null,
+) : IBlockRenderer<Node>
+```
+
+`CodeBlockRenderer` reads layout and style from `MarkdownTheme.codeBlockTheme`:
+
+- `backgroundColor`, `borderWidth`, `borderColor`, `shape`, `blockModifier`, `headerModifier`
+- `showHeader`, `showCopyButton`, `codeTitleTextStyle`, `codeCopyTextStyle`
+- `contentTheme` (code font, line numbers, padding, height, softWrap, etc.)
+
+**Syntax highlighting with `BasicSyntaxHighlighter`**
+
+The library ships a ready-made `CodeAnnotator` that applies regex-based token coloring for 20+
+languages. Pass a `BasicSyntaxHighlighter` instance to enable it:
+
+```kotlin
+val config = MarkdownRenderConfig.Builder()
+    .addBlockRenderer(
+        FencedCodeBlock::class,
+        CodeBlockRenderer(codeAnnotator = BasicSyntaxHighlighter()),
+    )
+    .addBlockRenderer(
+        IndentedCodeBlock::class,
+        CodeBlockRenderer(codeAnnotator = BasicSyntaxHighlighter()),
+    )
+    .build()
+```
+
+Customize colors via `CodeColors`:
+
+```kotlin
+val highlighter = BasicSyntaxHighlighter(
+    colors = CodeColors(
+        keyword    = Color(0xFF569CD6),
+        string     = Color(0xFFCE9178),
+        comment    = Color(0xFF6A9955),
+        number     = Color(0xFFB5CEA8),
+        annotation = Color(0xFFDCDC00),
+        type       = Color(0xFF4EC9B0),
+    )
+)
+```
+
+Supported languages (fenced code fence info string, case-insensitive):
+`kotlin`, `java`, `javascript`/`js`, `typescript`/`ts`, `python`, `swift`, `rust`, `go`, `dart`,
+`c`, `cpp`/`c++`, `cs`/`csharp`/`c#`, `ruby`, `php`, `sql`, `bash`/`sh`/`shell`/`zsh`,
+`css`, `html`, `xml`, `yaml`/`yml`, `toml`, `json`.
+
+Implement `CodeAnnotator` directly to integrate any third-party highlighter:
+
+```kotlin
+val config = MarkdownRenderConfig.Builder()
+    .addBlockRenderer(
+        FencedCodeBlock::class,
+        CodeBlockRenderer(
+            codeAnnotator = CodeAnnotator { code, language, _ ->
+                myHighlighter.highlight(code, language)
+            },
+        ),
+    )
+    .build()
+```
+
+---
+
 ## Plugin Modules
 
 ### TableMarkdownPlugin
