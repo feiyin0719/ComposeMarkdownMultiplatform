@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
@@ -165,9 +166,12 @@ private fun CodeContent(
     codeAnnotator: CodeAnnotator?,
 ) {
     val contentTheme = currentTheme().codeBlockTheme.contentTheme
+    val codeColors = currentTheme().codeBlockTheme.codeColors
     val annotatedCode =
-        (codeAnnotator ?: BasicSyntaxHighlighter(colors = currentTheme().codeBlockTheme.codeColors))
-            .annotate(codeText, language, node)
+        remember(codeText, language, node, codeAnnotator, codeColors) {
+            (codeAnnotator ?: BasicSyntaxHighlighter(colors = codeColors))
+                .annotate(codeText, language, node)
+        }
     val scrollModifier =
         if (contentTheme.height != null) {
             val scrollState = rememberScrollState()
