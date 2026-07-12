@@ -22,6 +22,7 @@ fun LazyMarkdownColumn(
     markdownRenderConfig: MarkdownRenderConfig =
         remember { MarkdownRenderConfig.Builder().build() },
     actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
     lazyListState: LazyListState = rememberLazyListState(),
 ) {
@@ -39,6 +40,7 @@ fun LazyMarkdownColumn(
     ProvideMarkdownLocals(
         markdownRenderConfig = markdownRenderConfig,
         actionHandler = actionHandler,
+        renderDependencies = renderDependencies,
         showNotSupported = showNotSupported,
     ) {
         val theme = currentTheme()

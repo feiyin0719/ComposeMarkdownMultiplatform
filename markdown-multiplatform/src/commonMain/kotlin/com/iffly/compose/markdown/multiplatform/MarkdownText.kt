@@ -42,6 +42,7 @@ import org.commonmark.node.Node
  * @param modifier Modifier to be applied to the Markdown text.
  * @param markdownRenderConfig Configuration controlling parsing, theming, and rendering behavior.
  * @param actionHandler Optional handler for user interactions such as link clicks.
+ * @param renderDependencies Dependencies available to custom renderers and node string builders.
  * @param showNotSupported Whether to display placeholder text for unsupported markdown elements.
  * @param overflow How visual overflow should be handled.
  * @param softWrap Whether the text should wrap softly.
@@ -61,6 +62,7 @@ fun MarkdownText(
     markdownRenderConfig: MarkdownRenderConfig =
         remember { MarkdownRenderConfig.Builder().build() },
     actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
@@ -80,6 +82,7 @@ fun MarkdownText(
     ProvideMarkdownLocals(
         markdownRenderConfig = markdownRenderConfig,
         actionHandler = actionHandler,
+        renderDependencies = renderDependencies,
         showNotSupported = showNotSupported,
     ) {
         MarkdownTextContent(

@@ -53,6 +53,7 @@ fun MarkdownView(
     markdownRenderConfig: MarkdownRenderConfig =
         remember { MarkdownRenderConfig.Builder().build() },
     actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
 )
 ```
@@ -93,6 +94,7 @@ fun LazyMarkdownColumn(
     markdownRenderConfig: MarkdownRenderConfig =
         remember { MarkdownRenderConfig.Builder().build() },
     actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
     lazyListState: LazyListState = rememberLazyListState(),
 )
@@ -218,6 +220,7 @@ fun MarkdownText(
     modifier: Modifier = Modifier,
     markdownRenderConfig: MarkdownRenderConfig = remember { MarkdownRenderConfig.Builder().build() },
     actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
@@ -908,6 +911,7 @@ data class NodeStringBuilderContext(
     val layoutContext: TextLayoutContext,
     val designContext: TextStyleContext,
     val systemContext: SystemContext,
+    val renderDependencies: Map<String, Any>,
 )
 
 data class TextLayoutContext(
@@ -946,8 +950,13 @@ data class SystemContext(
 @Composable @ReadOnlyComposable fun currentParser(): MarkdownParser
 @Composable @ReadOnlyComposable fun currentRenderRegistry(): RenderRegistry
 @Composable @ReadOnlyComposable fun currentActionHandler(): ActionHandler?
+@Composable @ReadOnlyComposable fun currentRenderDependencies(): Map<String, Any>
 @Composable @ReadOnlyComposable fun isShowNotSupported(): Boolean
 ```
+
+所有顶层渲染组件均接受 `renderDependencies` Map。Composable renderer 使用
+`currentRenderDependencies()` 读取；非 Composable 的节点字符串构建器从
+`nodeStringBuilderContext.renderDependencies` 读取同一份 Map。
 
 ---
 

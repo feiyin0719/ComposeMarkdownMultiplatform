@@ -53,6 +53,7 @@ fun MarkdownView(
     markdownRenderConfig: MarkdownRenderConfig =
         remember { MarkdownRenderConfig.Builder().build() },
     actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
 )
 ```
@@ -93,6 +94,7 @@ fun LazyMarkdownColumn(
     markdownRenderConfig: MarkdownRenderConfig =
         remember { MarkdownRenderConfig.Builder().build() },
     actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
     lazyListState: LazyListState = rememberLazyListState(),
 )
@@ -218,6 +220,7 @@ fun MarkdownText(
     modifier: Modifier = Modifier,
     markdownRenderConfig: MarkdownRenderConfig = remember { MarkdownRenderConfig.Builder().build() },
     actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
     overflow: TextOverflow = TextOverflow.Clip,
     softWrap: Boolean = true,
@@ -990,6 +993,7 @@ data class NodeStringBuilderContext(
     val layoutContext: TextLayoutContext,
     val designContext: TextStyleContext,
     val systemContext: SystemContext,
+    val renderDependencies: Map<String, Any>,
 )
 
 data class TextLayoutContext(
@@ -1028,8 +1032,13 @@ Convenience functions for accessing current rendering context within custom rend
 @Composable @ReadOnlyComposable fun currentParser(): MarkdownParser
 @Composable @ReadOnlyComposable fun currentRenderRegistry(): RenderRegistry
 @Composable @ReadOnlyComposable fun currentActionHandler(): ActionHandler?
+@Composable @ReadOnlyComposable fun currentRenderDependencies(): Map<String, Any>
 @Composable @ReadOnlyComposable fun isShowNotSupported(): Boolean
 ```
+
+All top-level rendering components accept a `renderDependencies` map. Composable renderers read it
+with `currentRenderDependencies()`, and non-Composable node string builders read the same map from
+`nodeStringBuilderContext.renderDependencies`.
 
 ---
 

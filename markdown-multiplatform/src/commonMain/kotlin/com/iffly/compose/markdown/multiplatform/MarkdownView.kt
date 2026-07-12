@@ -9,6 +9,7 @@ import com.iffly.compose.markdown.multiplatform.config.LocalActionHandlerProvide
 import com.iffly.compose.markdown.multiplatform.config.LocalMarkdownThemeProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalNodeDataMap
 import com.iffly.compose.markdown.multiplatform.config.LocalParserProvider
+import com.iffly.compose.markdown.multiplatform.config.LocalRenderDependencies
 import com.iffly.compose.markdown.multiplatform.config.LocalRenderRegistryProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalShowNotSupportedProvider
 import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
@@ -23,6 +24,7 @@ import org.commonmark.node.Node
  * @param modifier Modifier to be applied to the root content layout.
  * @param markdownRenderConfig Configuration controlling parsing, theming, and rendering behavior.
  * @param actionHandler Optional handler for user interactions such as link clicks and image clicks.
+ * @param renderDependencies Dependencies available to custom renderers and node string builders.
  * @param showNotSupported Whether to display placeholder text for unsupported markdown elements.
  */
 @Composable
@@ -32,6 +34,7 @@ fun MarkdownView(
     markdownRenderConfig: MarkdownRenderConfig =
         remember { MarkdownRenderConfig.Builder().build() },
     actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
 ) {
     val markdownParser = markdownRenderConfig.markdownParser
@@ -43,6 +46,7 @@ fun MarkdownView(
     ProvideMarkdownLocals(
         markdownRenderConfig = markdownRenderConfig,
         actionHandler = actionHandler,
+        renderDependencies = renderDependencies,
         showNotSupported = showNotSupported,
     ) {
         MarkdownContent(
@@ -59,6 +63,7 @@ fun MarkdownView(
  *
  * @param markdownRenderConfig The render configuration supplying theme, parser, and registry.
  * @param actionHandler Optional handler for user interaction events.
+ * @param renderDependencies Dependencies available to custom renderers and node string builders.
  * @param showNotSupported Whether to show unsupported element placeholders.
  * @param content The composable content that will have access to the provided locals.
  */
@@ -66,6 +71,7 @@ fun MarkdownView(
 fun ProvideMarkdownLocals(
     markdownRenderConfig: MarkdownRenderConfig,
     actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
     content: @Composable () -> Unit,
 ) {
@@ -75,6 +81,7 @@ fun ProvideMarkdownLocals(
         LocalParserProvider provides markdownRenderConfig.markdownParser,
         LocalRenderRegistryProvider provides markdownRenderConfig.renderRegistry,
         LocalActionHandlerProvider provides actionHandler,
+        LocalRenderDependencies provides renderDependencies,
         LocalShowNotSupportedProvider provides showNotSupported,
         LocalNodeDataMap provides nodeDataMap,
     ) {

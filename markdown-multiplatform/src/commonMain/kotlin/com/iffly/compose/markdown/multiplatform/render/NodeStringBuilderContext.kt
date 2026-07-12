@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import com.iffly.compose.markdown.multiplatform.config.currentParser
+import com.iffly.compose.markdown.multiplatform.config.currentRenderDependencies
 import kotlinx.coroutines.CoroutineScope
 import org.commonmark.node.Node
 
@@ -52,12 +53,14 @@ fun interface MarkdownParser {
  * @property layoutContext Layout-related context such as density, text measurer, and size constraints.
  * @property designContext Design-related context such as text style, content color, and font resolver.
  * @property systemContext Platform system services such as clipboard, URI handler, and haptic feedback.
+ * @property renderDependencies Dependencies supplied by the caller for custom node string builders.
  */
 data class NodeStringBuilderContext(
     val parser: MarkdownParser,
     val layoutContext: TextLayoutContext,
     val designContext: TextStyleContext,
     val systemContext: SystemContext,
+    val renderDependencies: Map<String, Any>,
 )
 
 /**
@@ -155,6 +158,7 @@ fun rememberNodeStringBuilderContext(
     val softwareKeyboardController = LocalSoftwareKeyboardController.current
     val scope = rememberCoroutineScope()
     val parser = currentParser()
+    val renderDependencies = currentRenderDependencies()
 
     val mergedTextStyle = systemTextStyle.merge(textStyle)
 
@@ -175,6 +179,7 @@ fun rememberNodeStringBuilderContext(
         focusManager,
         scope,
         parser,
+        renderDependencies,
     ) {
         NodeStringBuilderContext(
             parser = parser,
@@ -202,6 +207,7 @@ fun rememberNodeStringBuilderContext(
                     focusManager = focusManager,
                     coroutineScope = scope,
                 ),
+            renderDependencies = renderDependencies,
         )
     }
 }
