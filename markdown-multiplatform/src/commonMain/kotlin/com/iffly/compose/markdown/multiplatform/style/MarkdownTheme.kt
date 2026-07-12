@@ -159,6 +159,9 @@ data class MarkdownTheme(
     val codeBlockTheme: CodeBlockTheme = CodeBlockTheme(),
 ) {
     companion object {
+        /** Shared default Markdown theme. */
+        val Default = MarkdownTheme()
+
         /** Heading level 1 (largest). */
         const val HEAD1 = 1
 

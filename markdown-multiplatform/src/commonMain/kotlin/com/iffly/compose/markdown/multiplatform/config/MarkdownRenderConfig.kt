@@ -1,5 +1,6 @@
 package com.iffly.compose.markdown.multiplatform.config
 
+import androidx.compose.runtime.Immutable
 import com.iffly.compose.markdown.multiplatform.core.plugins.CorePlugin
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
@@ -20,29 +21,15 @@ import kotlin.reflect.KClass
  *
  * @see Builder
  */
-class MarkdownRenderConfig {
+@Immutable
+class MarkdownRenderConfig private constructor(
     /** The theme used for styling rendered Markdown content. */
-    var markdownTheme: MarkdownTheme
-        private set
-
+    val markdownTheme: MarkdownTheme,
     /** The parser responsible for converting raw Markdown text into a Node tree. */
-    var markdownParser: MarkdownParser
-        private set
-
+    val markdownParser: MarkdownParser,
     /** The registry that maps node types to their corresponding renderers. */
-    var renderRegistry: RenderRegistry
-        private set
-
-    private constructor(
-        markdownTheme: MarkdownTheme,
-        markdownParser: MarkdownParser,
-        renderRegistry: RenderRegistry,
-    ) {
-        this.markdownTheme = markdownTheme
-        this.markdownParser = markdownParser
-        this.renderRegistry = renderRegistry
-    }
-
+    val renderRegistry: RenderRegistry,
+) {
     companion object {
         private val internalPlugins =
             listOf<IMarkdownRenderPlugin>(
@@ -126,17 +113,16 @@ class MarkdownRenderConfig {
                 extensions.addAll(plugin.parserExtensions())
             }
 
+            val parser =
+                Parser
+                    .builder()
+                    .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
+                    .extensions(extensions)
+                    .build()
+
             return MarkdownRenderConfig(
-                markdownTheme ?: MarkdownTheme(),
-                MarkdownParser { sourceText ->
-                    val parser =
-                        Parser
-                            .builder()
-                            .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
-                            .extensions(extensions)
-                            .build()
-                    parser.parse(sourceText)
-                },
+                markdownTheme ?: MarkdownTheme.Default,
+                MarkdownParser(parser::parse),
                 RenderRegistry(
                     blockRenderers.toMap(),
                     inlineNodeStringBuilders.toMap(),

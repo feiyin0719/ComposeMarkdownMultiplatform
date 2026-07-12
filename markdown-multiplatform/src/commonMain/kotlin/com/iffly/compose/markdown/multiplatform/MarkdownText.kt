@@ -41,6 +41,7 @@ import org.commonmark.node.Node
  * @param text The raw markdown content to render.
  * @param modifier Modifier to be applied to the Markdown text.
  * @param markdownRenderConfig Configuration controlling parsing, theming, and rendering behavior.
+ * Remember custom instances at the call site.
  * @param actionHandler Optional handler for user interactions such as link clicks.
  * @param renderDependencies Dependencies available to custom renderers and node string builders.
  * @param showNotSupported Whether to display placeholder text for unsupported markdown elements.
@@ -128,7 +129,7 @@ private fun MarkdownTextContent(
     BoxWithConstraints(modifier = modifier) {
         val theme = currentTheme()
         val baseRegistry = currentRenderRegistry()
-        val renderRegistry = remember(baseRegistry) { baseRegistry.textModeRegistry() }
+        val renderRegistry = baseRegistry.textModeRegistry()
         val actionHandler = currentActionHandler()
         val isShowNotSupported = isShowNotSupported()
         val nodeStringBuilderContext =

@@ -11,7 +11,7 @@ import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
  * @return A fully constructed [MarkdownRenderConfig] instance.
  */
 fun markdownRenderConfig(
-    markdownTheme: MarkdownTheme = MarkdownTheme(),
+    markdownTheme: MarkdownTheme = MarkdownTheme.Default,
     block: MarkdownRenderConfig.Builder.() -> Unit = {},
 ): MarkdownRenderConfig =
     MarkdownRenderConfig

@@ -62,7 +62,7 @@ fun MarkdownView(
 
 - `text`：要渲染的 Markdown 文本。
 - `modifier`：标准 Compose `Modifier`，用于尺寸、内边距等设置。
-- `markdownRenderConfig`：渲染配置，通过 `MarkdownRenderConfig.Builder()` 创建。省略时使用默认配置。
+- `markdownRenderConfig`：渲染配置；省略时按调用点创建并 remember。自定义配置也应由调用方 Composable 使用 `remember` 持有。
 - `actionHandler`：可选的交互处理器（链接、图片、自定义事件等）。
 - `showNotSupported`：当为 `true` 时，不支持的元素会以文本回退方式显示，而不是静默忽略。
 
@@ -218,7 +218,8 @@ fun MarkdownInlineText(
 fun MarkdownText(
     text: String,
     modifier: Modifier = Modifier,
-    markdownRenderConfig: MarkdownRenderConfig = remember { MarkdownRenderConfig.Builder().build() },
+    markdownRenderConfig: MarkdownRenderConfig =
+        remember { MarkdownRenderConfig.Builder().build() },
     actionHandler: ActionHandler? = null,
     renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
@@ -274,6 +275,8 @@ SelectionContainer {
 - 一个 `RenderRegistry`，描述如何渲染各类节点。
 
 实例通过 `MarkdownRenderConfig.Builder` 创建：
+在 Composable 内创建时，应使用 `remember` 包裹完整 Builder 表达式，使 parser 和 renderer
+实例在重组之间保持稳定。
 
 ```kotlin
 val config = MarkdownRenderConfig.Builder()

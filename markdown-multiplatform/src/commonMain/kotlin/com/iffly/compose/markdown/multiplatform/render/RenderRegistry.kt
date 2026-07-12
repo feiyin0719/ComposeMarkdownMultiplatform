@@ -1,15 +1,19 @@
 package com.iffly.compose.markdown.multiplatform.render
 
+import androidx.compose.runtime.Immutable
 import org.commonmark.node.Document
 import org.commonmark.node.Node
 import kotlin.reflect.KClass
 
+@Immutable
 data class RenderRegistry(
     private val blockRenderers: Map<KClass<out Node>, IBlockRenderer<*>>,
     private val inlineNodeStringBuilders: Map<KClass<out Node>, IInlineNodeStringBuilder<*>>,
     val markdownContentRenderer: MarkdownContentRenderer? = null,
     val markdownInlineTextRenderer: MarkdownInlineTextRenderer? = null,
 ) {
+    private val cachedTextModeRegistry: RenderRegistry by lazy { createTextModeRegistry() }
+
     fun getBlockRenderer(nodeClass: KClass<out Node>): IBlockRenderer<*>? = blockRenderers[nodeClass]
 
     @Suppress("UNCHECKED_CAST")
@@ -39,7 +43,10 @@ data class RenderRegistry(
      * without modifying the base registry at config-build time.
      */
     @Suppress("UNCHECKED_CAST")
-    fun textModeRegistry(): RenderRegistry {
+    fun textModeRegistry(): RenderRegistry = cachedTextModeRegistry
+
+    @Suppress("UNCHECKED_CAST")
+    private fun createTextModeRegistry(): RenderRegistry {
         val augmented = inlineNodeStringBuilders.toMutableMap()
         if (!augmented.containsKey(Document::class)) {
             augmented[Document::class] = DocumentInlineStringBuilder()

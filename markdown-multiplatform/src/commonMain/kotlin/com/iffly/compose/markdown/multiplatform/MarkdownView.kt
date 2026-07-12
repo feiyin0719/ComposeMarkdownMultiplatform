@@ -23,6 +23,7 @@ import org.commonmark.node.Node
  * @param text The raw markdown content to render.
  * @param modifier Modifier to be applied to the root content layout.
  * @param markdownRenderConfig Configuration controlling parsing, theming, and rendering behavior.
+ * Remember custom instances at the call site.
  * @param actionHandler Optional handler for user interactions such as link clicks and image clicks.
  * @param renderDependencies Dependencies available to custom renderers and node string builders.
  * @param showNotSupported Whether to display placeholder text for unsupported markdown elements.
