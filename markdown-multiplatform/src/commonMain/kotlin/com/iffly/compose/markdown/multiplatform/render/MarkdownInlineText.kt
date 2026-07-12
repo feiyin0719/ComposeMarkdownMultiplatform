@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
@@ -21,7 +22,9 @@ import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.isInQuoteBlock
 import com.iffly.compose.markdown.multiplatform.util.nodeTextContent
 import com.iffly.compose.markdown.multiplatform.widget.richtext.RichText
-import kotlinx.collections.immutable.toImmutableMap
+import com.iffly.compose.markdown.multiplatform.widget.richtext.RichTextInlineContent
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
 import org.commonmark.node.ListItem
 import org.commonmark.node.Node
 
@@ -93,51 +96,22 @@ private fun DefaultMarkdownInlineText(
 ) {
     BoxWithConstraints(modifier = modifier) {
         val theme = currentTheme()
-        val renderRegistry = currentRenderRegistry()
-        val actionHandler = currentActionHandler()
-        val isShowNotSupported = isShowNotSupported()
-        val nodeStringBuilderContext =
-            rememberNodeStringBuilderContext(
-                textSizeConstraints =
-                    TextSizeConstraints(
-                        maxWidth = maxWidth,
-                        maxHeight = maxHeight,
-                        minWidth = minWidth,
-                        minHeight = minHeight,
-                    ),
+        val textSizeConstraints =
+            remember(maxWidth, maxHeight, minWidth, minHeight) {
+                TextSizeConstraints(
+                    maxWidth = maxWidth,
+                    maxHeight = maxHeight,
+                    minWidth = minWidth,
+                    minHeight = minHeight,
+                )
+            }
+        val result =
+            rememberMarkdownAnnotatedStringResult(
+                node = parent,
+                textSizeConstraints = textSizeConstraints,
                 textAlign = textAlign,
                 textStyle = textStyle,
             )
-        val (text, inlineContent) =
-            remember(
-                parent,
-                theme,
-                renderRegistry,
-                isShowNotSupported,
-                actionHandler,
-                nodeStringBuilderContext,
-            ) {
-                markdownText(
-                    parent,
-                    theme,
-                    renderRegistry,
-                    actionHandler,
-                    1,
-                    isShowNotSupported,
-                    nodeStringBuilderContext,
-                )
-            }
-        val inlineContentMap =
-            remember(inlineContent) {
-                inlineContent
-                    .mapNotNull { (key, value) ->
-                        if (value is MarkdownInlineView.MarkdownRichTextInlineContent) {
-                            key to value.inlineContent
-                        } else {
-                            null
-                        }
-                    }.toMap()
-            }
         val isInQuote = parent.isInQuoteBlock()
         val mergedTextStyle =
             (textStyle ?: theme.textStyle).merge(
@@ -150,8 +124,8 @@ private fun DefaultMarkdownInlineText(
         val nodeDataMap = if (listItemNode != null) LocalNodeDataMap.current else null
 
         RichText(
-            text = text,
-            inlineContent = inlineContentMap.toImmutableMap(),
+            text = result.text,
+            inlineContent = result.inlineContent,
             modifier =
                 Modifier
                     .wrapContentHeight()
@@ -167,6 +141,63 @@ private fun DefaultMarkdownInlineText(
                     }
                 },
         )
+    }
+}
+
+/** Remembered text and inline content produced by the active Markdown rendering locals. */
+@Immutable
+data class MarkdownAnnotatedStringResult(
+    val text: AnnotatedString,
+    val inlineContent: ImmutableMap<String, RichTextInlineContent>,
+)
+
+/**
+ * Builds and remembers an annotated Markdown string using the renderer supplied by the current
+ * composition locals.
+ */
+@Composable
+fun rememberMarkdownAnnotatedStringResult(
+    node: Node,
+    textSizeConstraints: TextSizeConstraints,
+    textAlign: TextAlign = TextAlign.Start,
+    textStyle: TextStyle? = null,
+): MarkdownAnnotatedStringResult {
+    val theme = currentTheme()
+    val renderRegistry = currentRenderRegistry()
+    val actionHandler = currentActionHandler()
+    val showNotSupported = isShowNotSupported()
+    val nodeStringBuilderContext =
+        rememberNodeStringBuilderContext(
+            textSizeConstraints = textSizeConstraints,
+            textAlign = textAlign,
+            textStyle = textStyle,
+        )
+
+    return remember(
+        node,
+        theme,
+        renderRegistry,
+        actionHandler,
+        showNotSupported,
+        nodeStringBuilderContext,
+    ) {
+        val (text, inlineViews) =
+            markdownText(
+                node = node,
+                markdownTheme = theme,
+                renderRegistry = renderRegistry,
+                actionHandler = actionHandler,
+                indentLevel = 1,
+                isShowNotSupported = showNotSupported,
+                nodeStringBuilderContext = nodeStringBuilderContext,
+            )
+        val inlineContent = persistentMapOf<String, RichTextInlineContent>().builder()
+        inlineViews.forEach { (key, value) ->
+            if (value is MarkdownInlineView.MarkdownRichTextInlineContent) {
+                inlineContent[key] = value.inlineContent
+            }
+        }
+        MarkdownAnnotatedStringResult(text = text, inlineContent = inlineContent.build())
     }
 }
 

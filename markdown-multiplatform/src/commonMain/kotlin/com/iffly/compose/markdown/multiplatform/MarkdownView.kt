@@ -14,6 +14,7 @@ import com.iffly.compose.markdown.multiplatform.config.LocalRenderRegistryProvid
 import com.iffly.compose.markdown.multiplatform.config.LocalShowNotSupportedProvider
 import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContent
+import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import org.commonmark.node.Node
 
 /**
@@ -65,6 +66,7 @@ fun MarkdownView(
  * @param markdownRenderConfig The render configuration supplying theme, parser, and registry.
  * @param actionHandler Optional handler for user interaction events.
  * @param renderDependencies Dependencies available to custom renderers and node string builders.
+ * @param renderRegistry Registry exposed to descendants. Defaults to the registry from [markdownRenderConfig].
  * @param showNotSupported Whether to show unsupported element placeholders.
  * @param content The composable content that will have access to the provided locals.
  */
@@ -74,13 +76,14 @@ fun ProvideMarkdownLocals(
     actionHandler: ActionHandler? = null,
     renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
+    renderRegistry: RenderRegistry = markdownRenderConfig.renderRegistry,
     content: @Composable () -> Unit,
 ) {
     val nodeDataMap = remember { mutableStateMapOf<Node, Any>() }
     CompositionLocalProvider(
         LocalMarkdownThemeProvider provides markdownRenderConfig.markdownTheme,
         LocalParserProvider provides markdownRenderConfig.markdownParser,
-        LocalRenderRegistryProvider provides markdownRenderConfig.renderRegistry,
+        LocalRenderRegistryProvider provides renderRegistry,
         LocalActionHandlerProvider provides actionHandler,
         LocalRenderDependencies provides renderDependencies,
         LocalShowNotSupportedProvider provides showNotSupported,

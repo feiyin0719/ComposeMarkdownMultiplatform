@@ -205,6 +205,11 @@ fun MarkdownInlineText(
 - `textAlign`: Text alignment.
 - `textStyle`: Override text style (defaults to theme style).
 
+Both this component and `MarkdownText` use `rememberMarkdownAnnotatedStringResult(...)`. The helper
+reads the active registry from `ProvideMarkdownLocals`; it does not accept a registry directly.
+`MarkdownText` provides the cached text-mode registry as an override, while regular inline rendering
+uses the base registry from `MarkdownRenderConfig`.
+
 ---
 
 ### MarkdownText

@@ -205,6 +205,10 @@ fun MarkdownInlineText(
 - `textAlign`：文本对齐方式。
 - `textStyle`：覆盖文本样式（默认使用主题样式）。
 
+该组件与 `MarkdownText` 共用 `rememberMarkdownAnnotatedStringResult(...)`。此 helper 不直接接收
+registry，而是读取 `ProvideMarkdownLocals` 中当前生效的 registry。`MarkdownText` 会覆盖为缓存的
+text-mode registry；普通内联渲染继续使用 `MarkdownRenderConfig` 的基础 registry。
+
 ---
 
 ### MarkdownText
