@@ -8,6 +8,7 @@ import com.iffly.compose.markdown.multiplatform.widget.richtext.RichTextInlineCo
 import com.iffly.compose.markdown.multiplatform.widget.richtext.getStandaloneInlineTextContentAnnotations
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertSame
 
 class InlineContentIdTest {
@@ -72,6 +73,22 @@ class InlineContentIdTest {
         val annotation = builder.toAnnotatedString().getStandaloneInlineTextContentAnnotations().single()
         assertEquals(actualId, annotation.item)
         assertEquals("fallback", builder.toAnnotatedString().text)
+    }
+
+    @Test
+    fun overwriteRejectsADifferentAnnotationType() {
+        val builder = AnnotatedString.Builder()
+        val inlineContent = mutableMapOf<String, MarkdownInlineView>()
+        builder.appendMarkdownInlineContent("shared", embeddedContent(), inlineContent)
+
+        assertFailsWith<IllegalArgumentException> {
+            builder.appendMarkdownInlineContent(
+                id = "shared",
+                inlineContent = RichTextInlineContent.StandaloneInlineContent {},
+                inlineContentMap = inlineContent,
+                overwrite = true,
+            )
+        }
     }
 
     private fun embeddedContent(): RichTextInlineContent =
