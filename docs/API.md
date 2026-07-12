@@ -593,11 +593,43 @@ interface IInlineNodeStringBuilder<T : Node> {
 **Parameters**
 
 - `node`: The inline AST node.
-- `inlineContentMap`: Mutable map for registering rich inline content (key -> `MarkdownInlineView`).
+- `inlineContentMap`: Mutable map associating annotation IDs with `MarkdownInlineView` values.
 - `markdownTheme`: Current theme for reading styles.
 - `actionHandler`: Optional interaction handler for links, etc.
 - `renderRegistry`: Used for recursively building child node strings.
 - `nodeStringBuilderContext`: Context providing text measurement, density, clipboard, etc.
+
+**Registering inline content**
+
+Use the public helper to register the map entry and append its matching embedded or standalone
+annotation in one operation:
+
+```kotlin
+fun AnnotatedString.Builder.appendMarkdownInlineContent(
+        id: String,
+        inlineContent: RichTextInlineContent,
+        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        alternateText: String = "\uFFFD",
+        overwrite: Boolean = false,
+): String
+```
+
+- The default `overwrite = false` preserves an existing entry and assigns the new content a
+    deterministic `_1`, `_2`, and so on suffix. The helper returns the actual ID.
+- `overwrite = true` replaces the entry under the requested ID. Every earlier or later annotation
+    with that ID then resolves to the replacement, so use it only for stateless, semantically
+    interchangeable occurrences.
+- When using native `appendInlineContent(...)` or `appendStandaloneInlineTextContent(...)`, manage
+    IDs manually. Reassigning an ID in the map replaces the content for every annotation with that ID.
+
+```kotlin
+appendMarkdownInlineContent(
+        id = "status-${node.status}",
+        inlineContent = buildStatusInlineContent(node),
+        inlineContentMap = inlineContentMap,
+        alternateText = "[${node.status}]",
+)
+```
 
 **Helper class:**
 

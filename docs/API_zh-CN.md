@@ -592,11 +592,38 @@ interface IInlineNodeStringBuilder<T : Node> {
 **参数说明**
 
 - `node`：内联 AST 节点。
-- `inlineContentMap`：用于注册富内联内容的可变 Map（key -> `MarkdownInlineView`）。
+- `inlineContentMap`：用于关联 annotation ID 与 `MarkdownInlineView` 的可变 Map。
 - `markdownTheme`：当前主题，用于读取样式。
 - `actionHandler`：可选的交互处理器。
 - `renderRegistry`：用于递归构建子节点字符串。
 - `nodeStringBuilderContext`：提供文本测量、密度、剪贴板等上下文。
+
+**注册内联内容**
+
+使用公共 helper，在一次操作中注册 Map 条目并追加匹配的 embedded 或 standalone annotation：
+
+```kotlin
+fun AnnotatedString.Builder.appendMarkdownInlineContent(
+    id: String,
+    inlineContent: RichTextInlineContent,
+    inlineContentMap: MutableMap<String, MarkdownInlineView>,
+    alternateText: String = "\uFFFD",
+    overwrite: Boolean = false,
+): String
+```
+
+- 默认 `overwrite = false`：保留已有条目，并为新内容分配 `_1`、`_2` 等确定性后缀；helper 返回实际 ID。
+- `overwrite = true`：替换请求 ID 下的条目。此前及此后所有使用该 ID 的 annotation 都会解析到替换后的内容，因此仅用于无状态且语义可互换的 occurrence。
+- 如果直接使用原生 `appendInlineContent(...)` 或 `appendStandaloneInlineTextContent(...)`，必须自行管理 ID。Map 中重复写入同一 ID 会替换所有同 ID annotation 使用的内容。
+
+```kotlin
+appendMarkdownInlineContent(
+    id = "status-${node.status}",
+    inlineContent = buildStatusInlineContent(node),
+    inlineContentMap = inlineContentMap,
+    alternateText = "[${node.status}]",
+)
+```
 
 **辅助类：**
 

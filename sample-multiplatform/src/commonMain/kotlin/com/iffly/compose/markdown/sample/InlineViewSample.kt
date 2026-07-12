@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +31,7 @@ import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
 import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
+import com.iffly.compose.markdown.multiplatform.render.appendMarkdownInlineContent
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.widget.richtext.RichTextInlineContent
 import org.commonmark.node.Code
@@ -148,8 +148,9 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
                 else -> Color.Gray
             }
 
-        inlineContentMap[id] =
-            MarkdownInlineView.MarkdownRichTextInlineContent(
+        appendMarkdownInlineContent(
+            id = id,
+            inlineContent =
                 RichTextInlineContent.EmbeddedRichTextInlineContent(
                     placeholder =
                         Placeholder(
@@ -167,8 +168,9 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
                                 .background(color),
                     )
                 },
-            )
-        appendInlineContent(id, "[$status]")
+            inlineContentMap = inlineContentMap,
+            alternateText = "[$status]",
+        )
     }
 
     /**
@@ -181,8 +183,9 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
     ) {
         val id = "inline_tag_$tag"
 
-        inlineContentMap[id] =
-            MarkdownInlineView.MarkdownRichTextInlineContent(
+        appendMarkdownInlineContent(
+            id = id,
+            inlineContent =
                 RichTextInlineContent.EmbeddedRichTextInlineContent(
                     placeholder =
                         Placeholder(
@@ -204,7 +207,8 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
                         style = MaterialTheme.typography.labelLarge,
                     )
                 },
-            )
-        appendInlineContent(id, "[$tag]")
+            inlineContentMap = inlineContentMap,
+            alternateText = "[$tag]",
+        )
     }
 }

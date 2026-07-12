@@ -1,7 +1,6 @@
 package com.iffly.compose.markdown.multiplatform.render
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ParagraphStyle
@@ -52,8 +51,9 @@ class BlockRendererInlineStringBuilder<T : Node>(
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        val inlineView =
-            MarkdownInlineView.MarkdownRichTextInlineContent(
+        appendMarkdownInlineContent(
+            id = "${node::class.simpleName}_${node.contentHash()}",
+            inlineContent =
                 RichTextInlineContent.EmbeddedRichTextInlineContent(
                     placeholder =
                         Placeholder(
@@ -65,31 +65,9 @@ class BlockRendererInlineStringBuilder<T : Node>(
                 ) {
                     blockRenderer.Invoke(node, Modifier.fillMaxWidth())
                 },
-            )
-        val blockId =
-            inlineContentMap.putUniqueInlineContent(
-                baseId = "${node::class.simpleName}_${node.contentHash()}",
-                value = inlineView,
-            )
-        appendInlineContent(blockId, REPLACEMENT_CHAR)
+            inlineContentMap = inlineContentMap,
+        )
     }
-
-    private companion object {
-        const val REPLACEMENT_CHAR = "\uFFFD"
-    }
-}
-
-internal fun <T> MutableMap<String, T>.putUniqueInlineContent(
-    baseId: String,
-    value: T,
-): String {
-    var id = baseId
-    var occurrence = 1
-    while (containsKey(id)) {
-        id = "${baseId}_${occurrence++}"
-    }
-    this[id] = value
-    return id
 }
 
 /**

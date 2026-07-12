@@ -16,10 +16,10 @@ import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
 import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
+import com.iffly.compose.markdown.multiplatform.render.appendMarkdownInlineContent
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.widget.LoadingView
 import com.iffly.compose.markdown.multiplatform.widget.richtext.RichTextInlineContent
-import com.iffly.compose.markdown.multiplatform.widget.richtext.appendStandaloneInlineTextContent
 import org.commonmark.node.Image
 import org.commonmark.node.Node
 
@@ -157,8 +157,9 @@ class ImageNodeStringBuilder(
 
         if (url.isNotBlank()) {
             val imageId = "image_$url"
-            inlineContentMap[imageId] =
-                MarkdownInlineView.MarkdownRichTextInlineContent(
+            appendMarkdownInlineContent(
+                id = imageId,
+                inlineContent =
                     RichTextInlineContent.StandaloneInlineContent(
                         modifier = Modifier,
                     ) { modifier ->
@@ -176,8 +177,9 @@ class ImageNodeStringBuilder(
                             errorView = errorView,
                         )
                     },
-                )
-            appendStandaloneInlineTextContent(imageId, "[${altText ?: "Image"}]")
+                inlineContentMap = inlineContentMap,
+                alternateText = "[${altText ?: "Image"}]",
+            )
         } else {
             altText?.let {
                 append("[$it]")
