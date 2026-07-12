@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.iffly.compose.markdown.multiplatform.MarkdownText
@@ -18,6 +19,7 @@ fun MarkdownTextExample(
     paddingValues: PaddingValues,
     modifier: Modifier = Modifier,
 ) {
+    val markdownRenderConfig = remember { MarkdownRenderConfig.Builder().build() }
     Box(
         modifier =
             modifier
@@ -76,7 +78,7 @@ fun MarkdownTextExample(
 
                     *End of MarkdownText example.*
                     """.trimIndent(),
-                markdownRenderConfig = MarkdownRenderConfig.Builder().build(),
+                markdownRenderConfig = markdownRenderConfig,
                 modifier = Modifier.padding(16.dp),
             )
         }
