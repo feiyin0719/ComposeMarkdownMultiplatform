@@ -52,8 +52,7 @@ class BlockRendererInlineStringBuilder<T : Node>(
         renderRegistry: RenderRegistry,
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
-        val blockId = "${node::class.simpleName}_${node.contentHash()}"
-        inlineContentMap[blockId] =
+        val inlineView =
             MarkdownInlineView.MarkdownRichTextInlineContent(
                 RichTextInlineContent.EmbeddedRichTextInlineContent(
                     placeholder =
@@ -67,12 +66,30 @@ class BlockRendererInlineStringBuilder<T : Node>(
                     blockRenderer.Invoke(node, Modifier.fillMaxWidth())
                 },
             )
+        val blockId =
+            inlineContentMap.putUniqueInlineContent(
+                baseId = "${node::class.simpleName}_${node.contentHash()}",
+                value = inlineView,
+            )
         appendInlineContent(blockId, REPLACEMENT_CHAR)
     }
 
     private companion object {
         const val REPLACEMENT_CHAR = "\uFFFD"
     }
+}
+
+internal fun <T> MutableMap<String, T>.putUniqueInlineContent(
+    baseId: String,
+    value: T,
+): String {
+    var id = baseId
+    var occurrence = 1
+    while (containsKey(id)) {
+        id = "${baseId}_${occurrence++}"
+    }
+    this[id] = value
+    return id
 }
 
 /**
