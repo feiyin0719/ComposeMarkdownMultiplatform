@@ -23,7 +23,6 @@ import com.iffly.compose.markdown.multiplatform.util.StringExt
 import com.iffly.compose.markdown.multiplatform.widget.SelectionFormatText
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableMap
 
 /**
  * A composable that renders rich text with support for both inline and standalone inline content.
@@ -62,35 +61,13 @@ fun RichText(
     onTextLayout: ((Int, TextLayoutResult) -> Unit)? = null,
     style: TextStyle = LocalTextStyle.current,
 ) {
-    val standaloneInlineContent =
-        inlineContent
-            .mapNotNull { (key, value) ->
-                if (value is RichTextInlineContent.StandaloneInlineContent) {
-                    key to value
-                } else {
-                    null
-                }
-            }.toMap()
-            .toImmutableMap()
+    val (standaloneInlineContent, inlineTextContent) =
+        remember(inlineContent) { groupRichTextInlineContent(inlineContent) }
     val textSegments =
         rememberRichTextSegment(
             text = text,
             standaloneInlineContent = standaloneInlineContent,
         )
-    val inlineTextContent =
-        inlineContent
-            .mapNotNull { (key, value) ->
-                when (value) {
-                    is RichTextInlineContent.EmbeddedRichTextInlineContent -> {
-                        key to value
-                    }
-
-                    else -> {
-                        null
-                    }
-                }
-            }.toMap()
-            .toImmutableMap()
 
     Column(modifier = modifier) {
         var textSegmentIndex = 0
@@ -99,6 +76,7 @@ fun RichText(
                 is RichTextSegment.Text -> {
                     val currentIndex = textSegmentIndex
                     textSegmentIndex++
+                    val segmentOnTextLayout = rememberSegmentOnTextLayout(currentIndex, onTextLayout)
                     AdaptiveInlineContentText(
                         text = it.text,
                         color = color,
@@ -115,10 +93,7 @@ fun RichText(
                         maxLines = maxLines,
                         minLines = minLines,
                         inlineContent = inlineTextContent,
-                        onTextLayout =
-                            onTextLayout?.let { callback ->
-                                { result -> callback(currentIndex, result) }
-                            } ?: {},
+                        onTextLayout = segmentOnTextLayout,
                         style = style,
                         modifier =
                             Modifier
@@ -144,9 +119,35 @@ private fun rememberRichTextSegment(
     text: AnnotatedString,
     standaloneInlineContent: ImmutableMap<String, RichTextInlineContent.StandaloneInlineContent>,
 ): List<RichTextSegment> =
-    remember(text, standaloneInlineContent.keys) {
+    remember(text, standaloneInlineContent) {
         buildRichTextSegments(text, standaloneInlineContent)
     }
+
+@Composable
+private fun rememberSegmentOnTextLayout(
+    segmentIndex: Int,
+    onTextLayout: ((Int, TextLayoutResult) -> Unit)?,
+): (TextLayoutResult) -> Unit =
+    remember(segmentIndex, onTextLayout) {
+        onTextLayout?.let { callback ->
+            { result -> callback(segmentIndex, result) }
+        } ?: emptyTextLayoutCallback
+    }
+
+private fun groupRichTextInlineContent(inlineContent: ImmutableMap<String, RichTextInlineContent>): GroupedRichTextInlineContent {
+    val standalone = persistentMapOf<String, RichTextInlineContent.StandaloneInlineContent>().builder()
+    val embedded = persistentMapOf<String, RichTextInlineContent.EmbeddedRichTextInlineContent>().builder()
+    inlineContent.forEach { (key, value) ->
+        when (value) {
+            is RichTextInlineContent.StandaloneInlineContent -> standalone[key] = value
+            is RichTextInlineContent.EmbeddedRichTextInlineContent -> embedded[key] = value
+        }
+    }
+    return GroupedRichTextInlineContent(
+        standalone = standalone.build(),
+        embedded = embedded.build(),
+    )
+}
 
 private fun buildRichTextSegments(
     text: AnnotatedString,
@@ -185,3 +186,10 @@ private sealed interface RichTextSegment {
         val standaloneInlineTextContent: RichTextInlineContent.StandaloneInlineContent,
     ) : RichTextSegment
 }
+
+private data class GroupedRichTextInlineContent(
+    val standalone: ImmutableMap<String, RichTextInlineContent.StandaloneInlineContent>,
+    val embedded: ImmutableMap<String, RichTextInlineContent.EmbeddedRichTextInlineContent>,
+)
+
+private val emptyTextLayoutCallback: (TextLayoutResult) -> Unit = {}

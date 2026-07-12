@@ -14,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,12 +29,16 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun LoadingView(modifier: Modifier = Modifier) {
+    val surfaceVariant = MaterialTheme.colorScheme.surfaceVariant
     val shimmerColors =
-        listOf(
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-            MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
-        )
+        remember(surfaceVariant) {
+            listOf(
+                surfaceVariant.copy(alpha = 0.6f),
+                surfaceVariant.copy(alpha = 0.3f),
+                surfaceVariant.copy(alpha = 0.6f),
+            )
+        }
+    val shape = remember { RoundedCornerShape(8.dp) }
     val transition = rememberInfiniteTransition(label = "shimmer")
     val shimmerX by transition.animateFloat(
         initialValue = 0f,
@@ -49,7 +54,7 @@ fun LoadingView(modifier: Modifier = Modifier) {
     Box(
         modifier =
             modifier
-                .clip(RoundedCornerShape(8.dp))
+                .clip(shape)
                 .background(
                     Brush.linearGradient(
                         colors = shimmerColors,
