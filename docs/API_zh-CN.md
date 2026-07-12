@@ -958,6 +958,9 @@ data class SystemContext(
 `currentRenderDependencies()` 读取；非 Composable 的节点字符串构建器从
 `nodeStringBuilderContext.renderDependencies` 读取同一份 Map。
 
+文本模式块渲染使用的自定义节点可以实现 `NodeContentHashProvider`。覆盖 `contentHash()` 时只纳入
+会影响渲染的字段；无状态节点可直接使用基于类名的默认实现。
+
 ---
 
 ## 常见使用模式

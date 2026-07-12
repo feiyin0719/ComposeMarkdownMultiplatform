@@ -2,15 +2,31 @@ package com.iffly.compose.markdown.multiplatform.util
 
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
+import com.iffly.compose.markdown.multiplatform.render.NodeContentHashProvider
 import com.iffly.compose.markdown.multiplatform.render.childNodes
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import org.commonmark.node.BlockQuote
 import org.commonmark.node.BulletList
+import org.commonmark.node.Code
+import org.commonmark.node.Document
+import org.commonmark.node.Emphasis
+import org.commonmark.node.FencedCodeBlock
+import org.commonmark.node.HardLineBreak
 import org.commonmark.node.Heading
+import org.commonmark.node.HtmlBlock
+import org.commonmark.node.HtmlInline
+import org.commonmark.node.Image
+import org.commonmark.node.IndentedCodeBlock
+import org.commonmark.node.Link
 import org.commonmark.node.ListBlock
 import org.commonmark.node.ListItem
 import org.commonmark.node.Node
 import org.commonmark.node.OrderedList
+import org.commonmark.node.Paragraph
+import org.commonmark.node.SoftLineBreak
+import org.commonmark.node.StrongEmphasis
+import org.commonmark.node.Text
+import org.commonmark.node.ThematicBreak
 
 /**
  * Returns the heading level (1..6) for Heading nodes.
@@ -44,6 +60,61 @@ fun MarkdownTheme.getNodeParagraphStyle(node: Node?): ParagraphStyle {
         this.textStyle.toParagraphStyle()
     }
 }
+
+/**
+ * Calculates a stable hash from the render-relevant content of this node and its descendants.
+ * Traversal is iterative and bounded to avoid expensive work for unusually large subtrees.
+ */
+fun Node.contentHash(): Int {
+    val stack = ArrayDeque<Node>()
+    stack.addLast(this)
+    var hash = 0
+    var count = 0
+    while (stack.isNotEmpty()) {
+        val node = stack.removeLast()
+        if (count >= CONTENT_HASH_MAX_NODES) {
+            return HASH_MULTIPLIER * hash + this.hashCode()
+        }
+        hash = HASH_MULTIPLIER * hash + node.selfContentHash()
+        count++
+
+        var child = node.lastChild
+        while (child != null) {
+            stack.addLast(child)
+            child = child.previous
+        }
+    }
+    return hash
+}
+
+private fun Node.selfContentHash(): Int =
+    when (this) {
+        is NodeContentHashProvider -> contentHash()
+        is Code -> literal.hashCode()
+        is HtmlInline -> literal?.hashCode() ?: 0
+        is HtmlBlock -> literal?.hashCode() ?: 0
+        is FencedCodeBlock -> HASH_MULTIPLIER * info.hashCode() + literal.hashCode()
+        is IndentedCodeBlock -> literal?.hashCode() ?: 0
+        is Text -> literal.hashCode()
+        is Link -> toString().hashCode()
+        is Image -> toString().hashCode()
+        is Heading -> level
+        is OrderedList -> HASH_MULTIPLIER * isTight.hashCode() + (markerStartNumber ?: 1)
+        is BulletList -> isTight.hashCode()
+        is Paragraph -> this::class.simpleName.orEmpty().hashCode()
+        is BlockQuote -> this::class.simpleName.orEmpty().hashCode()
+        is ListItem -> this::class.simpleName.orEmpty().hashCode()
+        is Document -> this::class.simpleName.orEmpty().hashCode()
+        is HardLineBreak -> this::class.simpleName.orEmpty().hashCode()
+        is SoftLineBreak -> this::class.simpleName.orEmpty().hashCode()
+        is ThematicBreak -> this::class.simpleName.orEmpty().hashCode()
+        is Emphasis -> this::class.simpleName.orEmpty().hashCode()
+        is StrongEmphasis -> this::class.simpleName.orEmpty().hashCode()
+        else -> toString().hashCode()
+    }
+
+private const val HASH_MULTIPLIER = 31
+private const val CONTENT_HASH_MAX_NODES = 1024
 
 /** Unicode bullet point character used as the marker for unordered list items. */
 const val BULLET_POINT = "\u2022"

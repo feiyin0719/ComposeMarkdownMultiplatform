@@ -1040,6 +1040,10 @@ All top-level rendering components accept a `renderDependencies` map. Composable
 with `currentRenderDependencies()`, and non-Composable node string builders read the same map from
 `nodeStringBuilderContext.renderDependencies`.
 
+Custom nodes used by text-mode block rendering can implement `NodeContentHashProvider`. Override
+`contentHash()` with only fields that affect rendering; stateless nodes can use the class-name-based
+default implementation.
+
 ---
 
 ## Common Usage Patterns
