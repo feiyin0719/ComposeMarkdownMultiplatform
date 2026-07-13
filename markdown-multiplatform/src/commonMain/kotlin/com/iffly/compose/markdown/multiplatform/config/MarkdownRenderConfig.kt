@@ -1,8 +1,6 @@
 package com.iffly.compose.markdown.multiplatform.config
 
 import androidx.compose.runtime.Immutable
-import com.iffly.compose.markdown.multiplatform.DefaultStreamingMarkdownParser
-import com.iffly.compose.markdown.multiplatform.StreamingMarkdownParser
 import com.iffly.compose.markdown.multiplatform.core.plugins.CorePlugin
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
@@ -10,6 +8,7 @@ import com.iffly.compose.markdown.multiplatform.render.MarkdownContentRenderer
 import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineTextRenderer
 import com.iffly.compose.markdown.multiplatform.render.MarkdownParser
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
+import com.iffly.compose.markdown.multiplatform.streaming.StreamingMarkdownParser
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import org.commonmark.Extension
 import org.commonmark.node.Node
@@ -31,9 +30,24 @@ class MarkdownRenderConfig private constructor(
     val markdownParser: MarkdownParser,
     /** The registry that maps node types to their corresponding renderers. */
     val renderRegistry: RenderRegistry,
-    private val streamingMarkdownParserFactory: (MarkdownRenderConfig) -> StreamingMarkdownParser,
+    /** Source spans included by the parser used for regular rendering. */
+    val includeSourceSpans: IncludeSourceSpans,
+    private val parserExtensions: List<Extension>,
+    private val streamingMarkdownParserFactory: ((MarkdownRenderConfig) -> StreamingMarkdownParser)?,
 ) {
-    fun createStreamingMarkdownParser(): StreamingMarkdownParser = streamingMarkdownParserFactory(this)
+    fun createStreamingMarkdownParser(): StreamingMarkdownParser? = streamingMarkdownParserFactory?.invoke(this)
+
+    /** Creates an independent parser from this configuration's extensions and source-span policy. */
+    fun createMarkdownParser(minimumSourceSpans: IncludeSourceSpans = IncludeSourceSpans.NONE): MarkdownParser {
+        val effectiveSourceSpans = includeSourceSpans.atLeast(minimumSourceSpans)
+        val parser =
+            Parser
+                .builder()
+                .includeSourceSpans(effectiveSourceSpans)
+                .extensions(parserExtensions)
+                .build()
+        return MarkdownParser(parser::parse)
+    }
 
     companion object {
         private val internalPlugins =
@@ -65,8 +79,8 @@ class MarkdownRenderConfig private constructor(
         private val blockRenderers = mutableMapOf<KClass<out Node>, IBlockRenderer<*>>()
 
         private val extensions = mutableListOf<Extension>()
-        private var streamingMarkdownParserFactory: (MarkdownRenderConfig) -> StreamingMarkdownParser =
-            ::DefaultStreamingMarkdownParser
+        private var includeSourceSpans: IncludeSourceSpans = IncludeSourceSpans.BLOCKS
+        private var streamingMarkdownParserFactory: ((MarkdownRenderConfig) -> StreamingMarkdownParser)? = null
 
         fun markdownTheme(markdownTheme: MarkdownTheme): Builder {
             this.markdownTheme = markdownTheme
@@ -109,12 +123,25 @@ class MarkdownRenderConfig private constructor(
             return this
         }
 
-        fun streamingMarkdownParserFactory(factory: (MarkdownRenderConfig) -> StreamingMarkdownParser): Builder {
+        /** Configures source spans for parsers used by regular Markdown rendering. */
+        fun includeSourceSpans(includeSourceSpans: IncludeSourceSpans): Builder {
+            this.includeSourceSpans = includeSourceSpans
+            return this
+        }
+
+        /**
+         * Configures the per-component streaming parser factory.
+         *
+         * The default is `null`. Without a factory, Markdown components use the normal full parser
+         * even when their `isStreaming` parameter is `true`.
+         */
+        fun streamingMarkdownParserFactory(factory: ((MarkdownRenderConfig) -> StreamingMarkdownParser)?): Builder {
             streamingMarkdownParserFactory = factory
             return this
         }
 
         fun build(): MarkdownRenderConfig {
+            val parserExtensions = extensions.toMutableList()
             plugins.forEach { plugin ->
                 plugin.inlineNodeStringBuilders().forEach { (nodeClass, builder) ->
                     inlineNodeStringBuilders[nodeClass] = builder
@@ -122,14 +149,14 @@ class MarkdownRenderConfig private constructor(
                 plugin.blockRenderers().forEach { (nodeClass, renderer) ->
                     blockRenderers[nodeClass] = renderer
                 }
-                extensions.addAll(plugin.parserExtensions())
+                parserExtensions.addAll(plugin.parserExtensions())
             }
 
             val parser =
                 Parser
                     .builder()
-                    .includeSourceSpans(IncludeSourceSpans.BLOCKS_AND_INLINES)
-                    .extensions(extensions)
+                    .includeSourceSpans(includeSourceSpans)
+                    .extensions(parserExtensions)
                     .build()
 
             return MarkdownRenderConfig(
@@ -141,8 +168,12 @@ class MarkdownRenderConfig private constructor(
                     markdownContentRenderer,
                     markdownInlineTextRenderer,
                 ),
+                includeSourceSpans,
+                parserExtensions.toList(),
                 streamingMarkdownParserFactory,
             )
         }
     }
 }
+
+private fun IncludeSourceSpans.atLeast(minimum: IncludeSourceSpans): IncludeSourceSpans = if (ordinal >= minimum.ordinal) this else minimum

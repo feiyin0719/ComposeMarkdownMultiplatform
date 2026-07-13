@@ -100,11 +100,14 @@ Each component receives its own stateful parser instance. A custom `StreamingMar
 controls caching, incremental parsing, source positions, AST merging, fallback, and final parsing;
 its parsing method receives only the complete content and `isStreaming`.
 
+The factory is `null` by default. Without one, `isStreaming = true` falls back to the normal parser
+and performs a full parse for every update. Configure `::DefaultStreamingMarkdownParser`
+explicitly to enable the built-in incremental workflow. The default streaming implementation
+creates its own parser from the render configuration and forces at least block source spans.
+
 ```kotlin
 val config = MarkdownRenderConfig.Builder()
-    .streamingMarkdownParserFactory { renderConfig ->
-        CustomStreamingMarkdownParser(renderConfig)
-    }
+    .streamingMarkdownParserFactory(::DefaultStreamingMarkdownParser)
     .build()
 ```
 
@@ -215,6 +218,9 @@ is silent by default. `onStateChanged` optionally reports `InitialLoading`, `Loa
 Chunk parses do not share reference-definition state. Use inline links, or choose
 `LazyMarkdownColumn` when full-document semantics are required. Custom parsers must emit unique,
 source-spanned top-level nodes.
+
+`LazyMarkdownView` creates a dedicated parser from `MarkdownRenderConfig` and forces at least
+`IncludeSourceSpans.BLOCKS`, even if regular rendering is configured with `NONE`.
 
 ---
 
@@ -383,8 +389,13 @@ MarkdownText(
 - A `MarkdownTheme` describing typography, colors and component styles.
 - A `MarkdownParser` (powered by `commonmark-kotlin`).
 - A `RenderRegistry` mapping node types to renderers.
+- An `IncludeSourceSpans` policy. It defaults to `BLOCKS` and can be changed with the builder.
 
 Instances are created via `MarkdownRenderConfig.Builder`:
+        fun includeSourceSpans(includeSourceSpans: IncludeSourceSpans): Builder
+        fun streamingMarkdownParserFactory(
+            factory: ((MarkdownRenderConfig) -> StreamingMarkdownParser)?,
+        ): Builder
 When creating one inside a Composable, wrap the complete builder expression in `remember` so parser
 and renderer instances remain stable across recompositions.
 

@@ -143,6 +143,10 @@ fun LargeMarkdownExample(markdown: String) {
 `isStreaming = false`，以强制执行一次最终全量解析。可传入自定义
 `StreamingMarkdownParser`，并通过 `MarkdownRenderConfig.Builder.streamingMarkdownParserFactory`
 替换默认流程；其 `parse` 方法只接收完整 content 与 streaming 状态，可自主控制整个解析生命周期。
+factory 默认为 `null`，未配置时 streaming 请求使用普通全量解析。需显式配置
+`::DefaultStreamingMarkdownParser` 才启用内置流程；该实现会创建自己的 parser，并保证至少包含
+block source span。普通 parser 的 source span 可配置且默认是 `IncludeSourceSpans.BLOCKS`；
+`LazyMarkdownView` 同样强制至少使用 `BLOCKS`。
 
 ```kotlin
 MarkdownView(

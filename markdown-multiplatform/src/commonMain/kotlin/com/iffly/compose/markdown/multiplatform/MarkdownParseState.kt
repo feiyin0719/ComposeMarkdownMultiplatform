@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import com.iffly.compose.markdown.multiplatform.render.MarkdownParser
+import com.iffly.compose.markdown.multiplatform.streaming.StreamingMarkdownParser
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -25,31 +27,45 @@ internal sealed interface MarkdownParseState {
 internal fun rememberMarkdownNode(
     text: String,
     isStreaming: Boolean,
-    parser: StreamingMarkdownParser,
-): Node = remember(text, isStreaming, parser) { parser.parse(text, isStreaming) }
+    streamingParser: StreamingMarkdownParser?,
+    fallbackParser: MarkdownParser,
+): Node =
+    remember(text, isStreaming, streamingParser, fallbackParser) {
+        if (isStreaming && streamingParser != null) {
+            streamingParser.parse(text, true)
+        } else {
+            fallbackParser.parse(text)
+        }
+    }
 
 @Composable
 internal fun rememberAsyncMarkdownNode(
     text: String,
     isStreaming: Boolean,
-    parser: StreamingMarkdownParser,
+    streamingParser: StreamingMarkdownParser?,
+    fallbackParser: MarkdownParser,
     dispatcher: CoroutineDispatcher,
 ): State<MarkdownParseState> =
     produceState<MarkdownParseState>(
         initialValue = MarkdownParseState.Loading,
         text,
         isStreaming,
-        parser,
+        streamingParser,
+        fallbackParser,
         dispatcher,
     ) {
-        if (!isStreaming || value !is MarkdownParseState.Success) {
+        if (!isStreaming || streamingParser == null || value !is MarkdownParseState.Success) {
             value = MarkdownParseState.Loading
         }
         value =
             try {
                 val parsedNode =
                     withContext(dispatcher) {
-                        parser.parse(text, isStreaming)
+                        if (isStreaming && streamingParser != null) {
+                            streamingParser.parse(text, true)
+                        } else {
+                            fallbackParser.parse(text)
+                        }
                     }
                 MarkdownParseState.Success(parsedNode)
             } catch (cancellation: CancellationException) {

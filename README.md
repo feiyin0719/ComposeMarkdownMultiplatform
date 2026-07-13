@@ -144,7 +144,11 @@ Stable prefix nodes are reused and only the previous final block is reparsed. Se
 `isStreaming = false` when generation finishes to force an authoritative full parse. A custom
 `StreamingMarkdownParser` can replace the default workflow through
 `MarkdownRenderConfig.Builder.streamingMarkdownParserFactory`; its `parse` method receives only
-the complete content and streaming flag and can control the entire parsing lifecycle.
+the complete content and streaming flag and can control the entire parsing lifecycle. The factory
+defaults to `null`; without one, streaming requests use normal full parsing. Configure
+`::DefaultStreamingMarkdownParser` explicitly to enable the built-in workflow. It creates its own
+parser with at least block source spans. Regular parser spans are configurable and default to
+`IncludeSourceSpans.BLOCKS`; `LazyMarkdownView` also forces at least `BLOCKS`.
 
 ```kotlin
 MarkdownView(

@@ -37,6 +37,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.yield
 import org.commonmark.node.Node
+import org.commonmark.parser.IncludeSourceSpans
 
 /** Observable line-source and parsing activity. AST recycling remains [Idle]. */
 enum class LazyMarkdownViewState {
@@ -98,7 +99,8 @@ fun LazyMarkdownView(
  *
  * @param source Stable, rereadable Markdown line source. Remember it at the call site.
  * @param modifier Modifier applied to the underlying LazyColumn.
- * @param markdownRenderConfig Parser, theme, and renderer configuration.
+ * @param markdownRenderConfig Parser, theme, and renderer configuration. Parsing always includes
+ * at least block source spans, even when the regular parser is configured with `NONE`.
  * @param actionHandler Optional interaction handler.
  * @param renderDependencies Dependencies available to custom renderers and string builders.
  * @param showNotSupported Whether unsupported nodes produce fallback text.
@@ -130,15 +132,19 @@ fun LazyMarkdownView(
     onError: (Throwable) -> Unit = {},
 ) {
     require(nestedPrefetchItemCount >= 0) { "nestedPrefetchItemCount must be non-negative" }
+    val lazyMarkdownParser =
+        remember(markdownRenderConfig) {
+            markdownRenderConfig.createMarkdownParser(minimumSourceSpans = IncludeSourceSpans.BLOCKS)
+        }
     val loader =
         remember(
             source,
-            markdownRenderConfig.markdownParser,
+            lazyMarkdownParser,
             chunkLoaderConfig,
         ) {
             MarkdownChunkLoader(
                 source = source,
-                parser = markdownRenderConfig.markdownParser,
+                parser = lazyMarkdownParser,
                 maxCachedSourceLines = chunkLoaderConfig.maxCachedSourceLines,
                 sourceDispatcher = chunkLoaderConfig.sourceDispatcher,
                 parserDispatcher = chunkLoaderConfig.parserDispatcher,

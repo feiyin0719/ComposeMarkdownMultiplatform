@@ -31,7 +31,8 @@ import org.commonmark.node.Node
  * @param renderDependencies Dependencies available to custom renderers and node string builders.
  * @param showNotSupported Whether to display placeholder text for unsupported markdown elements.
  * @param isStreaming Whether [text] is an append-only partial stream. Setting it to `false`
- * forces a final full parse.
+ * forces a final full parse. If no streaming parser factory is configured, normal full parsing is
+ * used regardless of this value.
  */
 @Composable
 fun MarkdownView(
@@ -44,15 +45,16 @@ fun MarkdownView(
     showNotSupported: Boolean = false,
     isStreaming: Boolean = false,
 ) {
-    val parser =
-        remember(markdownRenderConfig) {
-            markdownRenderConfig.createStreamingMarkdownParser()
+    val streamingParser =
+        remember(markdownRenderConfig, isStreaming) {
+            if (isStreaming) markdownRenderConfig.createStreamingMarkdownParser() else null
         }
     val rootNode =
         rememberMarkdownNode(
             text = text,
-            parser = parser,
             isStreaming = isStreaming,
+            streamingParser = streamingParser,
+            fallbackParser = markdownRenderConfig.markdownParser,
         )
 
     MarkdownViewNode(
@@ -80,15 +82,16 @@ fun MarkdownView(
     onLoading: (@Composable () -> Unit)? = null,
     onError: (@Composable (Throwable) -> Unit)? = null,
 ) {
-    val parser =
-        remember(markdownRenderConfig) {
-            markdownRenderConfig.createStreamingMarkdownParser()
+    val streamingParser =
+        remember(markdownRenderConfig, isStreaming) {
+            if (isStreaming) markdownRenderConfig.createStreamingMarkdownParser() else null
         }
     val parseState by
         rememberAsyncMarkdownNode(
             text = text,
-            parser = parser,
             isStreaming = isStreaming,
+            streamingParser = streamingParser,
+            fallbackParser = markdownRenderConfig.markdownParser,
             dispatcher = parseDispatcher,
         )
     when (val state = parseState) {

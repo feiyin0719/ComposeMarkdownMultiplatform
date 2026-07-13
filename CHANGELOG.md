@@ -14,6 +14,8 @@
 - 为 `MarkdownView` 与 `MarkdownText` 新增可指定 dispatcher 的异步重载
 - Added append-only streaming parsing to `MarkdownView` and `MarkdownText`, with tail-block reparsing, source-span rebasing, final full parsing, and custom `StreamingMarkdownParser` support
 - 为 `MarkdownView` 与 `MarkdownText` 新增 append-only streaming 解析，支持尾部 block 重解析、source span 重定位、结束时全量解析及自定义 `StreamingMarkdownParser`
+- Added configurable parser source spans (default `BLOCKS`), optional streaming parser factories, and dedicated parsers that force block spans for streaming and `LazyMarkdownView`
+- 新增可配置 parser source span（默认 `BLOCKS`）、可选 streaming parser factory，并为 streaming 与 `LazyMarkdownView` 创建强制 block span 的独立 parser
 
 ---
 

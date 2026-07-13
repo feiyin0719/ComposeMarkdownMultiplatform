@@ -1,10 +1,11 @@
-package com.iffly.compose.markdown.multiplatform
+package com.iffly.compose.markdown.multiplatform.streaming
 
 import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.render.MarkdownParser
 import org.commonmark.node.Document
 import org.commonmark.node.Node
 import org.commonmark.node.SourceSpan
+import org.commonmark.parser.IncludeSourceSpans
 
 /**
  * Owns the parsing lifecycle for Markdown content that may be streaming.
@@ -21,11 +22,16 @@ interface StreamingMarkdownParser {
     ): Node
 }
 
-/** Default append-only CommonMark streaming parser. */
+/**
+ * Default append-only CommonMark streaming parser.
+ *
+ * It creates an independent parser from [markdownRenderConfig] with at least block source spans.
+ */
 class DefaultStreamingMarkdownParser(
     override val markdownRenderConfig: MarkdownRenderConfig,
 ) : StreamingMarkdownParser {
-    private val parser: MarkdownParser = markdownRenderConfig.markdownParser
+    private val parser: MarkdownParser =
+        markdownRenderConfig.createMarkdownParser(minimumSourceSpans = IncludeSourceSpans.BLOCKS)
     private var snapshot: MarkdownSnapshot? = null
 
     override fun parse(

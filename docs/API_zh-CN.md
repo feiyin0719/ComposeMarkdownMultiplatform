@@ -94,11 +94,13 @@ parser 通过 `MarkdownRenderConfig.Builder.streamingMarkdownParserFactory` 配�
 独立的有状态 parser 实例。自定义 `StreamingMarkdownParser` 可完全控制缓存、增量解析、source
 position、AST 合并、回退与最终解析；它的解析方法只接收完整 content 和 `isStreaming`。
 
+factory 默认为 `null`。未配置时，即使 `isStreaming = true` 也会回退到普通 parser，并在每次更新
+时执行全量解析。需显式配置 `::DefaultStreamingMarkdownParser` 才启用内置增量流程。默认
+streaming 实现会根据 render config 创建自己的 parser，并强制至少包含 block source span。
+
 ```kotlin
 val config = MarkdownRenderConfig.Builder()
-    .streamingMarkdownParserFactory { renderConfig ->
-        CustomStreamingMarkdownParser(renderConfig)
-    }
+    .streamingMarkdownParserFactory(::DefaultStreamingMarkdownParser)
     .build()
 ```
 
@@ -223,6 +225,9 @@ LazyMarkdownView(
 
 各 chunk 不共享 reference definition 状态。需要完整文档语义时请使用 `LazyMarkdownColumn`。
 自定义 parser 必须输出具有唯一 source span 的顶层节点。
+
+`LazyMarkdownView` 会根据 `MarkdownRenderConfig` 创建独立 parser，并强制至少使用
+`IncludeSourceSpans.BLOCKS`；即使普通 parser 配置为 `NONE` 也不受影响。
 
 ---
 
@@ -390,8 +395,13 @@ MarkdownText(
 - 一个 `MarkdownTheme`，描述排版、颜色和组件样式。
 - 一个 `MarkdownParser`（基于 `commonmark-kotlin`）。
 - 一个 `RenderRegistry`，描述如何渲染各类节点。
+- 一个 `IncludeSourceSpans` 策略，默认为 `BLOCKS`，可通过 Builder 修改。
 
 实例通过 `MarkdownRenderConfig.Builder` 创建：
+        fun includeSourceSpans(includeSourceSpans: IncludeSourceSpans): Builder
+        fun streamingMarkdownParserFactory(
+            factory: ((MarkdownRenderConfig) -> StreamingMarkdownParser)?,
+        ): Builder
 在 Composable 内创建时，应使用 `remember` 包裹完整 Builder 表达式，使 parser 和 renderer
 实例在重组之间保持稳定。
 
