@@ -32,7 +32,6 @@ import org.commonmark.node.Node
  * @param showNotSupported Whether to display placeholder text for unsupported markdown elements.
  * @param isStreaming Whether [text] is an append-only partial stream. Setting it to `false`
  * forces a final full parse.
- * @param streamingMarkdownParser Parser used for incremental tail updates while streaming.
  */
 @Composable
 fun MarkdownView(
@@ -44,15 +43,16 @@ fun MarkdownView(
     renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
     isStreaming: Boolean = false,
-    streamingMarkdownParser: StreamingMarkdownParser = DefaultStreamingMarkdownParser,
 ) {
-    val markdownParser = markdownRenderConfig.markdownParser
+    val parser =
+        remember(markdownRenderConfig) {
+            markdownRenderConfig.createStreamingMarkdownParser()
+        }
     val rootNode =
         rememberMarkdownNode(
             text = text,
-            parser = markdownParser,
+            parser = parser,
             isStreaming = isStreaming,
-            streamingParser = streamingMarkdownParser,
         )
 
     MarkdownViewNode(
@@ -77,16 +77,18 @@ fun MarkdownView(
     renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
     isStreaming: Boolean = false,
-    streamingMarkdownParser: StreamingMarkdownParser = DefaultStreamingMarkdownParser,
     onLoading: (@Composable () -> Unit)? = null,
     onError: (@Composable (Throwable) -> Unit)? = null,
 ) {
+    val parser =
+        remember(markdownRenderConfig) {
+            markdownRenderConfig.createStreamingMarkdownParser()
+        }
     val parseState by
         rememberAsyncMarkdownNode(
             text = text,
-            parser = markdownRenderConfig.markdownParser,
+            parser = parser,
             isStreaming = isStreaming,
-            streamingParser = streamingMarkdownParser,
             dispatcher = parseDispatcher,
         )
     when (val state = parseState) {

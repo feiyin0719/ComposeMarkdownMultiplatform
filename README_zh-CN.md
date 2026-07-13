@@ -141,8 +141,8 @@ fun LargeMarkdownExample(markdown: String) {
 当文本只在尾部追加时，在 `MarkdownView` 或 `MarkdownText` 中设置 `isStreaming = true`。
 稳定前缀节点会被复用，仅重新解析旧文档最后一个 block。生成结束时设置
 `isStreaming = false`，以强制执行一次最终全量解析。可传入自定义
-`StreamingMarkdownParser` 替换默认尾部解析器；返回的 tail source span 保持相对坐标，库会统一
-将其重定位到完整源码坐标。
+`StreamingMarkdownParser`，并通过 `MarkdownRenderConfig.Builder.streamingMarkdownParserFactory`
+替换默认流程；其 `parse` 方法只接收完整 content 与 streaming 状态，可自主控制整个解析生命周期。
 
 ```kotlin
 MarkdownView(

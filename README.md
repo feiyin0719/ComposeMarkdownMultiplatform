@@ -142,8 +142,9 @@ silent and internal concurrency uses a separate operation guard.
 Set `isStreaming = true` on `MarkdownView` or `MarkdownText` while text is appended at the end.
 Stable prefix nodes are reused and only the previous final block is reparsed. Set
 `isStreaming = false` when generation finishes to force an authoritative full parse. A custom
-`StreamingMarkdownParser` can replace the default tail parser; returned tail source spans remain
-relative and are rebased by the library.
+`StreamingMarkdownParser` can replace the default workflow through
+`MarkdownRenderConfig.Builder.streamingMarkdownParserFactory`; its `parse` method receives only
+the complete content and streaming flag and can control the entire parsing lifecycle.
 
 ```kotlin
 MarkdownView(

@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import com.iffly.compose.markdown.multiplatform.render.MarkdownParser
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
@@ -25,49 +24,37 @@ internal sealed interface MarkdownParseState {
 @Composable
 internal fun rememberMarkdownNode(
     text: String,
-    parser: MarkdownParser,
     isStreaming: Boolean,
-    streamingParser: StreamingMarkdownParser,
-): Node {
-    val session = remember(parser, streamingParser) { StreamingMarkdownParseSession() }
-    return remember(text, isStreaming, session) {
-        val request = session.createRequest(text, isStreaming)
-        session.complete(
-            request = request,
-            parsedNode = request.parse(parser, streamingParser),
-        )
-    }
-}
+    parser: StreamingMarkdownParser,
+): Node = remember(text, isStreaming, parser) { parser.parse(text, isStreaming) }
 
 @Composable
 internal fun rememberAsyncMarkdownNode(
     text: String,
-    parser: MarkdownParser,
     isStreaming: Boolean,
-    streamingParser: StreamingMarkdownParser,
+    parser: StreamingMarkdownParser,
     dispatcher: CoroutineDispatcher,
-): State<MarkdownParseState> {
-    val session = remember(parser, streamingParser) { StreamingMarkdownParseSession() }
-    return produceState<MarkdownParseState>(
+): State<MarkdownParseState> =
+    produceState<MarkdownParseState>(
         initialValue = MarkdownParseState.Loading,
         text,
         isStreaming,
-        session,
+        parser,
         dispatcher,
     ) {
-        value = MarkdownParseState.Loading
+        if (!isStreaming || value !is MarkdownParseState.Success) {
+            value = MarkdownParseState.Loading
+        }
         value =
             try {
-                val request = session.createRequest(text, isStreaming)
                 val parsedNode =
                     withContext(dispatcher) {
-                        request.parse(parser, streamingParser)
+                        parser.parse(text, isStreaming)
                     }
-                MarkdownParseState.Success(session.complete(request, parsedNode))
+                MarkdownParseState.Success(parsedNode)
             } catch (cancellation: CancellationException) {
                 throw cancellation
             } catch (throwable: Throwable) {
                 MarkdownParseState.Error(throwable)
             }
     }
-}

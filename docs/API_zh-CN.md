@@ -55,7 +55,6 @@ fun MarkdownView(
         renderDependencies: Map<String, Any> = emptyMap(),
         showNotSupported: Boolean = false,
         isStreaming: Boolean = false,
-        streamingMarkdownParser: StreamingMarkdownParser = DefaultStreamingMarkdownParser,
 )
 ```
 
@@ -91,8 +90,17 @@ MarkdownView(
 `SourceSpan` line/input index。若前部被修改或缺少 source span，会自动回退到全量解析。流结束时
 设置 `isStreaming = false`，强制执行一次最终全量解析。`MarkdownText` 支持相同行为。
 
-自定义尾部解析可传入 `StreamingMarkdownParser`。它接收完整文本和 tail offset，并返回 source
-span 相对于被解析子串的 tail `Document`；库负责绝对坐标重定位和 AST 合并。
+parser 通过 `MarkdownRenderConfig.Builder.streamingMarkdownParserFactory` 配置，每个组件都会得到
+独立的有状态 parser 实例。自定义 `StreamingMarkdownParser` 可完全控制缓存、增量解析、source
+position、AST 合并、回退与最终解析；它的解析方法只接收完整 content 和 `isStreaming`。
+
+```kotlin
+val config = MarkdownRenderConfig.Builder()
+    .streamingMarkdownParserFactory { renderConfig ->
+        CustomStreamingMarkdownParser(renderConfig)
+    }
+    .build()
+```
 
 ```kotlin
 MarkdownView(
@@ -328,7 +336,6 @@ fun MarkdownText(
     letterSpacing: TextUnit = TextUnit.Unspecified,
     textDecoration: TextDecoration? = null,
     isStreaming: Boolean = false,
-    streamingMarkdownParser: StreamingMarkdownParser = DefaultStreamingMarkdownParser,
     onTextLayout: (TextLayoutResult) -> Unit = {},
 )
 ```

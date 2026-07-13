@@ -78,6 +78,12 @@ val markdownExamples =
             LazyMarkdownViewExample(paddingValues)
         },
         MarkdownExample(
+            title = "Streaming Markdown Example",
+            description = "Incrementally parses an append-only Markdown stream and finalizes it",
+        ) { paddingValues ->
+            StreamingMarkdownExample(paddingValues)
+        },
+        MarkdownExample(
             title = "Inline View Example",
             description = "Demonstrates FixedSize and DynamicSize inline views in markdown",
         ) { paddingValues ->

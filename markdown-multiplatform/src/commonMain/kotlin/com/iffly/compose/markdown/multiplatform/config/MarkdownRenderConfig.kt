@@ -1,6 +1,8 @@
 package com.iffly.compose.markdown.multiplatform.config
 
 import androidx.compose.runtime.Immutable
+import com.iffly.compose.markdown.multiplatform.DefaultStreamingMarkdownParser
+import com.iffly.compose.markdown.multiplatform.StreamingMarkdownParser
 import com.iffly.compose.markdown.multiplatform.core.plugins.CorePlugin
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
@@ -29,7 +31,10 @@ class MarkdownRenderConfig private constructor(
     val markdownParser: MarkdownParser,
     /** The registry that maps node types to their corresponding renderers. */
     val renderRegistry: RenderRegistry,
+    private val streamingMarkdownParserFactory: (MarkdownRenderConfig) -> StreamingMarkdownParser,
 ) {
+    fun createStreamingMarkdownParser(): StreamingMarkdownParser = streamingMarkdownParserFactory(this)
+
     companion object {
         private val internalPlugins =
             listOf<IMarkdownRenderPlugin>(
@@ -60,6 +65,8 @@ class MarkdownRenderConfig private constructor(
         private val blockRenderers = mutableMapOf<KClass<out Node>, IBlockRenderer<*>>()
 
         private val extensions = mutableListOf<Extension>()
+        private var streamingMarkdownParserFactory: (MarkdownRenderConfig) -> StreamingMarkdownParser =
+            ::DefaultStreamingMarkdownParser
 
         fun markdownTheme(markdownTheme: MarkdownTheme): Builder {
             this.markdownTheme = markdownTheme
@@ -102,6 +109,11 @@ class MarkdownRenderConfig private constructor(
             return this
         }
 
+        fun streamingMarkdownParserFactory(factory: (MarkdownRenderConfig) -> StreamingMarkdownParser): Builder {
+            streamingMarkdownParserFactory = factory
+            return this
+        }
+
         fun build(): MarkdownRenderConfig {
             plugins.forEach { plugin ->
                 plugin.inlineNodeStringBuilders().forEach { (nodeClass, builder) ->
@@ -129,6 +141,7 @@ class MarkdownRenderConfig private constructor(
                     markdownContentRenderer,
                     markdownInlineTextRenderer,
                 ),
+                streamingMarkdownParserFactory,
             )
         }
     }
