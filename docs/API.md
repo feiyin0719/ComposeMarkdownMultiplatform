@@ -392,14 +392,16 @@ MarkdownText(
 - An `IncludeSourceSpans` policy. It defaults to `BLOCKS` and can be changed with the builder.
 
 Instances are created via `MarkdownRenderConfig.Builder`:
+When creating one inside a Composable, wrap the complete builder expression in `remember` so parser
+and renderer instances remain stable across recompositions.
+The regular `markdownParser` is created lazily on first access from the stored extensions and
+`IncludeSourceSpans` policy. Dedicated streaming and lazy parsers are created separately when needed.
+
+```kotlin
         fun includeSourceSpans(includeSourceSpans: IncludeSourceSpans): Builder
         fun streamingMarkdownParserFactory(
             factory: ((MarkdownRenderConfig) -> StreamingMarkdownParser)?,
         ): Builder
-When creating one inside a Composable, wrap the complete builder expression in `remember` so parser
-and renderer instances remain stable across recompositions.
-
-```kotlin
 val config = MarkdownRenderConfig.Builder()
     // configure theme, plugins, renderers...
     .build()

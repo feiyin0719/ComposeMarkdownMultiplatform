@@ -398,14 +398,16 @@ MarkdownText(
 - 一个 `IncludeSourceSpans` 策略，默认为 `BLOCKS`，可通过 Builder 修改。
 
 实例通过 `MarkdownRenderConfig.Builder` 创建：
+在 Composable 内创建时，应使用 `remember` 包裹完整 Builder 表达式，使 parser 和 renderer
+实例在重组之间保持稳定。
+普通 `markdownParser` 会在首次访问时，根据保存的 extensions 与 `IncludeSourceSpans` 策略懒创建；
+streaming 与 lazy parser 则在需要时分别创建独立实例。
+
+```kotlin
         fun includeSourceSpans(includeSourceSpans: IncludeSourceSpans): Builder
         fun streamingMarkdownParserFactory(
             factory: ((MarkdownRenderConfig) -> StreamingMarkdownParser)?,
         ): Builder
-在 Composable 内创建时，应使用 `remember` 包裹完整 Builder 表达式，使 parser 和 renderer
-实例在重组之间保持稳定。
-
-```kotlin
 val config = MarkdownRenderConfig.Builder()
     // 配置主题、插件、渲染器等...
     .build()

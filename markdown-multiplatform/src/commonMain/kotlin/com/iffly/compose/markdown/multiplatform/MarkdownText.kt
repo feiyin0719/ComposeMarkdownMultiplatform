@@ -75,8 +75,8 @@ fun MarkdownText(
     onTextLayout: (TextLayoutResult) -> Unit = {},
 ) {
     val streamingParser =
-        remember(markdownRenderConfig, isStreaming) {
-            if (isStreaming) markdownRenderConfig.createStreamingMarkdownParser() else null
+        remember(markdownRenderConfig) {
+            markdownRenderConfig.createStreamingMarkdownParser()
         }
     val rootNode =
         rememberMarkdownNode(
@@ -128,8 +128,8 @@ fun MarkdownText(
     onError: (@Composable (Throwable) -> Unit)? = null,
 ) {
     val streamingParser =
-        remember(markdownRenderConfig, isStreaming) {
-            if (isStreaming) markdownRenderConfig.createStreamingMarkdownParser() else null
+        remember(markdownRenderConfig) {
+            markdownRenderConfig.createStreamingMarkdownParser()
         }
     val parseState by
         rememberAsyncMarkdownNode(

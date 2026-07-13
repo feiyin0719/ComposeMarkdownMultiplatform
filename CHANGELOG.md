@@ -16,6 +16,8 @@
 - 为 `MarkdownView` 与 `MarkdownText` 新增 append-only streaming 解析，支持尾部 block 重解析、source span 重定位、结束时全量解析及自定义 `StreamingMarkdownParser`
 - Added configurable parser source spans (default `BLOCKS`), optional streaming parser factories, and dedicated parsers that force block spans for streaming and `LazyMarkdownView`
 - 新增可配置 parser source span（默认 `BLOCKS`）、可选 streaming parser factory，并为 streaming 与 `LazyMarkdownView` 创建强制 block span 的独立 parser
+- Lazily creates the regular MPP Markdown parser and retains each component's streaming parser across streaming-state transitions
+- MPP 普通 Markdown parser 改为懒创建，并在 streaming 状态切换期间保留每个组件的 streaming parser 实例
 
 ---
 

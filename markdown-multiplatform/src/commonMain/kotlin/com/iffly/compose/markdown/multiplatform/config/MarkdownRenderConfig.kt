@@ -26,8 +26,6 @@ import kotlin.reflect.KClass
 class MarkdownRenderConfig private constructor(
     /** The theme used for styling rendered Markdown content. */
     val markdownTheme: MarkdownTheme,
-    /** The parser responsible for converting raw Markdown text into a Node tree. */
-    val markdownParser: MarkdownParser,
     /** The registry that maps node types to their corresponding renderers. */
     val renderRegistry: RenderRegistry,
     /** Source spans included by the parser used for regular rendering. */
@@ -35,6 +33,9 @@ class MarkdownRenderConfig private constructor(
     private val parserExtensions: List<Extension>,
     private val streamingMarkdownParserFactory: ((MarkdownRenderConfig) -> StreamingMarkdownParser)?,
 ) {
+    /** The lazily created parser used by regular Markdown rendering. */
+    val markdownParser: MarkdownParser by lazy { createMarkdownParser() }
+
     fun createStreamingMarkdownParser(): StreamingMarkdownParser? = streamingMarkdownParserFactory?.invoke(this)
 
     /** Creates an independent parser from this configuration's extensions and source-span policy. */
@@ -152,16 +153,8 @@ class MarkdownRenderConfig private constructor(
                 parserExtensions.addAll(plugin.parserExtensions())
             }
 
-            val parser =
-                Parser
-                    .builder()
-                    .includeSourceSpans(includeSourceSpans)
-                    .extensions(parserExtensions)
-                    .build()
-
             return MarkdownRenderConfig(
                 markdownTheme ?: MarkdownTheme.Default,
-                MarkdownParser(parser::parse),
                 RenderRegistry(
                     blockRenderers.toMap(),
                     inlineNodeStringBuilders.toMap(),
