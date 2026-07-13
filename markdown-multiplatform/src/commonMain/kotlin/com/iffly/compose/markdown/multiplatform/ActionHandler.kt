@@ -1,5 +1,6 @@
 package com.iffly.compose.markdown.multiplatform
 
+import androidx.compose.runtime.State
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.LinkInteractionListener
 import org.commonmark.node.Node
@@ -30,13 +31,15 @@ interface ActionHandler {
     ) {}
 }
 
+typealias ActionHandlerState = State<ActionHandler?>
+
 class MarkdownLinkInteractionListener(
-    private val actionHandler: ActionHandler,
+    private val actionHandler: ActionHandlerState?,
     private val node: Node,
 ) : LinkInteractionListener {
     override fun onClick(link: LinkAnnotation) {
         (link as? LinkAnnotation.Url)?.let {
-            actionHandler.handleUrlClick(link.url, node)
+            actionHandler?.value?.handleUrlClick(link.url, node)
         }
     }
 }

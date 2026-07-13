@@ -5,6 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import com.iffly.compose.markdown.multiplatform.config.LocalActionHandlerProvider
 import com.iffly.compose.markdown.multiplatform.config.LocalMarkdownThemeProvider
@@ -160,11 +161,12 @@ fun ProvideMarkdownLocals(
     content: @Composable () -> Unit,
 ) {
     val nodeDataMap = remember { mutableStateMapOf<Node, Any>() }
+    val actionHandlerState = rememberUpdatedState(actionHandler)
     CompositionLocalProvider(
         LocalMarkdownThemeProvider provides markdownRenderConfig.markdownTheme,
         LocalParserProvider provides markdownRenderConfig.markdownParser,
         LocalRenderRegistryProvider provides renderRegistry,
-        LocalActionHandlerProvider provides actionHandler,
+        LocalActionHandlerProvider provides actionHandlerState,
         LocalRenderDependencies provides renderDependencies,
         LocalShowNotSupportedProvider provides showNotSupported,
         LocalNodeDataMap provides nodeDataMap,

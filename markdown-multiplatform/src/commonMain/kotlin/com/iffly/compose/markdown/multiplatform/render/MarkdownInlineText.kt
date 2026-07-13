@@ -11,7 +11,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextAlign
-import com.iffly.compose.markdown.multiplatform.ActionHandler
+import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.config.LocalNodeDataMap
 import com.iffly.compose.markdown.multiplatform.config.currentActionHandler
 import com.iffly.compose.markdown.multiplatform.config.currentRenderRegistry
@@ -205,7 +205,7 @@ fun markdownText(
     node: Node,
     markdownTheme: MarkdownTheme,
     renderRegistry: RenderRegistry,
-    actionHandler: ActionHandler? = null,
+    actionHandler: ActionHandlerState? = null,
     indentLevel: Int = 0,
     isShowNotSupported: Boolean,
     nodeStringBuilderContext: NodeStringBuilderContext,

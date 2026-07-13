@@ -2,7 +2,7 @@ package com.iffly.compose.markdown.multiplatform.render
 
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.ui.text.AnnotatedString
-import com.iffly.compose.markdown.multiplatform.ActionHandler
+import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.widget.richtext.RichTextInlineContent
 import com.iffly.compose.markdown.multiplatform.widget.richtext.appendStandaloneInlineTextContent
@@ -13,7 +13,7 @@ interface IInlineNodeStringBuilder<T : Node> {
         node: T,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
+        actionHandler: ActionHandlerState?,
         indentLevel: Int,
         isShowNotSupported: Boolean,
         renderRegistry: RenderRegistry,
@@ -113,7 +113,7 @@ fun IInlineNodeStringBuilder<*>.buildMarkdownInlineNodeString(
     inlineContentMap: MutableMap<String, MarkdownInlineView>,
     markdownTheme: MarkdownTheme,
     indentLevel: Int,
-    actionHandler: ActionHandler? = null,
+    actionHandler: ActionHandlerState? = null,
     renderRegistry: RenderRegistry,
     isShowNotSupported: Boolean,
     builder: AnnotatedString.Builder,

@@ -59,7 +59,7 @@ fun MarkdownImage(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .clickable {
-                    actionHandler?.handleImageClick(url, node)
+                    actionHandler.value?.handleImageClick(url, node)
                 },
         loading = {
             loadingView(url, contentDescription, node, Modifier)

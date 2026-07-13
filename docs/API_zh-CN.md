@@ -98,6 +98,10 @@ factory 默认为 `null`。未配置时，即使 `isStreaming = true` 也会回�
 时执行全量解析。需显式配置 `::DefaultStreamingMarkdownParser` 才启用内置增量流程。默认
 streaming 实现会根据 render config 创建自己的 parser，并强制至少包含 block source span。
 
+对于每次发生变化的输入，自定义 streaming parser 必须返回一个**新的根 `Document` 实例**，否则
+Compose 可能将解析结果视为未变化。同时应保持已完成且未变化的顶层 child block 对象身份不变，
+使带 key 的 block renderer 可以跳过稳定前缀的重组；只有被替换的尾部节点应创建新实例。
+
 ```kotlin
 val config = MarkdownRenderConfig.Builder()
     .streamingMarkdownParserFactory(::DefaultStreamingMarkdownParser)
@@ -705,7 +709,7 @@ interface IInlineNodeStringBuilder<T : Node> {
         node: T,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
+        actionHandler: ActionHandlerState?,
         indentLevel: Int,
         isShowNotSupported: Boolean,
         renderRegistry: RenderRegistry,
@@ -987,7 +991,7 @@ data class HtmlInlineTagContext(
     val node: Node,
     val inlineContentMap: MutableMap<String, MarkdownInlineView>,
     val markdownTheme: MarkdownTheme,
-    val actionHandler: ActionHandler?,
+    val actionHandler: ActionHandlerState?,
     val indentLevel: Int,
     val isShowNotSupported: Boolean,
     val renderRegistry: RenderRegistry,
@@ -1109,7 +1113,7 @@ data class SystemContext(
 @Composable @ReadOnlyComposable fun currentTheme(): MarkdownTheme
 @Composable @ReadOnlyComposable fun currentParser(): MarkdownParser
 @Composable @ReadOnlyComposable fun currentRenderRegistry(): RenderRegistry
-@Composable @ReadOnlyComposable fun currentActionHandler(): ActionHandler?
+@Composable @ReadOnlyComposable fun currentActionHandler(): ActionHandlerState
 @Composable @ReadOnlyComposable fun currentRenderDependencies(): Map<String, Any>
 @Composable @ReadOnlyComposable fun isShowNotSupported(): Boolean
 ```
@@ -1117,6 +1121,11 @@ data class SystemContext(
 所有顶层渲染组件均接受 `renderDependencies` Map。Composable renderer 使用
 `currentRenderDependencies()` 读取；非 Composable 的节点字符串构建器从
 `nodeStringBuilderContext.renderDependencies` 读取同一份 Map。
+
+`actionHandler` 在内部通过稳定的 `ActionHandlerState` 提供，并用 `rememberUpdatedState` 更新。
+NodeStringBuilder 与交互 listener 保留该 State，直到事件发生时才读取其 value，因此外部 handler
+变化不会重建 annotated text。`renderDependencies` 与不支持内容显示标记会影响实际渲染结果，仍以
+直接值提供，变化时应正常触发渲染更新。
 
 文本模式块渲染使用的自定义节点可以实现 `NodeContentHashProvider`。覆盖 `contentHash()` 时只纳入
 会影响渲染的字段；无状态节点可直接使用基于类名的默认实现。

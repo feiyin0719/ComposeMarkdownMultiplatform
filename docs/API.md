@@ -105,6 +105,11 @@ and performs a full parse for every update. Configure `::DefaultStreamingMarkdow
 explicitly to enable the built-in incremental workflow. The default streaming implementation
 creates its own parser from the render configuration and forces at least block source spans.
 
+For each changed input, a custom streaming parser must return a **new root `Document` instance**.
+Returning the same root object can make Compose treat the parse result as unchanged. Preserve the
+identity of completed, unchanged top-level child blocks so keyed block renderers can skip
+recomposing the stable prefix; only the replaced tail should receive new node instances.
+
 ```kotlin
 val config = MarkdownRenderConfig.Builder()
     .streamingMarkdownParserFactory(::DefaultStreamingMarkdownParser)
@@ -699,7 +704,7 @@ interface IInlineNodeStringBuilder<T : Node> {
         node: T,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
+        actionHandler: ActionHandlerState?,
         indentLevel: Int,
         isShowNotSupported: Boolean,
         renderRegistry: RenderRegistry,
@@ -1071,7 +1076,7 @@ data class HtmlInlineTagContext(
     val node: Node,
     val inlineContentMap: MutableMap<String, MarkdownInlineView>,
     val markdownTheme: MarkdownTheme,
-    val actionHandler: ActionHandler?,
+    val actionHandler: ActionHandlerState?,
     val indentLevel: Int,
     val isShowNotSupported: Boolean,
     val renderRegistry: RenderRegistry,
@@ -1193,7 +1198,7 @@ Convenience functions for accessing current rendering context within custom rend
 @Composable @ReadOnlyComposable fun currentTheme(): MarkdownTheme
 @Composable @ReadOnlyComposable fun currentParser(): MarkdownParser
 @Composable @ReadOnlyComposable fun currentRenderRegistry(): RenderRegistry
-@Composable @ReadOnlyComposable fun currentActionHandler(): ActionHandler?
+@Composable @ReadOnlyComposable fun currentActionHandler(): ActionHandlerState
 @Composable @ReadOnlyComposable fun currentRenderDependencies(): Map<String, Any>
 @Composable @ReadOnlyComposable fun isShowNotSupported(): Boolean
 ```
@@ -1201,6 +1206,12 @@ Convenience functions for accessing current rendering context within custom rend
 All top-level rendering components accept a `renderDependencies` map. Composable renderers read it
 with `currentRenderDependencies()`, and non-Composable node string builders read the same map from
 `nodeStringBuilderContext.renderDependencies`.
+
+`actionHandler` is provided internally as a stable `ActionHandlerState` updated with
+`rememberUpdatedState`. Node string builders and interaction listeners keep that State and read its
+value only when an event occurs, so changing the external handler does not rebuild annotated text.
+`renderDependencies` and the unsupported-content flag remain direct values because they affect the
+rendered result and must invalidate rendering when changed.
 
 Custom nodes used by text-mode block rendering can implement `NodeContentHashProvider`. Override
 `contentHash()` with only fields that affect rendering; stateless nodes can use the class-name-based

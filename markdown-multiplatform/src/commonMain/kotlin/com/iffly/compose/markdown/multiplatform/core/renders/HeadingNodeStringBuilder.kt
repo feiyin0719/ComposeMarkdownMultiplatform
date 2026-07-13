@@ -2,7 +2,7 @@ package com.iffly.compose.markdown.multiplatform.core.renders
 
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.withStyle
-import com.iffly.compose.markdown.multiplatform.ActionHandler
+import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
 import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
@@ -22,7 +22,7 @@ class HeadingNodeStringBuilder : IInlineNodeStringBuilder<Heading> {
         node: Heading,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
+        actionHandler: ActionHandlerState?,
         indentLevel: Int,
         isShowNotSupported: Boolean,
         renderRegistry: RenderRegistry,

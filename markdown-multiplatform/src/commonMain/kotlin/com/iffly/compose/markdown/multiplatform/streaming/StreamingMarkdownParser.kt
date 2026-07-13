@@ -12,6 +12,9 @@ import org.commonmark.parser.IncludeSourceSpans
  *
  * Implementations receive only the latest complete [content] and [isStreaming] state, and have full
  * control over caching, incremental parsing, source positions, fallback behavior, and final parsing.
+ * Every changed input must return a new root [Document] instance so Compose observes the parsed-node
+ * change. Reuse unchanged completed child blocks by identity so keyed renderers can skip
+ * recomposing the stable prefix.
  */
 interface StreamingMarkdownParser {
     val markdownRenderConfig: MarkdownRenderConfig

@@ -150,6 +150,10 @@ defaults to `null`; without one, streaming requests use normal full parsing. Con
 parser with at least block source spans. Regular parser spans are configurable and default to
 `IncludeSourceSpans.BLOCKS`; `LazyMarkdownView` also forces at least `BLOCKS`.
 
+A custom streaming parser must return a new root `Document` for each changed input so Compose sees
+the update, while reusing unchanged completed child blocks by identity so their keyed renderers can
+skip recomposition.
+
 ```kotlin
 MarkdownView(
     text = streamedMarkdown,

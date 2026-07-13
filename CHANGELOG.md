@@ -18,6 +18,10 @@
 - 新增可配置 parser source span（默认 `BLOCKS`）、可选 streaming parser factory，并为 streaming 与 `LazyMarkdownView` 创建强制 block span 的独立 parser
 - Lazily creates the regular MPP Markdown parser and retains each component's streaming parser across streaming-state transitions
 - MPP 普通 Markdown parser 改为懒创建，并在 streaming 状态切换期间保留每个组件的 streaming parser 实例
+- Changed node string builders to receive `ActionHandlerState`, allowing interaction callbacks to read the latest handler without rebuilding annotated content
+- NodeStringBuilder 改为接收 `ActionHandlerState`，交互回调可读取最新 handler，而无需重建 annotated content
+- Documented that streaming parsers return a new root document for changed input while preserving unchanged child-node identity
+- 明确 streaming parser 在输入变化时返回新的根 Document，同时保持未变化 child node 的对象身份
 
 ---
 

@@ -148,6 +148,9 @@ factory 默认为 `null`，未配置时 streaming 请求使用普通全量解析
 block source span。普通 parser 的 source span 可配置且默认是 `IncludeSourceSpans.BLOCKS`；
 `LazyMarkdownView` 同样强制至少使用 `BLOCKS`。
 
+自定义 streaming parser 对每次变化的输入都必须返回新的根 `Document`，让 Compose 能观察到更新；
+已完成且未变化的 child block 应保持对象身份不变，使带 key 的 renderer 能跳过重组。
+
 ```kotlin
 MarkdownView(
     text = streamedMarkdown,

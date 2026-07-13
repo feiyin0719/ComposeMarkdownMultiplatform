@@ -3,7 +3,7 @@ package com.iffly.compose.markdown.multiplatform.core.renders
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.withLink
-import com.iffly.compose.markdown.multiplatform.ActionHandler
+import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.MarkdownLinkInteractionListener
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
 import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
@@ -23,7 +23,7 @@ class LinkNodeStringBuilder : IInlineNodeStringBuilder<Link> {
         node: Link,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
+        actionHandler: ActionHandlerState?,
         indentLevel: Int,
         isShowNotSupported: Boolean,
         renderRegistry: RenderRegistry,
@@ -31,10 +31,7 @@ class LinkNodeStringBuilder : IInlineNodeStringBuilder<Link> {
     ) {
         val url = node.destination
 
-        val linkInteractionListener =
-            actionHandler?.let {
-                MarkdownLinkInteractionListener(actionHandler = it, node = node)
-            }
+        val linkInteractionListener = MarkdownLinkInteractionListener(actionHandler = actionHandler, node = node)
         val linkAnnotation =
             LinkAnnotation.Url(
                 url = url,
@@ -72,7 +69,7 @@ class ImageNodeStringBuilder : IInlineNodeStringBuilder<Image> {
         node: Image,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
+        actionHandler: ActionHandlerState?,
         indentLevel: Int,
         isShowNotSupported: Boolean,
         renderRegistry: RenderRegistry,

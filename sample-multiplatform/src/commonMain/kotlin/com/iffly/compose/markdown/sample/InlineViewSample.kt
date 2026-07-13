@@ -23,7 +23,7 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.iffly.compose.markdown.multiplatform.ActionHandler
+import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.MarkdownView
 import com.iffly.compose.markdown.multiplatform.config.IMarkdownRenderPlugin
 import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
@@ -103,7 +103,7 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
         node: Code,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
+        actionHandler: ActionHandlerState?,
         indentLevel: Int,
         isShowNotSupported: Boolean,
         renderRegistry: RenderRegistry,

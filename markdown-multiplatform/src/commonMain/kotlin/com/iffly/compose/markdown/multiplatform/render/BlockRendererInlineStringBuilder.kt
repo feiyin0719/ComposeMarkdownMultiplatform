@@ -11,7 +11,7 @@ import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
-import com.iffly.compose.markdown.multiplatform.ActionHandler
+import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.StringExt
 import com.iffly.compose.markdown.multiplatform.util.nodeTextContent
@@ -44,7 +44,7 @@ class BlockRendererInlineStringBuilder<T : Node>(
         node: T,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
+        actionHandler: ActionHandlerState?,
         indentLevel: Int,
         isShowNotSupported: Boolean,
         renderRegistry: RenderRegistry,
@@ -84,7 +84,7 @@ class DocumentInlineStringBuilder : IInlineNodeStringBuilder<Document> {
         node: Document,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
+        actionHandler: ActionHandlerState?,
         indentLevel: Int,
         isShowNotSupported: Boolean,
         renderRegistry: RenderRegistry,
@@ -149,7 +149,7 @@ private fun AnnotatedString.Builder.buildChildInlineNodeString(
     child: Node,
     inlineContentMap: MutableMap<String, MarkdownInlineView>,
     markdownTheme: MarkdownTheme,
-    actionHandler: ActionHandler?,
+    actionHandler: ActionHandlerState?,
     indentLevel: Int,
     isShowNotSupported: Boolean,
     renderRegistry: RenderRegistry,

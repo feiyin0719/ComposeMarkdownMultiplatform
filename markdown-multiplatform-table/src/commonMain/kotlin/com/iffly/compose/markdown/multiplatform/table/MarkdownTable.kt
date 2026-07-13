@@ -387,7 +387,7 @@ private fun TableTitle(
                 style = tableTheme.copyTextStyle,
                 modifier =
                     Modifier.clickable {
-                        actionHandler?.handleCopyClick(tableNode)
+                        actionHandler.value?.handleCopyClick(tableNode)
                     },
             )
         }

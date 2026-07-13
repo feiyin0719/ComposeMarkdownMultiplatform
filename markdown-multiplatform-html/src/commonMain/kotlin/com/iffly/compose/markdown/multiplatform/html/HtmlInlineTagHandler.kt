@@ -1,7 +1,7 @@
 package com.iffly.compose.markdown.multiplatform.html
 
 import androidx.compose.ui.text.AnnotatedString
-import com.iffly.compose.markdown.multiplatform.ActionHandler
+import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
@@ -25,7 +25,7 @@ data class HtmlInlineTagContext(
     val node: Node,
     val inlineContentMap: MutableMap<String, MarkdownInlineView>,
     val markdownTheme: MarkdownTheme,
-    val actionHandler: ActionHandler?,
+    val actionHandler: ActionHandlerState?,
     val indentLevel: Int,
     val isShowNotSupported: Boolean,
     val renderRegistry: RenderRegistry,

@@ -140,7 +140,7 @@ private fun CodeHeader(
                         style = codeBlockTheme.codeCopyTextStyle,
                         modifier =
                             Modifier.wrapContentSize().clickable {
-                                actionHandler?.handleCopyClick(node)
+                                actionHandler.value?.handleCopyClick(node)
                             },
                     )
                 }

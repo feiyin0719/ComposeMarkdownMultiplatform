@@ -4,7 +4,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.ParagraphStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.withStyle
-import com.iffly.compose.markdown.multiplatform.ActionHandler
+import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
 import com.iffly.compose.markdown.multiplatform.util.nodeTextContent
 import org.commonmark.node.Node
@@ -20,7 +20,7 @@ fun AnnotatedString.Builder.buildChildNodeAnnotatedString(
     inlineContentMap: MutableMap<String, MarkdownInlineView>,
     markdownTheme: MarkdownTheme,
     renderRegistry: RenderRegistry,
-    actionHandler: ActionHandler? = null,
+    actionHandler: ActionHandlerState? = null,
     isShowNotSupported: Boolean,
     nodeStringBuilderContext: NodeStringBuilderContext,
     children: List<Node>? = null,
@@ -111,7 +111,7 @@ open class CompositeChildNodeStringBuilder : IInlineNodeStringBuilder<Node> {
         node: Node,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
         markdownTheme: MarkdownTheme,
-        actionHandler: ActionHandler?,
+        actionHandler: ActionHandlerState?,
         indentLevel: Int,
         isShowNotSupported: Boolean,
         renderRegistry: RenderRegistry,
