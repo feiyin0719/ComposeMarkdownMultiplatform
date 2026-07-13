@@ -11,10 +11,11 @@
 - [Core Composables](#core-composables)
   - [MarkdownView](#markdownview)
   - [LazyMarkdownColumn](#lazymarkdowncolumn)
+    - [LazyMarkdownView](#lazymarkdownview)
   - [MarkdownContent](#markdowncontent)
   - [MarkdownChildren](#markdownchildren)
   - [MarkdownInlineText](#markdowninlinetext)
-  - [MarkdownText](#markdowntext-1)
+    - [MarkdownText](#markdowntext)
 - [Configuration](#configuration)
   - [MarkdownRenderConfig](#markdownrenderconfig)
   - [MarkdownRenderConfig.Builder](#markdownrenderconfigbuilder)
@@ -62,29 +63,36 @@ fun MarkdownView(
 
 - `text`: The Markdown text to render.
 - `modifier`: Standard Compose `Modifier` for sizing, padding, etc.
-- `markdownRenderConfig`: Rendering configuration, created and remembered per call site when omitted. Remember custom instances in the calling Composable.
-- `actionHandler`: Optional handler for interactions (links, images, custom events).
-- `showNotSupported`: When `true`, unsupported elements display fallback text instead of being silently ignored.
-
-**Example**
+- `markdownRenderConfig`: Rendering configuration. Remember custom instances at the call site.
+- `actionHandler`: Optional handler for interactions.
+- `renderDependencies`: Dependencies exposed to custom renderers and string builders.
+- `showNotSupported`: Whether unsupported elements display fallback text.
 
 ```kotlin
-@Composable
-fun SimpleExample() {
-    MarkdownView(
-        text = "# Hello\n\nThis is **Markdown**.",
-        modifier = Modifier.fillMaxSize(),
-    )
-}
+MarkdownView(
+    text = "# Hello\n\nThis is **Markdown**.",
+    modifier = Modifier.fillMaxSize(),
+)
 ```
+
+For background parsing, use the overload with a required dispatcher:
+
+```kotlin
+MarkdownView(
+    text = markdown,
+    parseDispatcher = Dispatchers.Default,
+    onLoading = { CircularProgressIndicator() },
+    onError = { error -> Text(error.message.orEmpty()) },
+)
+```
+
+Changing `text`, the parser, or `parseDispatcher` cancels the previous parse and starts a new one.
 
 ---
 
 ### LazyMarkdownColumn
 
-Renders Markdown content using a `LazyColumn` for efficient display of large documents. Each top-level block becomes an independent lazy item.
-
-**Signature** (from `LazyMarkdownColumn.kt`):
+Parses the complete Markdown string up front, then renders each top-level block as a lazy item.
 
 ```kotlin
 @Composable
@@ -100,28 +108,85 @@ fun LazyMarkdownColumn(
 )
 ```
 
-**Parameters**
+```kotlin
+LazyMarkdownColumn(
+    text = longMarkdownContent,
+    modifier = Modifier.fillMaxSize(),
+)
+```
 
-- `text`: The Markdown text to render.
-- `markdownRenderConfig`: Rendering configuration.
-- `actionHandler`: Optional interaction handler.
-- `showNotSupported`: Whether to show fallback for unsupported elements.
-- `lazyListState`: Optional `LazyListState` for external scroll control.
+---
 
-**Example**
+### LazyMarkdownView
+
+Incrementally reads and parses a line-oriented source. Parsed top-level nodes far from the viewport
+are recycled in bounded batches and reloaded by source line range when the user scrolls back.
 
 ```kotlin
 @Composable
-fun LazyExample() {
-    val config = remember { MarkdownRenderConfig.Builder().build() }
+fun LazyMarkdownView(
+    source: MarkdownLineSource,
+    modifier: Modifier = Modifier,
+    markdownRenderConfig: MarkdownRenderConfig =
+        remember { MarkdownRenderConfig.Builder().build() },
+    actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
+    showNotSupported: Boolean = false,
+    chunkLoaderConfig: MarkdownChunkLoaderConfig = MarkdownChunkLoaderConfig(),
+    nestedPrefetchItemCount: Int = 3,
+    lazyListState: LazyListState = rememberLazyListState(),
+    onLoadingChanged: (Boolean) -> Unit = {},
+    onStateChanged: (LazyMarkdownViewState) -> Unit = {},
+    onError: (Throwable) -> Unit = {},
+)
+```
 
-    LazyMarkdownColumn(
-        text = longMarkdownContent,
-        markdownRenderConfig = config,
-        modifier = Modifier.fillMaxSize(),
-    )
+An overload accepting `text: String` is also available and internally uses
+`StringMarkdownLineSource`, making it easy to compare the same Markdown text with the Android API.
+
+```kotlin
+fun interface MarkdownLineSource {
+    suspend fun readLines(startLine: Int, lineCount: Int): List<String>
 }
 ```
+
+The source uses zero-based line indices, must remain immutable, and must support rereading old
+ranges. Returning fewer lines than requested signals end-of-source. Use
+`StringMarkdownLineSource` for content already held in memory, or implement the interface over a
+file, asset, database, or range API for true lazy I/O.
+
+`MarkdownChunkLoaderConfig` controls read batch sizes, `minNodesAhead` / `minNodesBehind` watermarks,
+node and source-line cache limits, minimum recycle batch, and source/parser dispatchers.
+`nestedPrefetchItemCount` separately controls Compose lazy-item precomposition.
+Eviction never removes the visible anchor or its safety margin. Stable source-span keys keep the
+same first visible item when nodes before it are inserted or removed. If no safe recycle batch is
+available, the cache may temporarily exceed its target instead of moving the viewport.
+`maxCachedSourceLines` is also a hard limit for one unconfirmed trailing block or source context.
+
+```kotlin
+val source = remember(markdown) { StringMarkdownLineSource(markdown) }
+
+LazyMarkdownView(
+    source = source,
+    modifier = Modifier.fillMaxSize(),
+    chunkLoaderConfig = MarkdownChunkLoaderConfig(
+        initialLineCount = 1000,
+        incrementalLineCount = 500,
+        minNodesAhead = 100,
+        minNodesBehind = 30,
+        maxCachedNodes = 500,
+        maxCachedSourceLines = 10_000,
+    ),
+)
+```
+
+`onLoadingChanged` reports only initial loading while no content is available. Background parsing
+is silent by default. `onStateChanged` optionally reports `InitialLoading`, `LoadingBefore`,
+`LoadingAfter`, and `Idle`; AST recycling never reports loading.
+
+Chunk parses do not share reference-definition state. Use inline links, or choose
+`LazyMarkdownColumn` when full-document semantics are required. Custom parsers must emit unique,
+source-spanned top-level nodes.
 
 ---
 
@@ -265,6 +330,17 @@ SelectionContainer {
         overflow = TextOverflow.Ellipsis,
     )
 }
+```
+
+The async overload adds a required `parseDispatcher` plus `onLoading` and `onError`:
+
+```kotlin
+MarkdownText(
+    text = markdownContent,
+    parseDispatcher = Dispatchers.Default,
+    onLoading = { CircularProgressIndicator() },
+    onError = { error -> Text(error.message.orEmpty()) },
+)
 ```
 
 ---
@@ -1099,11 +1175,21 @@ MarkdownView(text = markdownContent)
 
 ### Large Scrollable Documents
 
-- Use `LazyMarkdownColumn` for `LazyColumn`-based scrolling.
+- Use `LazyMarkdownColumn` when the whole Markdown string can be parsed up front.
 
 ```kotlin
 LazyMarkdownColumn(
     text = longContent,
+    markdownRenderConfig = config,
+    modifier = Modifier.fillMaxSize(),
+)
+```
+
+- Use `LazyMarkdownView` when source I/O, parsing, and AST memory must also be incremental.
+
+```kotlin
+LazyMarkdownView(
+    source = markdownLineSource,
     markdownRenderConfig = config,
     modifier = Modifier.fillMaxSize(),
 )

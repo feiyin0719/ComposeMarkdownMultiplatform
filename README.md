@@ -21,6 +21,8 @@ A Compose Multiplatform Markdown rendering library that supports Android, iOS, D
 - **Plugin System** — Modular plugin architecture for tables, images, HTML, and more; supports custom parser extensions
 - **Customizable Themes** — Full control over typography, colors, and component styles
 - **MarkdownText** — Text-based rendering that works like Compose `Text` with `maxLines` / `overflow` support and cross-paragraph text selection
+- **LazyMarkdownView** — Incremental line loading, parsing, and bounded AST recycling for large sources
+- **Async Parsing** — `MarkdownView` and `MarkdownText` overloads accept a parsing dispatcher with loading/error content
 
 ## Supported Platforms
 
@@ -97,6 +99,42 @@ fun SimpleMarkdownExample() {
     )
 }
 ```
+
+### Incremental Large Documents
+
+`LazyMarkdownView` reads a stable line source incrementally and recycles parsed nodes away from the
+viewport. Stable lazy-item keys preserve the visible anchor when nodes are removed or reloaded.
+It can also accept a Markdown string directly for side-by-side comparison with the Android API.
+
+```kotlin
+@Composable
+fun LargeMarkdownExample(markdown: String) {
+    val source = remember(markdown) { StringMarkdownLineSource(markdown) }
+
+    LazyMarkdownView(
+        source = source,
+        modifier = Modifier.fillMaxSize(),
+        chunkLoaderConfig = MarkdownChunkLoaderConfig(
+            initialLineCount = 1000,
+            incrementalLineCount = 500,
+            minNodesAhead = 100,
+            minNodesBehind = 30,
+            maxCachedNodes = 500,
+            maxCachedSourceLines = 10_000,
+        ),
+    )
+}
+```
+
+For true lazy I/O, implement `MarkdownLineSource` with a stable file, asset, database, or range API.
+The source must support rereading old ranges because scrolling backward reloads recycled nodes.
+Chunk parses do not share reference-definition state; use inline links or `LazyMarkdownColumn` when
+full-document reference resolution is required.
+
+`onLoadingChanged` reports only the initial empty-screen wait. Use `onStateChanged` with
+`LazyMarkdownViewState` to observe optional background before/after loading UI. AST recycling is
+silent and internal concurrency uses a separate operation guard.
+`maxCachedSourceLines` is also a hard limit for one unconfirmed trailing block or source context.
 
 ## Tech Stack
 

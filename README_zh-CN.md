@@ -21,6 +21,8 @@
 - **插件系统** — 模块化的插件架构，支持表格、图片、HTML 等扩展；支持自定义解析器扩展
 - **可定制主题** — 完全控制排版、颜色和组件样式
 - **MarkdownText** — 基于文本的渲染模式，像 Compose `Text` 一样支持 `maxLines` / `overflow` 行数限制和跨段落文本选择
+- **LazyMarkdownView** — 为大型数据源提供增量行读取、解析和有界 AST 回收
+- **异步解析** — `MarkdownView` 与 `MarkdownText` 重载可指定解析 dispatcher，并提供 loading/error 内容
 
 ## 支持的平台
 
@@ -97,6 +99,41 @@ fun SimpleMarkdownExample() {
     )
 }
 ```
+
+### 增量加载大型文档
+
+`LazyMarkdownView` 按需读取稳定的行数据源，并回收远离视口的 AST 节点。删除或重新加载节点时，
+稳定的 lazy item key 会保持当前可见锚点，避免滚动位置抖动。
+也可以直接传入 Markdown 字符串，方便与 Android API 使用同一份文本进行对比。
+
+```kotlin
+@Composable
+fun LargeMarkdownExample(markdown: String) {
+    val source = remember(markdown) { StringMarkdownLineSource(markdown) }
+
+    LazyMarkdownView(
+        source = source,
+        modifier = Modifier.fillMaxSize(),
+        chunkLoaderConfig = MarkdownChunkLoaderConfig(
+            initialLineCount = 1000,
+            incrementalLineCount = 500,
+            minNodesAhead = 100,
+            minNodesBehind = 30,
+            maxCachedNodes = 500,
+            maxCachedSourceLines = 10_000,
+        ),
+    )
+}
+```
+
+如果需要真正的懒加载 I/O，可基于稳定的文件、asset、数据库或 range API 实现
+`MarkdownLineSource`。向上滚动会重新读取已回收区间，因此数据源必须支持重读旧范围。
+各 chunk 不共享 reference definition 状态；需要完整文档的 reference 解析时，请使用 inline link
+或 `LazyMarkdownColumn`。
+
+`onLoadingChanged` 只表示首屏尚无内容时的等待。需要观察后台向前/向后加载时，可使用
+`onStateChanged` 和 `LazyMarkdownViewState`。AST 回收保持静默，内部并发使用独立操作锁。
+`maxCachedSourceLines` 同时也是单个未确认尾部 block 或源码上下文的硬上限。
 
 ## 技术栈
 

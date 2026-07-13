@@ -11,10 +11,11 @@
 - [核心 Composable](#核心-composable)
   - [MarkdownView](#markdownview)
   - [LazyMarkdownColumn](#lazymarkdowncolumn)
+  - [LazyMarkdownView](#lazymarkdownview)
   - [MarkdownContent](#markdowncontent)
   - [MarkdownChildren](#markdownchildren)
   - [MarkdownInlineText](#markdowninlinetext)
-  - [MarkdownText](#markdowntext-1)
+  - [MarkdownText](#markdowntext)
 - [配置](#配置)
   - [MarkdownRenderConfig](#markdownrenderconfig)
   - [MarkdownRenderConfig.Builder](#markdownrenderconfigbuilder)
@@ -43,40 +44,45 @@
 
 渲染 Markdown 内容的主要入口。解析并渲染 Markdown 字符串。
 
-**函数签名**（来自 `MarkdownView.kt`）：
-
 ```kotlin
 @Composable
 fun MarkdownView(
-    text: String,
-    modifier: Modifier = Modifier,
-    markdownRenderConfig: MarkdownRenderConfig =
-        remember { MarkdownRenderConfig.Builder().build() },
-    actionHandler: ActionHandler? = null,
-    renderDependencies: Map<String, Any> = emptyMap(),
-    showNotSupported: Boolean = false,
+        text: String,
+        modifier: Modifier = Modifier,
+        markdownRenderConfig: MarkdownRenderConfig =
+                remember { MarkdownRenderConfig.Builder().build() },
+        actionHandler: ActionHandler? = null,
+        renderDependencies: Map<String, Any> = emptyMap(),
+        showNotSupported: Boolean = false,
 )
 ```
 
-**参数说明**
-
 - `text`：要渲染的 Markdown 文本。
-- `modifier`：标准 Compose `Modifier`，用于尺寸、内边距等设置。
-- `markdownRenderConfig`：渲染配置；省略时按调用点创建并 remember。自定义配置也应由调用方 Composable 使用 `remember` 持有。
-- `actionHandler`：可选的交互处理器（链接、图片、自定义事件等）。
-- `showNotSupported`：当为 `true` 时，不支持的元素会以文本回退方式显示，而不是静默忽略。
-
-**示例**
+- `modifier`：标准 Compose `Modifier`。
+- `markdownRenderConfig`：解析器、主题和 renderer 配置。
+- `actionHandler`：可选交互处理器。
+- `renderDependencies`：提供给自定义 renderer 与字符串构建器的依赖。
+- `showNotSupported`：是否为不支持的节点显示回退文本。
 
 ```kotlin
-@Composable
-fun SimpleExample() {
-    MarkdownView(
+MarkdownView(
         text = "# Hello\n\n这是 **Markdown** 内容。",
         modifier = Modifier.fillMaxSize(),
-    )
-}
+)
 ```
+
+需要后台解析时，使用带必填 dispatcher 的重载：
+
+```kotlin
+MarkdownView(
+    text = markdown,
+    parseDispatcher = Dispatchers.Default,
+    onLoading = { CircularProgressIndicator() },
+    onError = { error -> Text(error.message.orEmpty()) },
+)
+```
+
+`text`、parser 或 `parseDispatcher` 变化时，旧解析会取消并启动新解析。
 
 ---
 
@@ -122,6 +128,75 @@ fun LazyExample() {
     )
 }
 ```
+
+---
+
+### LazyMarkdownView
+
+按需读取并解析按行组织的数据源。远离视口的顶层 AST 节点会按批次回收；用户向上滚动时，
+再根据原始行范围重新加载。
+
+```kotlin
+@Composable
+fun LazyMarkdownView(
+    source: MarkdownLineSource,
+    modifier: Modifier = Modifier,
+    markdownRenderConfig: MarkdownRenderConfig =
+        remember { MarkdownRenderConfig.Builder().build() },
+    actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
+    showNotSupported: Boolean = false,
+    chunkLoaderConfig: MarkdownChunkLoaderConfig = MarkdownChunkLoaderConfig(),
+    nestedPrefetchItemCount: Int = 3,
+    lazyListState: LazyListState = rememberLazyListState(),
+    onLoadingChanged: (Boolean) -> Unit = {},
+    onStateChanged: (LazyMarkdownViewState) -> Unit = {},
+    onError: (Throwable) -> Unit = {},
+)
+```
+
+另有直接接收 `text: String` 的重载，内部使用 `StringMarkdownLineSource`，便于和 Android API
+使用同一份 Markdown 文本进行对比。
+
+```kotlin
+fun interface MarkdownLineSource {
+    suspend fun readLines(startLine: Int, lineCount: Int): List<String>
+}
+```
+
+数据源使用从 0 开始的行号，在生命周期内必须保持不变，并支持重读旧范围。返回行数少于请求值
+表示数据源结束。内存内容可使用 `StringMarkdownLineSource`；真正的懒加载 I/O 可基于文件、
+asset、数据库或 range API 实现该接口。
+
+`MarkdownChunkLoaderConfig` 控制读取批次、`minNodesAhead` / `minNodesBehind` 节点水位、
+node/source-line 双重缓存上限、最小回收批次和 source/parser dispatcher。回收不会删除当前可见锚点；稳定的
+source-span key 会在当前 item 之前插入或删除节点时保持首个可见 item。
+`nestedPrefetchItemCount` 另行控制 Compose lazy item 预组合。如果没有安全的回收批次，
+缓存会暂时超过目标上限，而不是移动用户的滚动位置。
+`maxCachedSourceLines` 同时也是单个未确认尾部 block 或源码上下文的硬上限。
+
+```kotlin
+val source = remember(markdown) { StringMarkdownLineSource(markdown) }
+
+LazyMarkdownView(
+    source = source,
+    modifier = Modifier.fillMaxSize(),
+    chunkLoaderConfig = MarkdownChunkLoaderConfig(
+        initialLineCount = 1000,
+        incrementalLineCount = 500,
+        minNodesAhead = 100,
+        minNodesBehind = 30,
+        maxCachedNodes = 500,
+        maxCachedSourceLines = 10_000,
+    ),
+)
+```
+
+`onLoadingChanged` 只报告尚无可显示内容时的首次加载。后台预取默认静默；如果需要观察，可通过
+`onStateChanged` 获取 `InitialLoading`、`LoadingBefore`、`LoadingAfter` 和 `Idle`。AST 回收不报告 loading。
+
+各 chunk 不共享 reference definition 状态。需要完整文档语义时请使用 `LazyMarkdownColumn`。
+自定义 parser 必须输出具有唯一 source span 的顶层节点。
 
 ---
 
@@ -264,6 +339,17 @@ SelectionContainer {
         overflow = TextOverflow.Ellipsis,
     )
 }
+```
+
+异步重载增加必填 `parseDispatcher`，并支持 `onLoading` 与 `onError`：
+
+```kotlin
+MarkdownText(
+    text = markdownContent,
+    parseDispatcher = Dispatchers.Default,
+    onLoading = { CircularProgressIndicator() },
+    onError = { error -> Text(error.message.orEmpty()) },
+)
 ```
 
 ---
@@ -1009,11 +1095,21 @@ MarkdownView(text = markdownContent)
 
 ### 大型可滚动文档
 
-- 使用 `LazyMarkdownColumn` 进行基于 `LazyColumn` 的滚动。
+- 完整 Markdown 字符串可以预先解析时，使用 `LazyMarkdownColumn`。
 
 ```kotlin
 LazyMarkdownColumn(
     text = longContent,
+    markdownRenderConfig = config,
+    modifier = Modifier.fillMaxSize(),
+)
+```
+
+- 数据源 I/O、解析和 AST 内存也需要增量处理时，使用 `LazyMarkdownView`。
+
+```kotlin
+LazyMarkdownView(
+    source = markdownLineSource,
     markdownRenderConfig = config,
     modifier = Modifier.fillMaxSize(),
 )

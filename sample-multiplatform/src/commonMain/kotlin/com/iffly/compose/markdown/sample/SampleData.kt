@@ -72,6 +72,12 @@ val markdownExamples =
             LazyMarkdownColumnExample(paddingValues)
         },
         MarkdownExample(
+            title = "LazyMarkdownView Example",
+            description = "Loads, recycles, and reloads a large Markdown source by line range",
+        ) { paddingValues ->
+            LazyMarkdownViewExample(paddingValues)
+        },
+        MarkdownExample(
             title = "Inline View Example",
             description = "Demonstrates FixedSize and DynamicSize inline views in markdown",
         ) { paddingValues ->

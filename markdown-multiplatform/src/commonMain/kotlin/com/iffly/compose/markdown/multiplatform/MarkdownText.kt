@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextLayoutResult
@@ -16,6 +17,7 @@ import com.iffly.compose.markdown.multiplatform.config.currentTheme
 import com.iffly.compose.markdown.multiplatform.render.TextSizeConstraints
 import com.iffly.compose.markdown.multiplatform.render.rememberMarkdownAnnotatedStringResult
 import com.iffly.compose.markdown.multiplatform.widget.richtext.RichText
+import kotlinx.coroutines.CoroutineDispatcher
 import org.commonmark.node.Node
 
 /**
@@ -73,6 +75,100 @@ fun MarkdownText(
         remember(text, markdownParser) {
             markdownParser.parse(text)
         }
+
+    MarkdownTextNode(
+        node = rootNode,
+        modifier = modifier,
+        markdownRenderConfig = markdownRenderConfig,
+        actionHandler = actionHandler,
+        renderDependencies = renderDependencies,
+        showNotSupported = showNotSupported,
+        overflow = overflow,
+        softWrap = softWrap,
+        textAlign = textAlign,
+        maxLines = maxLines,
+        minLines = minLines,
+        letterSpacing = letterSpacing,
+        textDecoration = textDecoration,
+        onTextLayout = onTextLayout,
+    )
+}
+
+/** Asynchronously parses [text] on [parseDispatcher] before rendering text-mode Markdown. */
+@Composable
+fun MarkdownText(
+    text: String,
+    parseDispatcher: CoroutineDispatcher,
+    modifier: Modifier = Modifier,
+    markdownRenderConfig: MarkdownRenderConfig =
+        remember { MarkdownRenderConfig.Builder().build() },
+    actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
+    showNotSupported: Boolean = false,
+    overflow: TextOverflow = TextOverflow.Clip,
+    softWrap: Boolean = true,
+    textAlign: TextAlign? = null,
+    maxLines: Int = Int.MAX_VALUE,
+    minLines: Int = 1,
+    letterSpacing: TextUnit = TextUnit.Unspecified,
+    textDecoration: TextDecoration? = null,
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+    onLoading: (@Composable () -> Unit)? = null,
+    onError: (@Composable (Throwable) -> Unit)? = null,
+) {
+    val parseState by
+        rememberAsyncMarkdownNode(
+            text = text,
+            parser = markdownRenderConfig.markdownParser,
+            dispatcher = parseDispatcher,
+        )
+    when (val state = parseState) {
+        MarkdownParseState.Loading -> {
+            onLoading?.invoke()
+        }
+
+        is MarkdownParseState.Error -> {
+            onError?.invoke(state.throwable)
+        }
+
+        is MarkdownParseState.Success -> {
+            MarkdownTextNode(
+                node = state.node,
+                modifier = modifier,
+                markdownRenderConfig = markdownRenderConfig,
+                actionHandler = actionHandler,
+                renderDependencies = renderDependencies,
+                showNotSupported = showNotSupported,
+                overflow = overflow,
+                softWrap = softWrap,
+                textAlign = textAlign,
+                maxLines = maxLines,
+                minLines = minLines,
+                letterSpacing = letterSpacing,
+                textDecoration = textDecoration,
+                onTextLayout = onTextLayout,
+            )
+        }
+    }
+}
+
+@Composable
+private fun MarkdownTextNode(
+    node: Node,
+    markdownRenderConfig: MarkdownRenderConfig,
+    actionHandler: ActionHandler?,
+    renderDependencies: Map<String, Any>,
+    showNotSupported: Boolean,
+    overflow: TextOverflow,
+    softWrap: Boolean,
+    textAlign: TextAlign?,
+    maxLines: Int,
+    minLines: Int,
+    letterSpacing: TextUnit,
+    textDecoration: TextDecoration?,
+    modifier: Modifier = Modifier,
+    onTextLayout: (TextLayoutResult) -> Unit = {},
+) {
     val textModeRegistry =
         remember(markdownRenderConfig.renderRegistry) {
             markdownRenderConfig.renderRegistry.textModeRegistry()
@@ -86,7 +182,7 @@ fun MarkdownText(
         renderRegistry = textModeRegistry,
     ) {
         MarkdownTextContent(
-            node = rootNode,
+            node = node,
             modifier = modifier,
             overflow = overflow,
             softWrap = softWrap,

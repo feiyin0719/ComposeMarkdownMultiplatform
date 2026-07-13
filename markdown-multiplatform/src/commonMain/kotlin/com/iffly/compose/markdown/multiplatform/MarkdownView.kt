@@ -2,6 +2,7 @@ package com.iffly.compose.markdown.multiplatform
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -15,6 +16,7 @@ import com.iffly.compose.markdown.multiplatform.config.LocalShowNotSupportedProv
 import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.render.MarkdownContent
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
+import kotlinx.coroutines.CoroutineDispatcher
 import org.commonmark.node.Node
 
 /**
@@ -45,6 +47,67 @@ fun MarkdownView(
             markdownParser.parse(text)
         }
 
+    MarkdownViewNode(
+        node = rootNode,
+        modifier = modifier,
+        markdownRenderConfig = markdownRenderConfig,
+        actionHandler = actionHandler,
+        renderDependencies = renderDependencies,
+        showNotSupported = showNotSupported,
+    )
+}
+
+/** Asynchronously parses [text] on [parseDispatcher] before rendering it. */
+@Composable
+fun MarkdownView(
+    text: String,
+    parseDispatcher: CoroutineDispatcher,
+    modifier: Modifier = Modifier,
+    markdownRenderConfig: MarkdownRenderConfig =
+        remember { MarkdownRenderConfig.Builder().build() },
+    actionHandler: ActionHandler? = null,
+    renderDependencies: Map<String, Any> = emptyMap(),
+    showNotSupported: Boolean = false,
+    onLoading: (@Composable () -> Unit)? = null,
+    onError: (@Composable (Throwable) -> Unit)? = null,
+) {
+    val parseState by
+        rememberAsyncMarkdownNode(
+            text = text,
+            parser = markdownRenderConfig.markdownParser,
+            dispatcher = parseDispatcher,
+        )
+    when (val state = parseState) {
+        MarkdownParseState.Loading -> {
+            onLoading?.invoke()
+        }
+
+        is MarkdownParseState.Error -> {
+            onError?.invoke(state.throwable)
+        }
+
+        is MarkdownParseState.Success -> {
+            MarkdownViewNode(
+                node = state.node,
+                modifier = modifier,
+                markdownRenderConfig = markdownRenderConfig,
+                actionHandler = actionHandler,
+                renderDependencies = renderDependencies,
+                showNotSupported = showNotSupported,
+            )
+        }
+    }
+}
+
+@Composable
+private fun MarkdownViewNode(
+    node: Node,
+    markdownRenderConfig: MarkdownRenderConfig,
+    actionHandler: ActionHandler?,
+    renderDependencies: Map<String, Any>,
+    showNotSupported: Boolean,
+    modifier: Modifier = Modifier,
+) {
     ProvideMarkdownLocals(
         markdownRenderConfig = markdownRenderConfig,
         actionHandler = actionHandler,
@@ -52,7 +115,7 @@ fun MarkdownView(
         showNotSupported = showNotSupported,
     ) {
         MarkdownContent(
-            node = rootNode,
+            node = node,
             modifier = modifier,
         )
     }

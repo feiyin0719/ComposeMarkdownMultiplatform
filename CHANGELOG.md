@@ -6,6 +6,12 @@
 
 - Added `appendMarkdownInlineContent()` to atomically register embedded or standalone inline content and append its annotation, with collision-safe IDs by default and explicit overwrite support
 - 新增 `appendMarkdownInlineContent()`，以原子方式注册 embedded 或 standalone inline content 并追加 annotation；默认安全处理 ID 冲突，同时支持显式覆盖
+- Added cross-platform `LazyMarkdownView`, `MarkdownLineSource`, and bounded bidirectional AST recycling for incrementally loaded large documents
+- 新增跨平台 `LazyMarkdownView`、`MarkdownLineSource` 与有界双向 AST 回收，用于增量加载大型文档
+- Added node-watermark preloading, node/source-line cache limits, and structured initial/background loading states
+- 新增节点水位预加载、node/source-line 双重缓存上限，以及结构化的首次/后台加载状态
+- Added dispatcher-based asynchronous overloads for `MarkdownView` and `MarkdownText`
+- 为 `MarkdownView` 与 `MarkdownText` 新增可指定 dispatcher 的异步重载
 
 ---
 
