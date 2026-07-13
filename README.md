@@ -23,6 +23,7 @@ A Compose Multiplatform Markdown rendering library that supports Android, iOS, D
 - **MarkdownText** — Text-based rendering that works like Compose `Text` with `maxLines` / `overflow` support and cross-paragraph text selection
 - **LazyMarkdownView** — Incremental line loading, parsing, and bounded AST recycling for large sources
 - **Async Parsing** — `MarkdownView` and `MarkdownText` overloads accept a parsing dispatcher with loading/error content
+- **Streaming Parsing** — Append-only updates reparse only the previous final block until a final full parse
 
 ## Supported Platforms
 
@@ -135,6 +136,22 @@ full-document reference resolution is required.
 `LazyMarkdownViewState` to observe optional background before/after loading UI. AST recycling is
 silent and internal concurrency uses a separate operation guard.
 `maxCachedSourceLines` is also a hard limit for one unconfirmed trailing block or source context.
+
+### Streaming Generated Content
+
+Set `isStreaming = true` on `MarkdownView` or `MarkdownText` while text is appended at the end.
+Stable prefix nodes are reused and only the previous final block is reparsed. Set
+`isStreaming = false` when generation finishes to force an authoritative full parse. A custom
+`StreamingMarkdownParser` can replace the default tail parser; returned tail source spans remain
+relative and are rebased by the library.
+
+```kotlin
+MarkdownView(
+    text = streamedMarkdown,
+    parseDispatcher = Dispatchers.Default,
+    isStreaming = streamInProgress,
+)
+```
 
 ## Tech Stack
 

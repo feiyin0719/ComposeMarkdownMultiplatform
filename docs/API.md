@@ -56,6 +56,8 @@ fun MarkdownView(
     actionHandler: ActionHandler? = null,
     renderDependencies: Map<String, Any> = emptyMap(),
     showNotSupported: Boolean = false,
+    isStreaming: Boolean = false,
+    streamingMarkdownParser: StreamingMarkdownParser = DefaultStreamingMarkdownParser,
 )
 ```
 
@@ -87,6 +89,24 @@ MarkdownView(
 ```
 
 Changing `text`, the parser, or `parseDispatcher` cancels the previous parse and starts a new one.
+
+Set `isStreaming = true` while `text` grows only by appending. Every successful update reuses all
+top-level nodes except the previous final block, reparses from that block's source-line start, and
+rebases the new tail's `SourceSpan` line/input indices. Earlier edits or missing source spans fall
+back to a full parse. Set `isStreaming = false` when the stream completes to force one final full
+parse. `MarkdownText` supports the same behavior.
+
+Custom tail parsing is available through `StreamingMarkdownParser`. It receives the complete text
+and tail offset and returns a tail `Document` with spans relative to the parsed substring; the
+library performs absolute rebasing and AST merging.
+
+```kotlin
+MarkdownView(
+    text = streamedMarkdown,
+    parseDispatcher = Dispatchers.Default,
+    isStreaming = streamInProgress,
+)
+```
 
 ---
 
@@ -300,6 +320,8 @@ fun MarkdownText(
     minLines: Int = 1,
     letterSpacing: TextUnit = TextUnit.Unspecified,
     textDecoration: TextDecoration? = null,
+    isStreaming: Boolean = false,
+    streamingMarkdownParser: StreamingMarkdownParser = DefaultStreamingMarkdownParser,
     onTextLayout: (TextLayoutResult) -> Unit = {},
 )
 ```

@@ -12,6 +12,8 @@
 - 新增节点水位预加载、node/source-line 双重缓存上限，以及结构化的首次/后台加载状态
 - Added dispatcher-based asynchronous overloads for `MarkdownView` and `MarkdownText`
 - 为 `MarkdownView` 与 `MarkdownText` 新增可指定 dispatcher 的异步重载
+- Added append-only streaming parsing to `MarkdownView` and `MarkdownText`, with tail-block reparsing, source-span rebasing, final full parsing, and custom `StreamingMarkdownParser` support
+- 为 `MarkdownView` 与 `MarkdownText` 新增 append-only streaming 解析，支持尾部 block 重解析、source span 重定位、结束时全量解析及自定义 `StreamingMarkdownParser`
 
 ---
 

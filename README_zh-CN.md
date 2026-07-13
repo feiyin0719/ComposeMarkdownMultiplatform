@@ -23,6 +23,7 @@
 - **MarkdownText** — 基于文本的渲染模式，像 Compose `Text` 一样支持 `maxLines` / `overflow` 行数限制和跨段落文本选择
 - **LazyMarkdownView** — 为大型数据源提供增量行读取、解析和有界 AST 回收
 - **异步解析** — `MarkdownView` 与 `MarkdownText` 重载可指定解析 dispatcher，并提供 loading/error 内容
+- **Streaming 解析** — append-only 更新只重新解析旧尾 block，结束时再执行一次全量解析
 
 ## 支持的平台
 
@@ -134,6 +135,22 @@ fun LargeMarkdownExample(markdown: String) {
 `onLoadingChanged` 只表示首屏尚无内容时的等待。需要观察后台向前/向后加载时，可使用
 `onStateChanged` 和 `LazyMarkdownViewState`。AST 回收保持静默，内部并发使用独立操作锁。
 `maxCachedSourceLines` 同时也是单个未确认尾部 block 或源码上下文的硬上限。
+
+### Streaming 生成内容
+
+当文本只在尾部追加时，在 `MarkdownView` 或 `MarkdownText` 中设置 `isStreaming = true`。
+稳定前缀节点会被复用，仅重新解析旧文档最后一个 block。生成结束时设置
+`isStreaming = false`，以强制执行一次最终全量解析。可传入自定义
+`StreamingMarkdownParser` 替换默认尾部解析器；返回的 tail source span 保持相对坐标，库会统一
+将其重定位到完整源码坐标。
+
+```kotlin
+MarkdownView(
+    text = streamedMarkdown,
+    parseDispatcher = Dispatchers.Default,
+    isStreaming = streamInProgress,
+)
+```
 
 ## 技术栈
 

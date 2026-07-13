@@ -48,6 +48,9 @@ import org.commonmark.node.Node
  * @param minLines The minimum number of lines to display.
  * @param letterSpacing The spacing between letters.
  * @param textDecoration The text decoration to apply.
+ * @param isStreaming Whether [text] is an append-only partial stream. Setting it to `false`
+ * forces a final full parse.
+ * @param streamingMarkdownParser Parser used for incremental tail updates while streaming.
  * @param onTextLayout Callback invoked when the text layout is computed.
  *
  * @see MarkdownView
@@ -68,13 +71,18 @@ fun MarkdownText(
     minLines: Int = 1,
     letterSpacing: TextUnit = TextUnit.Unspecified,
     textDecoration: TextDecoration? = null,
+    isStreaming: Boolean = false,
+    streamingMarkdownParser: StreamingMarkdownParser = DefaultStreamingMarkdownParser,
     onTextLayout: (TextLayoutResult) -> Unit = {},
 ) {
     val markdownParser = markdownRenderConfig.markdownParser
     val rootNode =
-        remember(text, markdownParser) {
-            markdownParser.parse(text)
-        }
+        rememberMarkdownNode(
+            text = text,
+            parser = markdownParser,
+            isStreaming = isStreaming,
+            streamingParser = streamingMarkdownParser,
+        )
 
     MarkdownTextNode(
         node = rootNode,
@@ -113,6 +121,8 @@ fun MarkdownText(
     letterSpacing: TextUnit = TextUnit.Unspecified,
     textDecoration: TextDecoration? = null,
     onTextLayout: (TextLayoutResult) -> Unit = {},
+    isStreaming: Boolean = false,
+    streamingMarkdownParser: StreamingMarkdownParser = DefaultStreamingMarkdownParser,
     onLoading: (@Composable () -> Unit)? = null,
     onError: (@Composable (Throwable) -> Unit)? = null,
 ) {
@@ -120,6 +130,8 @@ fun MarkdownText(
         rememberAsyncMarkdownNode(
             text = text,
             parser = markdownRenderConfig.markdownParser,
+            isStreaming = isStreaming,
+            streamingParser = streamingMarkdownParser,
             dispatcher = parseDispatcher,
         )
     when (val state = parseState) {
