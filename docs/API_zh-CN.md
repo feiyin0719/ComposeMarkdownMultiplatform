@@ -699,12 +699,13 @@ fun AnnotatedString.Builder.appendMarkdownInlineContent(
 ```
 
 - 默认 `overwrite = false`：保留已有条目，并为新内容分配 `_1`、`_2` 等确定性后缀；helper 返回实际 ID。
+- base ID 只需传入节点 class name。helper 会用 occurrence 后缀保证每个 annotation 唯一，因此无需再拼接内容、URL、hash 或源码位置。仅使用类名可缩短 ID、避免暴露内容，并将 ID 生成规则集中在一处。
 - `overwrite = true`：替换请求 ID 下的条目。此前及此后所有使用该 ID 的 annotation 都会解析到替换后的内容。原内容与替换内容必须同为 embedded 或同为 standalone，跨类型覆盖会被拒绝；因此仅用于无状态且语义可互换的 occurrence。
 - 如果直接使用原生 `appendInlineContent(...)` 或 `appendStandaloneInlineTextContent(...)`，必须自行管理 ID。Map 中重复写入同一 ID 会替换所有同 ID annotation 使用的内容。
 
 ```kotlin
 appendMarkdownInlineContent(
-    id = "status-${node.status}",
+    id = node::class.simpleName ?: "Node",
     inlineContent = buildStatusInlineContent(node),
     inlineContentMap = inlineContentMap,
     alternateText = "[${node.status}]",

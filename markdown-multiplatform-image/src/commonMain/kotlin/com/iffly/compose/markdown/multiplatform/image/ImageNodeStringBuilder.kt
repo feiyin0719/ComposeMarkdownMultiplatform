@@ -156,9 +156,8 @@ class ImageNodeStringBuilder(
         val altText = node.textContent().takeIf { it.isNotBlank() }
 
         if (url.isNotBlank()) {
-            val imageId = "image_$url"
             appendMarkdownInlineContent(
-                id = imageId,
+                id = node::class.simpleName ?: "Node",
                 inlineContent =
                     RichTextInlineContent.StandaloneInlineContent(
                         modifier = Modifier,

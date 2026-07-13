@@ -692,6 +692,9 @@ fun AnnotatedString.Builder.appendMarkdownInlineContent(
 
 - The default `overwrite = false` preserves an existing entry and assigns the new content a
     deterministic `_1`, `_2`, and so on suffix. The helper returns the actual ID.
+- Pass the node class name as the base ID. The helper's occurrence suffix makes each annotation
+    unique, so adding content, URLs, hashes, or source positions to the base ID is unnecessary.
+    Class-only IDs are shorter, avoid exposing content, and centralize ID generation.
 - `overwrite = true` replaces the entry under the requested ID. Every earlier or later annotation
     with that ID then resolves to the replacement. Existing and replacement content must both be
     embedded or both be standalone; cross-type overwrite is rejected. Use overwrite only for
@@ -701,7 +704,7 @@ fun AnnotatedString.Builder.appendMarkdownInlineContent(
 
 ```kotlin
 appendMarkdownInlineContent(
-        id = "status-${node.status}",
+    id = node::class.simpleName ?: "Node",
         inlineContent = buildStatusInlineContent(node),
         inlineContentMap = inlineContentMap,
         alternateText = "[${node.status}]",

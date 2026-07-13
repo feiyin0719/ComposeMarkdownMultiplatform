@@ -110,16 +110,17 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
         nodeStringBuilderContext: NodeStringBuilderContext,
     ) {
         val codeText = node.literal
+        val inlineContentId = node::class.simpleName ?: "Node"
 
         when {
             codeText.startsWith("status:") -> {
                 val status = codeText.removePrefix("status:")
-                appendFixedSizeStatusDot(status, inlineContentMap)
+                appendFixedSizeStatusDot(inlineContentId, status, inlineContentMap)
             }
 
             codeText.startsWith("tag:") -> {
                 val tag = codeText.removePrefix("tag:")
-                appendDynamicSizeTag(tag, inlineContentMap)
+                appendDynamicSizeTag(inlineContentId, tag, inlineContentMap)
             }
 
             else -> {
@@ -136,10 +137,10 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
      * The placeholder size is set explicitly and the content won't be measured.
      */
     private fun AnnotatedString.Builder.appendFixedSizeStatusDot(
+        id: String,
         status: String,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
     ) {
-        val id = "inline_status_$status"
         val color =
             when (status) {
                 "online" -> Color(0xFF4CAF50)
@@ -178,11 +179,10 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
      * by measuring the actual content via SubcomposeLayout.
      */
     private fun AnnotatedString.Builder.appendDynamicSizeTag(
+        id: String,
         tag: String,
         inlineContentMap: MutableMap<String, MarkdownInlineView>,
     ) {
-        val id = "inline_tag_$tag"
-
         appendMarkdownInlineContent(
             id = id,
             inlineContent =
