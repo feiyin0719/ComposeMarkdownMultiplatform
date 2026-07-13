@@ -1,33 +1,18 @@
 # Changelog
 
-## Unreleased / 未发布
-
-### New Features / 新增功能
-
-- Added `appendMarkdownInlineContent()` to atomically register embedded or standalone inline content and append its annotation, with collision-safe IDs by default and explicit overwrite support
-- 新增 `appendMarkdownInlineContent()`，以原子方式注册 embedded 或 standalone inline content 并追加 annotation；默认安全处理 ID 冲突，同时支持显式覆盖
-- Added cross-platform `LazyMarkdownView`, `MarkdownLineSource`, and bounded bidirectional AST recycling for incrementally loaded large documents
-- 新增跨平台 `LazyMarkdownView`、`MarkdownLineSource` 与有界双向 AST 回收，用于增量加载大型文档
-- Added node-watermark preloading, node/source-line cache limits, and structured initial/background loading states
-- 新增节点水位预加载、node/source-line 双重缓存上限，以及结构化的首次/后台加载状态
-- Added dispatcher-based asynchronous overloads for `MarkdownView` and `MarkdownText`
-- 为 `MarkdownView` 与 `MarkdownText` 新增可指定 dispatcher 的异步重载
-- Added append-only streaming parsing to `MarkdownView` and `MarkdownText`, with tail-block reparsing, source-span rebasing, final full parsing, and custom `StreamingMarkdownParser` support
-- 为 `MarkdownView` 与 `MarkdownText` 新增 append-only streaming 解析，支持尾部 block 重解析、source span 重定位、结束时全量解析及自定义 `StreamingMarkdownParser`
-- Added configurable parser source spans (default `BLOCKS`), optional streaming parser factories, and dedicated parsers that force block spans for streaming and `LazyMarkdownView`
-- 新增可配置 parser source span（默认 `BLOCKS`）、可选 streaming parser factory，并为 streaming 与 `LazyMarkdownView` 创建强制 block span 的独立 parser
-- Lazily creates the regular MPP Markdown parser and retains each component's streaming parser across streaming-state transitions
-- MPP 普通 Markdown parser 改为懒创建，并在 streaming 状态切换期间保留每个组件的 streaming parser 实例
-- Changed node string builders to receive `ActionHandlerState`, allowing interaction callbacks to read the latest handler without rebuilding annotated content
-- NodeStringBuilder 改为接收 `ActionHandlerState`，交互回调可读取最新 handler，而无需重建 annotated content
-- Documented that streaming parsers return a new root document for changed input while preserving unchanged child-node identity
-- 明确 streaming parser 在输入变化时返回新的根 Document，同时保持未变化 child node 的对象身份
-
----
-
 ## 0.2.0
 
 ### New Features
+
+- Added `appendMarkdownInlineContent()` to atomically register embedded or standalone inline content and append its annotation, with collision-safe IDs by default and explicit overwrite support
+- Added cross-platform `LazyMarkdownView`, `MarkdownLineSource`, and bounded bidirectional AST recycling for incrementally loaded large documents
+- Added node-watermark preloading, node/source-line cache limits, and structured initial/background loading states
+- Added dispatcher-based asynchronous overloads for `MarkdownView` and `MarkdownText`
+- Added append-only streaming parsing to `MarkdownView` and `MarkdownText`, with tail-block reparsing, source-span rebasing, final full parsing, and custom `StreamingMarkdownParser` support
+- Added configurable parser source spans (default `BLOCKS`), optional streaming parser factories, and dedicated parsers that force block spans for streaming and `LazyMarkdownView`
+- Lazily creates the regular MPP Markdown parser and retains each component's streaming parser across streaming-state transitions
+- Changed node string builders to receive `ActionHandlerState`, allowing interaction callbacks to read the latest handler without rebuilding annotated content
+- Documented that streaming parsers return a new root document for changed input while preserving unchanged child-node identity
 
 #### Render Dependency Context
 - Added `renderDependencies` to the public Markdown rendering components so callers can provide services and other external objects to custom renderers
@@ -62,6 +47,16 @@
 ## 0.2.0
 
 ### 新增功能
+
+- 新增 `appendMarkdownInlineContent()`，以原子方式注册 embedded 或 standalone inline content 并追加 annotation；默认安全处理 ID 冲突，同时支持显式覆盖
+- 新增跨平台 `LazyMarkdownView`、`MarkdownLineSource` 与有界双向 AST 回收，用于增量加载大型文档
+- 新增节点水位预加载、node/source-line 双重缓存上限，以及结构化的首次/后台加载状态
+- 为 `MarkdownView` 与 `MarkdownText` 新增可指定 dispatcher 的异步重载
+- 为 `MarkdownView` 与 `MarkdownText` 新增 append-only streaming 解析，支持尾部 block 重解析、source span 重定位、结束时全量解析及自定义 `StreamingMarkdownParser`
+- 新增可配置 parser source span（默认 `BLOCKS`）、可选 streaming parser factory，并为 streaming 与 `LazyMarkdownView` 创建强制 block span 的独立 parser
+- MPP 普通 Markdown parser 改为懒创建，并在 streaming 状态切换期间保留每个组件的 streaming parser 实例
+- NodeStringBuilder 改为接收 `ActionHandlerState`，交互回调可读取最新 handler，而无需重建 annotated content
+- 明确 streaming parser 在输入变化时返回新的根 Document，同时保持未变化 child node 的对象身份
 
 #### 渲染依赖上下文
 - 所有公开 Markdown 渲染组件新增 `renderDependencies`，调用方可向自定义 renderer 提供服务或其他外部对象
