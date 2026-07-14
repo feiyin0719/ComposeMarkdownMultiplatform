@@ -9,6 +9,8 @@ package com.iffly.compose.markdown.multiplatform.render
 class MarkdownInlineViewMap private constructor(
     private val inlineViews: MutableMap<String, MarkdownInlineView>,
 ) : MutableMap<String, MarkdownInlineView> by inlineViews {
+    private val occurrenceCache = mutableMapOf<String, Int>()
+
     constructor() : this(mutableMapOf())
 
     /**
@@ -20,14 +22,19 @@ class MarkdownInlineViewMap private constructor(
         id: String,
         overwrite: Boolean = false,
     ): String {
-        if (overwrite || id !in inlineViews) return id
+        if (overwrite) return id
+        if (id !in inlineViews) {
+            occurrenceCache.remove(id)
+            return id
+        }
 
-        var occurrence = 1
+        var occurrence = occurrenceCache[id] ?: 1
         var candidate = "${id}_$occurrence"
         while (candidate in inlineViews) {
             occurrence++
             candidate = "${id}_$occurrence"
         }
+        occurrenceCache[id] = occurrence
         return candidate
     }
 
