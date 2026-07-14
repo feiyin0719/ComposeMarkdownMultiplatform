@@ -31,6 +31,7 @@ class MarkdownRenderConfig private constructor(
     /** Source spans included by the parser used for regular rendering. */
     val includeSourceSpans: IncludeSourceSpans,
     private val parserExtensions: List<Extension>,
+    private val parserBuilderCustomizer: ((Parser.Builder) -> Unit)?,
     private val streamingMarkdownParserFactory: ((MarkdownRenderConfig) -> StreamingMarkdownParser)?,
 ) {
     /** The lazily created parser used by regular Markdown rendering. */
@@ -41,12 +42,13 @@ class MarkdownRenderConfig private constructor(
     /** Creates an independent parser from this configuration's extensions and source-span policy. */
     fun createMarkdownParser(minimumSourceSpans: IncludeSourceSpans = IncludeSourceSpans.NONE): MarkdownParser {
         val effectiveSourceSpans = includeSourceSpans.atLeast(minimumSourceSpans)
-        val parser =
+        val parserBuilder =
             Parser
                 .builder()
                 .includeSourceSpans(effectiveSourceSpans)
                 .extensions(parserExtensions)
-                .build()
+        parserBuilderCustomizer?.invoke(parserBuilder)
+        val parser = parserBuilder.build()
         return MarkdownParser(parser::parse)
     }
 
@@ -82,6 +84,7 @@ class MarkdownRenderConfig private constructor(
         private val extensions = mutableListOf<Extension>()
         private var includeSourceSpans: IncludeSourceSpans = IncludeSourceSpans.BLOCKS
         private var streamingMarkdownParserFactory: ((MarkdownRenderConfig) -> StreamingMarkdownParser)? = null
+        private var parserBuilderCustomizer: ((Parser.Builder) -> Unit)? = null
 
         fun markdownTheme(markdownTheme: MarkdownTheme): Builder {
             this.markdownTheme = markdownTheme
@@ -141,6 +144,17 @@ class MarkdownRenderConfig private constructor(
             return this
         }
 
+        /**
+         * Configures each underlying commonmark [Parser.Builder].
+         *
+         * The customizer is applied after extensions, source spans, and all other parser settings,
+         * allowing it to override values configured by this builder.
+         */
+        fun configureParserBuilder(customizer: (Parser.Builder) -> Unit): Builder {
+            parserBuilderCustomizer = customizer
+            return this
+        }
+
         fun build(): MarkdownRenderConfig {
             val parserExtensions = extensions.toMutableList()
             plugins.forEach { plugin ->
@@ -163,6 +177,7 @@ class MarkdownRenderConfig private constructor(
                 ),
                 includeSourceSpans,
                 parserExtensions.toList(),
+                parserBuilderCustomizer,
                 streamingMarkdownParserFactory,
             )
         }
