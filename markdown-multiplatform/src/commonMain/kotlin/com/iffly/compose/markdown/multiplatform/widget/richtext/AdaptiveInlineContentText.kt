@@ -232,7 +232,11 @@ private fun SubcomposeMeasureScope.measureAdaptiveInlineContentSize(
         val width = placeable?.width?.let(density::toPlaceholderSp) ?: value.placeholder.width
         val height = placeable?.height?.let(density::toPlaceholderSp) ?: value.placeholder.height
         val placeholder = value.placeholder.copy(width = width, height = height)
-        measuredAdaptiveInlineContent[entry.id] = entry.inlineContent(placeholder)
+        measuredAdaptiveInlineContent[entry.id] =
+            entry.inlineContent(
+                placeholder = placeholder,
+                child = value.content,
+            )
     }
     return measuredAdaptiveInlineContent.build()
 }
@@ -242,21 +246,26 @@ private class AdaptiveInlineContentEntry(
     val content: State<RichTextInlineContent.EmbeddedRichTextInlineContent>,
 ) {
     private var cachedPlaceholder: Placeholder? = null
+    private var cachedChild: (@Composable (String) -> Unit)? = null
     private var cachedInlineContent: InlineTextContent? = null
 
-    fun inlineContent(placeholder: Placeholder): InlineTextContent {
+    fun inlineContent(
+        placeholder: Placeholder,
+        child: @Composable (String) -> Unit,
+    ): InlineTextContent {
         val cached = cachedInlineContent
-        if (cached != null && cachedPlaceholder == placeholder) return cached
+        if (cached != null && cachedPlaceholder == placeholder && cachedChild === child) return cached
 
         return InlineTextContent(
             placeholder = placeholder,
             children = { alternateText ->
                 key(id) {
-                    content.value.content(alternateText)
+                    child(alternateText)
                 }
             },
         ).also {
             cachedPlaceholder = placeholder
+            cachedChild = child
             cachedInlineContent = it
         }
     }
