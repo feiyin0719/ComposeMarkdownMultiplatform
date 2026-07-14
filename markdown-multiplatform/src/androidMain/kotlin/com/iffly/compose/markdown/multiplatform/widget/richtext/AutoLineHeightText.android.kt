@@ -58,13 +58,19 @@ actual fun AutoLineHeightText(
     onTextLayout: (TextLayoutResult) -> Unit,
     inlineContent: ImmutableMap<String, InlineTextContent>,
 ) {
-    val (adjustedText, textLayoutResultState) =
-        rememberAdjustedText(
-            text = text,
-        )
+    val hasAdjustableInlineContent =
+        remember(inlineContent) {
+            inlineContent.values.any { it.placeholder.height.isSp }
+        }
+    val adjustment =
+        if (hasAdjustableInlineContent) {
+            rememberAdjustedText(text)
+        } else {
+            null
+        }
 
     Text(
-        text = adjustedText,
+        text = adjustment?.first ?: text,
         modifier = modifier,
         color = color,
         fontSize = fontSize,
@@ -81,7 +87,7 @@ actual fun AutoLineHeightText(
         minLines = minLines,
         inlineContent = inlineContent,
         onTextLayout = { layoutResult ->
-            textLayoutResultState.value = layoutResult
+            adjustment?.second?.value = layoutResult
             onTextLayout(layoutResult)
         },
         style = style,
@@ -99,6 +105,9 @@ private fun rememberAdjustedText(text: AnnotatedString): Pair<AnnotatedString, M
         }.distinctUntilChanged()
             .mapNotNull { layoutResult ->
                 layoutResult?.let {
+                    if (it.layoutInput.placeholders.none { placeholder -> placeholder.item.height.isSp }) {
+                        return@let null
+                    }
                     if (!adjustedText.hasEqualLayoutText(it.layoutInput.text)) {
                         // Text has changed, skip processing
                         return@let null

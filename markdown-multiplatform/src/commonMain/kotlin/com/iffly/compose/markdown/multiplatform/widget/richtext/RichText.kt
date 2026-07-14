@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
@@ -66,7 +67,7 @@ fun RichText(
     val textSegments =
         rememberRichTextSegment(
             text = text,
-            standaloneInlineContent = standaloneInlineContent,
+            standaloneInlineContentKeys = standaloneInlineContent.keys,
         )
 
     Column(modifier = modifier) {
@@ -103,10 +104,9 @@ fun RichText(
                 }
 
                 is RichTextSegment.InlineContentSegment -> {
-                    val content = it.standaloneInlineTextContent
-                    content.content(
-                        content.modifier,
-                    )
+                    standaloneInlineContent[it.key]?.let { content ->
+                        content.content(content.modifier)
+                    }
                 }
             }
             SelectionFormatText(StringExt.LINE_SEPARATOR)
@@ -117,22 +117,23 @@ fun RichText(
 @Composable
 private fun rememberRichTextSegment(
     text: AnnotatedString,
-    standaloneInlineContent: ImmutableMap<String, RichTextInlineContent.StandaloneInlineContent>,
+    standaloneInlineContentKeys: Set<String>,
 ): List<RichTextSegment> =
-    remember(text, standaloneInlineContent) {
-        buildRichTextSegments(text, standaloneInlineContent)
+    remember(text, standaloneInlineContentKeys) {
+        buildRichTextSegments(text, standaloneInlineContentKeys)
     }
 
 @Composable
 private fun rememberSegmentOnTextLayout(
     segmentIndex: Int,
     onTextLayout: ((Int, TextLayoutResult) -> Unit)?,
-): (TextLayoutResult) -> Unit =
-    remember(segmentIndex, onTextLayout) {
-        onTextLayout?.let { callback ->
-            { result -> callback(segmentIndex, result) }
-        } ?: emptyTextLayoutCallback
+): (TextLayoutResult) -> Unit {
+    val currentSegmentIndex = rememberUpdatedState(segmentIndex)
+    val currentOnTextLayout = rememberUpdatedState(onTextLayout)
+    return remember {
+        { result -> currentOnTextLayout.value?.invoke(currentSegmentIndex.value, result) }
     }
+}
 
 private fun groupRichTextInlineContent(inlineContent: ImmutableMap<String, RichTextInlineContent>): GroupedRichTextInlineContent {
     val standalone = persistentMapOf<String, RichTextInlineContent.StandaloneInlineContent>().builder()
@@ -151,30 +152,33 @@ private fun groupRichTextInlineContent(inlineContent: ImmutableMap<String, RichT
 
 private fun buildRichTextSegments(
     text: AnnotatedString,
-    standaloneInlineContent: Map<String, RichTextInlineContent.StandaloneInlineContent>,
+    standaloneInlineContentKeys: Set<String>,
 ): List<RichTextSegment> {
-    val standaloneInlineTextContentAnnotations = text.getStandaloneInlineTextContentAnnotations()
-    val validAnnotations =
-        standaloneInlineTextContentAnnotations.filter { annotation ->
-            standaloneInlineContent.containsKey(annotation.item)
-        }
+    if (text.isEmpty()) return emptyList()
+    if (standaloneInlineContentKeys.isEmpty()) return listOf(RichTextSegment.Text(text))
 
-    return buildList {
-        validAnnotations
-            .fold(0) { lastIndex, annotation ->
-                if (annotation.start > lastIndex) {
-                    add(RichTextSegment.Text(text.subSequence(lastIndex, annotation.start)))
-                }
-                standaloneInlineContent[annotation.item]?.let {
-                    add(RichTextSegment.InlineContentSegment(it))
-                }
-                annotation.end
-            }.let { lastIndex ->
-                if (lastIndex < text.length) {
-                    add(RichTextSegment.Text(text.subSequence(lastIndex, text.length)))
-                }
-            }
+    val standaloneInlineTextContentAnnotations = text.getStandaloneInlineTextContentAnnotations()
+    if (standaloneInlineTextContentAnnotations.isEmpty()) return listOf(RichTextSegment.Text(text))
+
+    val segments = mutableListOf<RichTextSegment>()
+    var lastIndex = 0
+    var hasStandaloneInlineContent = false
+    standaloneInlineTextContentAnnotations.fastForEach { annotation ->
+        if (annotation.item !in standaloneInlineContentKeys) return@fastForEach
+
+        hasStandaloneInlineContent = true
+        if (annotation.start > lastIndex) {
+            segments.add(RichTextSegment.Text(text.subSequence(lastIndex, annotation.start)))
+        }
+        segments.add(RichTextSegment.InlineContentSegment(annotation.item))
+        lastIndex = annotation.end
     }
+
+    if (!hasStandaloneInlineContent) return listOf(RichTextSegment.Text(text))
+    if (lastIndex < text.length) {
+        segments.add(RichTextSegment.Text(text.subSequence(lastIndex, text.length)))
+    }
+    return segments
 }
 
 private sealed interface RichTextSegment {
@@ -183,7 +187,7 @@ private sealed interface RichTextSegment {
     ) : RichTextSegment
 
     data class InlineContentSegment(
-        val standaloneInlineTextContent: RichTextInlineContent.StandaloneInlineContent,
+        val key: String,
     ) : RichTextSegment
 }
 
@@ -191,5 +195,3 @@ private data class GroupedRichTextInlineContent(
     val standalone: ImmutableMap<String, RichTextInlineContent.StandaloneInlineContent>,
     val embedded: ImmutableMap<String, RichTextInlineContent.EmbeddedRichTextInlineContent>,
 )
-
-private val emptyTextLayoutCallback: (TextLayoutResult) -> Unit = {}

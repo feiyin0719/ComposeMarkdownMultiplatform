@@ -5,14 +5,17 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.layout.SubcomposeMeasureScope
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -138,9 +141,10 @@ private fun TextWithAdaptiveInlineContent(
     style: TextStyle = LocalTextStyle.current,
 ) {
     val density = LocalDensity.current
+    val adaptiveInlineContentEntries = rememberAdaptiveInlineContentEntries(adaptiveInlineContent)
     SubcomposeLayout(modifier = modifier) { constraints ->
         val measuredAdaptiveInlineContent: ImmutableMap<String, InlineTextContent> =
-            measureAdaptiveInlineContentSize(adaptiveInlineContent, constraints, density)
+            measureAdaptiveInlineContentSize(adaptiveInlineContentEntries, constraints, density)
 
         val combinedInlineContent =
             persistentMapOf<String, InlineTextContent>()
@@ -184,8 +188,24 @@ private fun TextWithAdaptiveInlineContent(
     }
 }
 
-private fun SubcomposeMeasureScope.measureAdaptiveInlineContentSize(
+@Composable
+private fun rememberAdaptiveInlineContentEntries(
     adaptiveInlineContent: ImmutableList<Pair<String, RichTextInlineContent.EmbeddedRichTextInlineContent>>,
+): ImmutableList<AdaptiveInlineContentEntry> {
+    val entries = persistentListOf<AdaptiveInlineContentEntry>().builder()
+    adaptiveInlineContent.fastForEach { (id, content) ->
+        val entry =
+            key(id) {
+                val currentContent = rememberUpdatedState(content)
+                remember { AdaptiveInlineContentEntry(id, currentContent) }
+            }
+        entries.add(entry)
+    }
+    return entries.build()
+}
+
+private fun SubcomposeMeasureScope.measureAdaptiveInlineContentSize(
+    adaptiveInlineContent: ImmutableList<AdaptiveInlineContentEntry>,
     constraints: Constraints,
     density: Density,
 ): ImmutableMap<String, InlineTextContent> {
@@ -196,31 +216,50 @@ private fun SubcomposeMeasureScope.measureAdaptiveInlineContentSize(
         )
     val placeables =
         subcompose("adaptive_inline") {
-            adaptiveInlineContent.fastForEach { (id, value) ->
-                key(id) {
+            adaptiveInlineContent.fastForEach { entry ->
+                key(entry.id) {
                     Box(modifier = Modifier.wrapContentSize()) {
-                        value.content(id)
+                        entry.content.value.content(entry.id)
                     }
                 }
             }
         }.map { it.measure(adaptiveInlineConstraints) }
 
     val measuredAdaptiveInlineContent = persistentMapOf<String, InlineTextContent>().builder()
-    adaptiveInlineContent.forEachIndexed { index, (id, value) ->
+    adaptiveInlineContent.forEachIndexed { index, entry ->
+        val value = entry.content.value
         val placeable = placeables.getOrNull(index)
         val width = placeable?.width?.let(density::toPlaceholderSp) ?: value.placeholder.width
         val height = placeable?.height?.let(density::toPlaceholderSp) ?: value.placeholder.height
-        measuredAdaptiveInlineContent[id] =
-            InlineTextContent(
-                placeholder = value.placeholder.copy(width = width, height = height),
-                children = { alternateText ->
-                    key(id) {
-                        value.content(alternateText)
-                    }
-                },
-            )
+        val placeholder = value.placeholder.copy(width = width, height = height)
+        measuredAdaptiveInlineContent[entry.id] = entry.inlineContent(placeholder)
     }
     return measuredAdaptiveInlineContent.build()
+}
+
+private class AdaptiveInlineContentEntry(
+    val id: String,
+    val content: State<RichTextInlineContent.EmbeddedRichTextInlineContent>,
+) {
+    private var cachedPlaceholder: Placeholder? = null
+    private var cachedInlineContent: InlineTextContent? = null
+
+    fun inlineContent(placeholder: Placeholder): InlineTextContent {
+        val cached = cachedInlineContent
+        if (cached != null && cachedPlaceholder == placeholder) return cached
+
+        return InlineTextContent(
+            placeholder = placeholder,
+            children = { alternateText ->
+                key(id) {
+                    content.value.content(alternateText)
+                }
+            },
+        ).also {
+            cachedPlaceholder = placeholder
+            cachedInlineContent = it
+        }
+    }
 }
 
 private fun groupInlineContent(
