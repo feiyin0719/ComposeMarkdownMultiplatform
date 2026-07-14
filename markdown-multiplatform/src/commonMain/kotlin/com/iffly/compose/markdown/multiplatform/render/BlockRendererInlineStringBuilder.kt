@@ -42,7 +42,7 @@ class BlockRendererInlineStringBuilder<T : Node>(
 ) : IInlineNodeStringBuilder<T> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: T,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,
@@ -82,7 +82,7 @@ class BlockRendererInlineStringBuilder<T : Node>(
 class DocumentInlineStringBuilder : IInlineNodeStringBuilder<Document> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: Document,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,
@@ -147,7 +147,7 @@ private fun AnnotatedString.Builder.appendSpacer(
 
 private fun AnnotatedString.Builder.buildChildInlineNodeString(
     child: Node,
-    inlineContentMap: MutableMap<String, MarkdownInlineView>,
+    inlineContentMap: MarkdownInlineViewMap,
     markdownTheme: MarkdownTheme,
     actionHandler: ActionHandlerState?,
     indentLevel: Int,

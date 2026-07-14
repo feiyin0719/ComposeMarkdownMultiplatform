@@ -209,8 +209,8 @@ fun markdownText(
     indentLevel: Int = 0,
     isShowNotSupported: Boolean,
     nodeStringBuilderContext: NodeStringBuilderContext,
-): Pair<AnnotatedString, Map<String, MarkdownInlineView>> {
-    val inlineContentMap = mutableMapOf<String, MarkdownInlineView>()
+): Pair<AnnotatedString, MarkdownInlineViewMap> {
+    val inlineContentMap = MarkdownInlineViewMap()
 
     val annotatedString =
         buildAnnotatedString {

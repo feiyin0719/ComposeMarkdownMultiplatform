@@ -28,7 +28,7 @@ import com.iffly.compose.markdown.multiplatform.MarkdownView
 import com.iffly.compose.markdown.multiplatform.config.IMarkdownRenderPlugin
 import com.iffly.compose.markdown.multiplatform.config.MarkdownRenderConfig
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
-import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
+import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineViewMap
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.render.appendMarkdownInlineContent
@@ -101,7 +101,7 @@ private class InlineViewPlugin : IMarkdownRenderPlugin {
 private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: Code,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,
@@ -139,7 +139,7 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
     private fun AnnotatedString.Builder.appendFixedSizeStatusDot(
         id: String,
         status: String,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
     ) {
         val color =
             when (status) {
@@ -181,7 +181,7 @@ private class InlineViewCodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
     private fun AnnotatedString.Builder.appendDynamicSizeTag(
         id: String,
         tag: String,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
     ) {
         appendMarkdownInlineContent(
             id = id,

@@ -17,7 +17,7 @@ import org.commonmark.node.Node
 fun AnnotatedString.Builder.buildChildNodeAnnotatedString(
     parent: Node,
     indentLevel: Int = 1,
-    inlineContentMap: MutableMap<String, MarkdownInlineView>,
+    inlineContentMap: MarkdownInlineViewMap,
     markdownTheme: MarkdownTheme,
     renderRegistry: RenderRegistry,
     actionHandler: ActionHandlerState? = null,
@@ -109,7 +109,7 @@ open class CompositeChildNodeStringBuilder : IInlineNodeStringBuilder<Node> {
 
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: Node,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,

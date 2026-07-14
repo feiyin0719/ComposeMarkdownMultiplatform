@@ -11,7 +11,7 @@ import org.commonmark.node.Node
 interface IInlineNodeStringBuilder<T : Node> {
     fun AnnotatedString.Builder.buildInlineNodeString(
         node: T,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,
@@ -32,12 +32,12 @@ interface IInlineNodeStringBuilder<T : Node> {
  * content. Existing and replacement content must use the same embedded or standalone annotation
  * type. Use overwrite only when those occurrences are semantically interchangeable.
  *
- * Prefer this helper over writing to [inlineContentMap] and calling Compose's native
+ * Prefer this helper over registering content separately and calling Compose's native
  * `appendInlineContent` directly, because the native API does not manage map key collisions.
  *
  * @param id Base ID for the inline content, normally the node class name.
  * @param inlineContent Embedded or standalone rich text content to register.
- * @param inlineContentMap Map supplied to [IInlineNodeStringBuilder.buildInlineNodeString].
+ * @param inlineContentMap Collection supplied to [IInlineNodeStringBuilder.buildInlineNodeString].
  * @param alternateText Text used for accessibility and when the inline content cannot be resolved.
  * @param overwrite Whether to replace an existing entry with [id]. Defaults to `false`.
  * @return The actual ID registered and appended to this annotated string.
@@ -45,13 +45,13 @@ interface IInlineNodeStringBuilder<T : Node> {
 fun AnnotatedString.Builder.appendMarkdownInlineContent(
     id: String,
     inlineContent: RichTextInlineContent,
-    inlineContentMap: MutableMap<String, MarkdownInlineView>,
+    inlineContentMap: MarkdownInlineViewMap,
     alternateText: String = INLINE_CONTENT_REPLACEMENT_CHAR,
     overwrite: Boolean = false,
 ): String {
     require(alternateText.isNotEmpty())
     inlineContentMap.requireCompatibleOverwrite(id, inlineContent, overwrite)
-    val actualId = inlineContentMap.resolveInlineContentId(id, overwrite)
+    val actualId = inlineContentMap.resolveId(id, overwrite)
     inlineContentMap[actualId] =
         MarkdownInlineView.MarkdownRichTextInlineContent(inlineContent)
     when (inlineContent) {
@@ -66,7 +66,7 @@ fun AnnotatedString.Builder.appendMarkdownInlineContent(
     return actualId
 }
 
-private fun Map<String, MarkdownInlineView>.requireCompatibleOverwrite(
+private fun MarkdownInlineViewMap.requireCompatibleOverwrite(
     id: String,
     inlineContent: RichTextInlineContent,
     overwrite: Boolean,
@@ -91,26 +91,11 @@ private fun RichTextInlineContent.hasSameAnnotationTypeAs(other: RichTextInlineC
         }
     }
 
-private fun Map<String, MarkdownInlineView>.resolveInlineContentId(
-    id: String,
-    overwrite: Boolean,
-): String {
-    if (overwrite || id !in this) return id
-
-    var occurrence = 1
-    var candidate = "${id}_$occurrence"
-    while (candidate in this) {
-        occurrence++
-        candidate = "${id}_$occurrence"
-    }
-    return candidate
-}
-
 private const val INLINE_CONTENT_REPLACEMENT_CHAR = "\uFFFD"
 
 fun IInlineNodeStringBuilder<*>.buildMarkdownInlineNodeString(
     node: Node,
-    inlineContentMap: MutableMap<String, MarkdownInlineView>,
+    inlineContentMap: MarkdownInlineViewMap,
     markdownTheme: MarkdownTheme,
     indentLevel: Int,
     actionHandler: ActionHandlerState? = null,

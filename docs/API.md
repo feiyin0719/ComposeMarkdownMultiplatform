@@ -702,7 +702,7 @@ Converts an inline node into styled text spans within an `AnnotatedString`.
 interface IInlineNodeStringBuilder<T : Node> {
     fun AnnotatedString.Builder.buildInlineNodeString(
         node: T,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,
@@ -716,7 +716,7 @@ interface IInlineNodeStringBuilder<T : Node> {
 **Parameters**
 
 - `node`: The inline AST node.
-- `inlineContentMap`: Mutable map associating annotation IDs with `MarkdownInlineView` values.
+- `inlineContentMap`: Collection associating annotation IDs with `MarkdownInlineView` values.
 - `markdownTheme`: Current theme for reading styles.
 - `actionHandler`: Optional interaction handler for links, etc.
 - `renderRegistry`: Used for recursively building child node strings.
@@ -731,7 +731,7 @@ annotation in one operation:
 fun AnnotatedString.Builder.appendMarkdownInlineContent(
         id: String,
         inlineContent: RichTextInlineContent,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+    inlineContentMap: MarkdownInlineViewMap,
         alternateText: String = "\uFFFD",
         overwrite: Boolean = false,
 ): String
@@ -1074,7 +1074,7 @@ interface HtmlInlineTagHandler {
 ```kotlin
 data class HtmlInlineTagContext(
     val node: Node,
-    val inlineContentMap: MutableMap<String, MarkdownInlineView>,
+    val inlineContentMap: MarkdownInlineViewMap,
     val markdownTheme: MarkdownTheme,
     val actionHandler: ActionHandlerState?,
     val indentLevel: Int,

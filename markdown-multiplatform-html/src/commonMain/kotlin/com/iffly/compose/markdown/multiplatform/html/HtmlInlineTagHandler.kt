@@ -2,7 +2,7 @@ package com.iffly.compose.markdown.multiplatform.html
 
 import androidx.compose.ui.text.AnnotatedString
 import com.iffly.compose.markdown.multiplatform.ActionHandlerState
-import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
+import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineViewMap
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
@@ -13,7 +13,7 @@ import org.commonmark.node.Node
  * inline content map, theme, and other rendering state.
  *
  * @param node The node representing the HTML tag.
- * @param inlineContentMap Mutable map of inline content keyed by unique identifiers.
+ * @param inlineContentMap Inline view collection keyed by unique identifiers.
  * @param markdownTheme The current markdown theme providing text styles.
  * @param actionHandler Optional handler for user interactions such as link clicks.
  * @param indentLevel Current indentation level in the markdown structure.
@@ -23,7 +23,7 @@ import org.commonmark.node.Node
  */
 data class HtmlInlineTagContext(
     val node: Node,
-    val inlineContentMap: MutableMap<String, MarkdownInlineView>,
+    val inlineContentMap: MarkdownInlineViewMap,
     val markdownTheme: MarkdownTheme,
     val actionHandler: ActionHandlerState?,
     val indentLevel: Int,

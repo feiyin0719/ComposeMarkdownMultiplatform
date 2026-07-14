@@ -4,7 +4,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.withStyle
 import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
-import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
+import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineViewMap
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
@@ -17,7 +17,7 @@ import org.commonmark.node.Code
 class CodeNodeStringBuilder : IInlineNodeStringBuilder<Code> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: Code,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,

@@ -13,7 +13,7 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
-import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
+import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineViewMap
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.render.appendMarkdownInlineContent
@@ -144,7 +144,7 @@ class ImageNodeStringBuilder(
 
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: Image,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,

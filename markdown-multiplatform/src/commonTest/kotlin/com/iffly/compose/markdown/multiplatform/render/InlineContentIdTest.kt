@@ -15,7 +15,7 @@ class InlineContentIdTest {
     @Test
     fun duplicateContentIdsPreserveEveryInlineRenderer() {
         val builder = AnnotatedString.Builder()
-        val inlineContent = mutableMapOf<String, MarkdownInlineView>()
+        val inlineContent = MarkdownInlineViewMap()
         val first = embeddedContent()
         val second = embeddedContent()
 
@@ -36,7 +36,7 @@ class InlineContentIdTest {
     @Test
     fun overwriteReusesRequestedIdAndReplacesContent() {
         val builder = AnnotatedString.Builder()
-        val inlineContent = mutableMapOf<String, MarkdownInlineView>()
+        val inlineContent = MarkdownInlineViewMap()
         val first = embeddedContent()
         val second = embeddedContent()
 
@@ -60,7 +60,7 @@ class InlineContentIdTest {
     @Test
     fun standaloneContentUsesStandaloneAnnotation() {
         val builder = AnnotatedString.Builder()
-        val inlineContent = mutableMapOf<String, MarkdownInlineView>()
+        val inlineContent = MarkdownInlineViewMap()
 
         val actualId =
             builder.appendMarkdownInlineContent(
@@ -78,7 +78,7 @@ class InlineContentIdTest {
     @Test
     fun overwriteRejectsADifferentAnnotationType() {
         val builder = AnnotatedString.Builder()
-        val inlineContent = mutableMapOf<String, MarkdownInlineView>()
+        val inlineContent = MarkdownInlineViewMap()
         builder.appendMarkdownInlineContent("shared", embeddedContent(), inlineContent)
 
         assertFailsWith<IllegalArgumentException> {

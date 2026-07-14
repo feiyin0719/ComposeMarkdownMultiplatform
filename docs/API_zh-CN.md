@@ -707,7 +707,7 @@ interface IBlockRenderer<T : Node> {
 interface IInlineNodeStringBuilder<T : Node> {
     fun AnnotatedString.Builder.buildInlineNodeString(
         node: T,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,
@@ -721,7 +721,7 @@ interface IInlineNodeStringBuilder<T : Node> {
 **参数说明**
 
 - `node`：内联 AST 节点。
-- `inlineContentMap`：用于关联 annotation ID 与 `MarkdownInlineView` 的可变 Map。
+- `inlineContentMap`：用于关联 annotation ID 与 `MarkdownInlineView` 的集合。
 - `markdownTheme`：当前主题，用于读取样式。
 - `actionHandler`：可选的交互处理器。
 - `renderRegistry`：用于递归构建子节点字符串。
@@ -735,7 +735,7 @@ interface IInlineNodeStringBuilder<T : Node> {
 fun AnnotatedString.Builder.appendMarkdownInlineContent(
     id: String,
     inlineContent: RichTextInlineContent,
-    inlineContentMap: MutableMap<String, MarkdownInlineView>,
+    inlineContentMap: MarkdownInlineViewMap,
     alternateText: String = "\uFFFD",
     overwrite: Boolean = false,
 ): String
@@ -989,7 +989,7 @@ interface HtmlInlineTagHandler {
 ```kotlin
 data class HtmlInlineTagContext(
     val node: Node,
-    val inlineContentMap: MutableMap<String, MarkdownInlineView>,
+    val inlineContentMap: MarkdownInlineViewMap,
     val markdownTheme: MarkdownTheme,
     val actionHandler: ActionHandlerState?,
     val indentLevel: Int,

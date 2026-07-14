@@ -38,7 +38,7 @@ import com.iffly.compose.markdown.multiplatform.render.CompositeChildNodeStringB
 import com.iffly.compose.markdown.multiplatform.render.IBlockRenderer
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
 import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineText
-import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
+import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineViewMap
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.style.MarkdownTheme
@@ -356,7 +356,7 @@ class AlertBlockRenderer : IBlockRenderer<AlertBlock> {
 class MentionNodeStringBuilder : IInlineNodeStringBuilder<MentionNode> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: MentionNode,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: com.iffly.compose.markdown.multiplatform.ActionHandlerState?,
         indentLevel: Int,
@@ -379,7 +379,7 @@ class MentionNodeStringBuilder : IInlineNodeStringBuilder<MentionNode> {
 class HashtagNodeStringBuilder : IInlineNodeStringBuilder<HashtagNode> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: HashtagNode,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: com.iffly.compose.markdown.multiplatform.ActionHandlerState?,
         indentLevel: Int,
@@ -396,7 +396,7 @@ class HashtagNodeStringBuilder : IInlineNodeStringBuilder<HashtagNode> {
 class HighlightNodeStringBuilder : IInlineNodeStringBuilder<HighlightNode> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: HighlightNode,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: com.iffly.compose.markdown.multiplatform.ActionHandlerState?,
         indentLevel: Int,
@@ -419,7 +419,7 @@ class HighlightNodeStringBuilder : IInlineNodeStringBuilder<HighlightNode> {
 class BadgeNodeStringBuilder : IInlineNodeStringBuilder<BadgeNode> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: BadgeNode,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: com.iffly.compose.markdown.multiplatform.ActionHandlerState?,
         indentLevel: Int,

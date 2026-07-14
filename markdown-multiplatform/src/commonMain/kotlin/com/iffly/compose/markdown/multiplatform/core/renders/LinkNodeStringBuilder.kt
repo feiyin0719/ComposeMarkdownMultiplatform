@@ -6,7 +6,7 @@ import androidx.compose.ui.text.withLink
 import com.iffly.compose.markdown.multiplatform.ActionHandlerState
 import com.iffly.compose.markdown.multiplatform.MarkdownLinkInteractionListener
 import com.iffly.compose.markdown.multiplatform.render.IInlineNodeStringBuilder
-import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineView
+import com.iffly.compose.markdown.multiplatform.render.MarkdownInlineViewMap
 import com.iffly.compose.markdown.multiplatform.render.NodeStringBuilderContext
 import com.iffly.compose.markdown.multiplatform.render.RenderRegistry
 import com.iffly.compose.markdown.multiplatform.render.buildChildNodeAnnotatedString
@@ -21,7 +21,7 @@ import org.commonmark.node.Link
 class LinkNodeStringBuilder : IInlineNodeStringBuilder<Link> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: Link,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,
@@ -67,7 +67,7 @@ class LinkNodeStringBuilder : IInlineNodeStringBuilder<Link> {
 class ImageNodeStringBuilder : IInlineNodeStringBuilder<Image> {
     override fun AnnotatedString.Builder.buildInlineNodeString(
         node: Image,
-        inlineContentMap: MutableMap<String, MarkdownInlineView>,
+        inlineContentMap: MarkdownInlineViewMap,
         markdownTheme: MarkdownTheme,
         actionHandler: ActionHandlerState?,
         indentLevel: Int,
