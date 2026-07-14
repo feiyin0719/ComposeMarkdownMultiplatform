@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastForEach
+import com.iffly.compose.markdown.multiplatform.util.StringExt
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
@@ -117,7 +118,7 @@ private fun rememberAdjustedText(text: AnnotatedString): Pair<AnnotatedString, M
                             layoutResult = it,
                             density = density,
                         ).takeIf { map -> map.isNotEmpty() }?.let { requestMap ->
-                            buildAdjustLineHeightText(
+                            buildAdjustedLineHeightText(
                                 currentText = it.layoutInput.text,
                                 requests = requestMap.values.toList(),
                             )
@@ -131,79 +132,46 @@ private fun rememberAdjustedText(text: AnnotatedString): Pair<AnnotatedString, M
     return Pair(adjustedText, textLayoutResultState)
 }
 
-private fun buildAdjustLineHeightText(
+internal fun buildAdjustedLineHeightText(
     currentText: AnnotatedString,
     requests: List<AdjustLineHeightRequest>,
 ): AnnotatedString =
     buildAnnotatedString {
         var lastIndex = 0
-        requests.sortedBy { it.startIndex }.fastForEach { request ->
-            // 1. Append plain text gap before this request
+        requests.sortedBy { it.startIndex }.forEach { request ->
             if (request.startIndex > lastIndex) {
-                val gapEnd = request.startIndex
-                if (currentText[gapEnd - 1] == '\n' &&
-                    wouldSplitParagraphAnnotation(currentText, gapEnd - 1, gapEnd)
-                ) {
-                    // Drop trailing \n to avoid splitting paragraph annotation
-                    if (gapEnd - 1 > lastIndex) append(currentText.subSequence(lastIndex, gapEnd - 1))
-                } else {
+                val gapEnd =
+                    if (currentText.isNewlineAt(request.startIndex - 1)) {
+                        request.startIndex - 1
+                    } else {
+                        request.startIndex
+                    }
+                if (gapEnd > lastIndex) {
                     append(currentText.subSequence(lastIndex, gapEnd))
                 }
             }
 
-            // 2. Append adjusted segment with modified lineHeight
-            val endsWithNewline = currentText[request.endIndex - 1] == '\n'
-            val contentEnd = if (endsWithNewline) request.endIndex - 1 else request.endIndex
-            // Apply adjusted lineHeight only to content (excluding trailing \n)
-            if (request.startIndex < contentEnd) {
+            val contentEnd =
+                if (currentText.isNewlineAt(request.endIndex - 1)) {
+                    request.endIndex - 1
+                } else {
+                    request.endIndex
+                }
+
+            if (contentEnd > request.startIndex) {
                 withStyle(ParagraphStyle(lineHeight = request.lineHeight)) {
                     append(currentText.subSequence(request.startIndex, contentEnd))
                 }
             }
-            // Trailing \n keeps original lineHeight, or is dropped if it would split paragraph
-            if (endsWithNewline &&
-                !wouldSplitParagraphAnnotation(currentText, request.endIndex - 1, request.endIndex)
-            ) {
-                append(currentText.subSequence(contentEnd, request.endIndex))
-            }
 
             lastIndex = request.endIndex
         }
-        // 3. Append remaining text after last request
         if (lastIndex < currentText.length) {
             append(currentText.subSequence(lastIndex, currentText.length))
         }
     }
 
-/**
- * Check if a \n at [newlinePos] would split a ParagraphStyle annotation.
- * Returns true if any ParagraphStyle annotation in [currentText] covers
- * the \n position AND extends beyond [segmentEnd].
- */
-private fun wouldSplitParagraphAnnotation(
-    currentText: AnnotatedString,
-    newlinePos: Int,
-    segmentEnd: Int,
-): Boolean {
-    val styles = currentText.paragraphStyles
-    if (styles.isEmpty()) return false
-    // Binary search: find last style with start <= newlinePos
-    var low = 0
-    var high = styles.size - 1
-    var idx = -1
-    while (low <= high) {
-        val mid = (low + high) ushr 1
-        if (styles[mid].start <= newlinePos) {
-            idx = mid
-            low = mid + 1
-        } else {
-            high = mid - 1
-        }
-    }
-    if (idx == -1) return false
-    val ps = styles[idx]
-    return newlinePos < ps.end && ps.end > segmentEnd
-}
+private fun AnnotatedString.isNewlineAt(index: Int): Boolean = index in indices && this[index].toString() == StringExt.LINE_SEPARATOR
 
 /**
  * Compare two AnnotatedStrings for layout equality.
@@ -295,7 +263,7 @@ private fun calculateAdjustLineHeightRequest(
     return adjustLineHeightRequestMap
 }
 
-private data class AdjustLineHeightRequest(
+internal data class AdjustLineHeightRequest(
     val startIndex: Int,
     val endIndex: Int,
     val lineHeight: TextUnit,
