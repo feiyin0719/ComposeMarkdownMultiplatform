@@ -25,6 +25,7 @@
   - [IBlockRenderer](#iblockrenderer)
   - [IInlineNodeStringBuilder](#iinlinenodestringbuilder)
   - [MarkdownInlineView](#markdowninlineview)
+    - [PlaceholderTextUnitConverter](#placeholdertextunitconverter)
   - [RenderRegistry & Core Renderers](#renderregistry--core-renderers)
 - [Plugin Modules](#plugin-modules)
   - [TableMarkdownPlugin](#tablemarkdownplugin)
@@ -785,6 +786,44 @@ sealed interface MarkdownInlineView {
 
 - **`EmbeddedRichTextInlineContent`** -- Small inline elements (icons, badges) that sit within the text flow.
 - **`StandaloneInlineContent`** -- Full-width block elements (cards, media) rendered as separate sections.
+
+### PlaceholderTextUnitConverter
+
+Adaptive inline content converts measured pixel dimensions to `sp` through the process-wide
+`PlaceholderTextUnitConverter` proxy:
+
+```kotlin
+object PlaceholderTextUnitConverter {
+    var delegate: (density: Density, px: Int) -> TextUnit
+    fun convert(density: Density, px: Int): TextUnit
+    fun useComposeToSp()
+    fun reset()
+}
+```
+
+Platform defaults are intentionally different:
+
+- Android uses the linear compatibility conversion required by Compose versions before 1.10.
+- Desktop, iOS, and wasmJs use Compose's native `Density.toSp` conversion because the Android
+    compatibility issue does not apply to those targets.
+
+On Android with Compose 1.10 or newer, opt into the corrected native conversion once during
+application startup, before composing Markdown:
+
+```kotlin
+PlaceholderTextUnitConverter.useComposeToSp()
+```
+
+For a custom conversion, replace the delegate directly:
+
+```kotlin
+PlaceholderTextUnitConverter.delegate = { density, px ->
+    with(density) { px.toSp() }
+}
+```
+
+Call `PlaceholderTextUnitConverter.reset()` to restore the current platform's default. The
+delegate is global to the process, so do not change it during composition.
 
 ---
 

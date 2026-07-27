@@ -25,6 +25,7 @@
   - [IBlockRenderer](#iblockrenderer)
   - [IInlineNodeStringBuilder](#iinlinenodestringbuilder)
   - [MarkdownInlineView](#markdowninlineview)
+    - [PlaceholderTextUnitConverter](#placeholdertextunitconverter)
   - [RenderRegistry 与核心渲染器](#renderregistry-与核心渲染器)
 - [插件模块](#插件模块)
   - [TableMarkdownPlugin](#tablemarkdownplugin)
@@ -782,6 +783,41 @@ sealed interface MarkdownInlineView {
 
 - **`EmbeddedRichTextInlineContent`** -- 小型内联元素（图标、徽章），与文本处于同一行。
 - **`StandaloneInlineContent`** -- 全宽块级元素（卡片、媒体），作为独立段落渲染。
+
+### PlaceholderTextUnitConverter
+
+自适应内联内容通过进程级 `PlaceholderTextUnitConverter` 代理，将测量得到的像素尺寸转换为 `sp`：
+
+```kotlin
+object PlaceholderTextUnitConverter {
+    var delegate: (density: Density, px: Int) -> TextUnit
+    fun convert(density: Density, px: Int): TextUnit
+    fun useComposeToSp()
+    fun reset()
+}
+```
+
+各平台默认行为有意保持不同：
+
+- Android 使用 Compose 1.10 之前版本所需的线性兼容转换。
+- Desktop、iOS 和 wasmJs 直接使用 Compose 原生 `Density.toSp`，因为这些平台不受该 Android 问题影响。
+
+Android 使用 Compose 1.10 或更高版本时，应在应用启动阶段、开始组合 Markdown 之前切换到已修复的原生转换：
+
+```kotlin
+PlaceholderTextUnitConverter.useComposeToSp()
+```
+
+也可以直接替换 delegate，实现自定义转换：
+
+```kotlin
+PlaceholderTextUnitConverter.delegate = { density, px ->
+    with(density) { px.toSp() }
+}
+```
+
+调用 `PlaceholderTextUnitConverter.reset()` 可恢复当前平台的默认实现。delegate 在进程内全局生效，
+不要在组合过程中修改。
 
 ---
 
