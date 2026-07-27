@@ -227,14 +227,23 @@ private fun calculateAdjustLineHeightRequest(
     density: Density,
 ): MutableMap<Int, AdjustLineHeightRequest> {
     val adjustLineHeightRequestMap = mutableMapOf<Int, AdjustLineHeightRequest>()
-    val annotationRanges = layoutResult.layoutInput.placeholders
+    if (layoutResult.lineCount <= 0) return adjustLineHeightRequestMap
 
-    annotationRanges.fastForEach { annotation ->
+    val annotationRanges = layoutResult.layoutInput.placeholders
+    val placeholderRects = layoutResult.placeholderRects
+
+    annotationRanges.forEachIndexed { index, annotation ->
+        if (placeholderRects.getOrNull(index) == null) {
+            return@forEachIndexed
+        }
         if (!annotation.item.height.isSp) {
-            return@fastForEach
+            return@forEachIndexed
         }
 
         val lineNumber = layoutResult.getLineForOffset(annotation.start)
+        if (lineNumber !in 0 until layoutResult.lineCount) {
+            return@forEachIndexed
+        }
         val textLineHeight =
             layoutResult.getLineBottom(lineNumber) - layoutResult.getLineTop(lineNumber)
         val textLineHeightSp =
