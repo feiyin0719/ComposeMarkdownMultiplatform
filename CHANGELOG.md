@@ -1,5 +1,61 @@
 # Changelog
 
+## 0.3.0
+
+### New Features
+
+- Added `MarkdownRenderConfig.Builder.configureParserBuilder()` so applications can customize each CommonMark parser builder after built-in parser settings are applied
+- Added `MarkdownInlineViewMap`, which encapsulates inline-view ID resolution and storage while retaining the `MutableMap` API through delegation
+- Added `PlaceholderTextUnitConverter`, a process-wide proxy that uses Compose's native `Density.toSp` conversion on every platform by default and supports a custom conversion delegate
+
+### Bug Fixes
+
+- On Android, skips inline placeholders that were not laid out because of `maxLines`, empty layouts, or invalid line indexes before querying line geometry
+- On Android, rebuilt adjusted line-height text without retaining paragraph-boundary newlines that caused duplicate line breaks
+
+### Performance Improvements
+
+- Reuses RichText segmentation while standalone inline-content keys remain unchanged and keeps segment layout callbacks stable across recompositions
+- Reuses adaptive `InlineTextContent` only when both its measured placeholder and child content are unchanged
+- On Android, skips automatic line-height adjustment when no adjustable placeholder exists
+- Caches inline-view occurrence indexes to avoid repeatedly scanning ID suffixes from the beginning
+
+### Migration Notes
+
+- `IInlineNodeStringBuilder` now receives `MarkdownInlineViewMap` instead of `MutableMap<String, MarkdownInlineView>`
+- Compose 1.10 is the minimum supported Android baseline for native placeholder pixel-to-`sp` conversion
+
+---
+
+## 更新日志
+
+## 0.3.0
+
+### 新增功能
+
+- 新增 `MarkdownRenderConfig.Builder.configureParserBuilder()`，可在内置 parser 设置应用后继续自定义每个 CommonMark parser builder
+- 新增 `MarkdownInlineViewMap`，集中封装内联视图 ID 解析与存储，并通过 Kotlin 委托保留 `MutableMap` API
+- 新增进程级 `PlaceholderTextUnitConverter` 代理，所有平台默认使用 Compose 原生 `Density.toSp` 转换，同时支持自定义转换 delegate
+
+### Bug 修复
+
+- Android 在查询行布局信息前跳过因 `maxLines` 未布局的 placeholder、空布局和非法行号，避免崩溃
+- Android 重建调整行高的文本时移除段落边界换行，修复重复换行问题
+
+### 性能优化
+
+- standalone inline-content key 不变时复用 RichText 分段，并在重组间保持 segment layout callback 稳定
+- 仅当测量后的 placeholder 与 child content 都未变化时复用 adaptive `InlineTextContent`
+- Android 不存在可调整 placeholder 时跳过自动行高处理
+- 缓存内联视图 occurrence 索引，避免每次从头扫描 ID 后缀
+
+### 迁移说明
+
+- `IInlineNodeStringBuilder` 的参数由 `MutableMap<String, MarkdownInlineView>` 改为 `MarkdownInlineViewMap`
+- Android 原生 placeholder 像素到 `sp` 转换的最低支持基线为 Compose 1.10
+
+---
+
 ## 0.2.0
 
 ### New Features
