@@ -792,21 +792,12 @@ sealed interface MarkdownInlineView {
 object PlaceholderTextUnitConverter {
     var delegate: (density: Density, px: Int) -> TextUnit
     fun convert(density: Density, px: Int): TextUnit
-    fun useComposeToSp()
     fun reset()
 }
 ```
 
-各平台默认行为有意保持不同：
-
-- Android 使用 Compose 1.10 之前版本所需的线性兼容转换。
-- Desktop、iOS 和 wasmJs 直接使用 Compose 原生 `Density.toSp`，因为这些平台不受该 Android 问题影响。
-
-Android 使用 Compose 1.10 或更高版本时，应在应用启动阶段、开始组合 Markdown 之前切换到已修复的原生转换：
-
-```kotlin
-PlaceholderTextUnitConverter.useComposeToSp()
-```
+所有平台的默认 delegate 都直接使用 Compose 原生 `Density.toSp` 转换。Android 最低基线为 Compose 1.10，
+因此不再需要兼容切换。
 
 也可以直接替换 delegate，实现自定义转换：
 
@@ -816,7 +807,7 @@ PlaceholderTextUnitConverter.delegate = { density, px ->
 }
 ```
 
-调用 `PlaceholderTextUnitConverter.reset()` 可恢复当前平台的默认实现。delegate 在进程内全局生效，
+调用 `PlaceholderTextUnitConverter.reset()` 可恢复原生默认实现。delegate 在进程内全局生效，
 不要在组合过程中修改。
 
 ---

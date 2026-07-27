@@ -796,23 +796,12 @@ Adaptive inline content converts measured pixel dimensions to `sp` through the p
 object PlaceholderTextUnitConverter {
     var delegate: (density: Density, px: Int) -> TextUnit
     fun convert(density: Density, px: Int): TextUnit
-    fun useComposeToSp()
     fun reset()
 }
 ```
 
-Platform defaults are intentionally different:
-
-- Android uses the linear compatibility conversion required by Compose versions before 1.10.
-- Desktop, iOS, and wasmJs use Compose's native `Density.toSp` conversion because the Android
-    compatibility issue does not apply to those targets.
-
-On Android with Compose 1.10 or newer, opt into the corrected native conversion once during
-application startup, before composing Markdown:
-
-```kotlin
-PlaceholderTextUnitConverter.useComposeToSp()
-```
+The default delegate uses Compose's native `Density.toSp` conversion on every platform. Compose
+1.10 is the minimum supported Android baseline, so no compatibility switch is required.
 
 For a custom conversion, replace the delegate directly:
 
@@ -822,7 +811,7 @@ PlaceholderTextUnitConverter.delegate = { density, px ->
 }
 ```
 
-Call `PlaceholderTextUnitConverter.reset()` to restore the current platform's default. The
+Call `PlaceholderTextUnitConverter.reset()` to restore the native default. The
 delegate is global to the process, so do not change it during composition.
 
 ---
